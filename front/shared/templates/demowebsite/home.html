@@ -1,0 +1,10 @@
+{% extends "demowebsite/base.html" %}
+
+{% block title %}Research demos{% endblock %}
+
+{% block content %}
+    <h1>Research demos</h1>
+    <div class="demo-list">
+        <div class="card"><a href="{% url 'dticlustering:start' %}">DTI Clustering</a></div>
+    </div>
+{% endblock %}

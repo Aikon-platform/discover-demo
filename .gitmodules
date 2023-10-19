@@ -1,0 +1,3 @@
+[submodule "api/dti_source"]
+	path = api/app/dti
+	url = git@github.com:sonatbaltaci/dti-sprites.git

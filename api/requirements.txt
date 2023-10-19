@@ -1,0 +1,20 @@
+flask
+celery[redis]==5.*
+requests
+pyyaml
+tqdm
+django-environ
+slugify
+
+pandas
+Pillow<10.0
+scipy
+scikit-learn
+matplotlib
+seaborn
+
+kornia==0.7.*
+torch==1.12.1+cu116
+torchvision==0.13.1+cu116
+torchaudio==0.12.1
+--extra-index-url https://download.pytorch.org/whl/cu116
