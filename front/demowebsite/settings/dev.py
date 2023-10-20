@@ -9,3 +9,8 @@ DATABASES = {
         'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
+
+DTI_API_URL = 'http://localhost:5000'
+BASE_URL = 'http://localhost:8000'
+
+MEDIA_ROOT = Path("/mnt/Data/Doctorat/dti-demo/front-media/")

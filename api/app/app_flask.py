@@ -1,16 +1,15 @@
-from flask import Flask
-from celery import Celery
-
 from . import config
+from flask import Flask
+
+from celery import Celery
 
 app = Flask(__name__)
 app.config.from_object(config.FLASK_CONFIG)
 
 celery = Celery(
-    app.import_name,
+    app.name,
     backend=config.CELERY_BROKER_URL,
     broker=config.CELERY_BROKER_URL
 )
-celery.conf.update(app.config)
 
 from .routes import *

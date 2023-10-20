@@ -1,5 +1,6 @@
-from .app import celery
+from .app_celery import celery
 from yaml import load, Loader, dump, Dumper
+from typing import Optional
 import requests
 from zipfile import ZipFile
 from pathlib import Path
@@ -18,13 +19,19 @@ def _run_training(clustering_id: str, dataset_id: str, parameters: dict):
     # TODO update train_config with parameters
 
     config_file = CONFIGS_PATH / f"{clustering_id}.yml"
+    CONFIGS_PATH.mkdir(parents=True, exist_ok=True)
     dump(train_config, open(config_file, "w"), Dumper=Dumper)
 
     trainer = Trainer(config_file, run_dir, seed=train_config["training"]["seed"])
     trainer.run(seed=train_config["training"]["seed"])
 
 @celery.task
-def train_dti(clustering_id: str, dataset_id: str, dataset_url: str, parameters: dict):
+def train_dti(
+    clustering_id: str, 
+    dataset_id: str, 
+    dataset_url: str, 
+    parameters: Optional[dict]=None, 
+    callback_url: Optional[str]=None):
 
     # Download and extract dataset to local storage
     dataset_path = DATASETS_PATH / "generic" / dataset_id
@@ -44,6 +51,8 @@ def train_dti(clustering_id: str, dataset_id: str, dataset_url: str, parameters:
         with ZipFile(dataset_zip_path, "r") as zipObj:
             zipObj.extractall(dataset_path / "train")
 
+        dataset_zip_path.unlink()
+
         # Create ready file
         dataset_ready_file.touch()
 
@@ -51,4 +60,26 @@ def train_dti(clustering_id: str, dataset_id: str, dataset_url: str, parameters:
     _run_training(clustering_id, dataset_id, parameters)
 
     # Upload results
-    pass
+    if callback_url:
+        print(requests.post(
+            callback_url,
+            data={
+                "tracking_id": clustering_id,
+                "result_url": f"{config.BASE_URL}/{clustering_id}/result"
+            }
+        ).text)
+
+
+@celery.task
+def handle_error(request, exc, traceback, callback_url: Optional[str]=None):
+    print('Task {0} raised exception: {1!r}\n{2!r}'.format(
+          request.id, exc, traceback))
+    if callback_url:
+        requests.post(
+            callback_url,
+            data={
+                "tracking_id": request.id,
+                "error": str(exc),
+                "traceback": str(traceback)
+            }
+        )

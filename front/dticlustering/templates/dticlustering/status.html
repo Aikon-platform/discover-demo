@@ -1,0 +1,14 @@
+{% extends "demowebsite/base.html" %}
+
+{% block title %}DTI clustering task #{{ object.id }}{% endblock %}
+
+{% block content %}
+    <h1>DTI Clustering #{{ object.id }}</h1>
+    <a href="{% url "dticlustering:cancel" object.id %}">Cancel</a>
+    <a href="{{ object.dataset.zip_file.url }}">Download dataset</a>
+    {% if object.is_finished %}
+    <pre>
+        {{ object.get_full_log }}
+    </pre>
+    {% endif %}
+{% endblock %}

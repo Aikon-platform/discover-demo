@@ -1,0 +1,12 @@
+{% extends "demowebsite/base.html" %}
+
+{% block title %}Start a new DTI clustering task{% endblock %}
+
+{% block content %}
+    <h1>DTI Clustering</h1>
+    <form action="" method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        {% include "demowebsite/baseform.html" %}
+        <input type="submit" value="Start processing">
+    </form>
+{% endblock %}

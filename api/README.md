@@ -19,12 +19,12 @@ Create a python virtual environment and install the required packages:
 You can now run the API worker:
 
     . venv/bin/activate
-    celery -A app.app:celery worker -l INFO -c 1 -P threads
+    celery -A app.main:celery worker -l INFO -c 1 -P threads
 
 And the server:
 
     . venv/bin/activate
-    flask --app app.app run --debug
+    flask --app app.main run --debug
 
 ## Production deployment
 

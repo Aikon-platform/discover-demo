@@ -1,6 +1,6 @@
 from django import forms
 
-from datasets.models import ZippedDataset
+from datasets.models import ZippedDataset, path_datasets
 
 from .models import DTIClustering
 
@@ -9,7 +9,7 @@ class DTIClusteringForm(forms.ModelForm):
 
     class Meta:
         model = DTIClustering
-        fields = ('dataset_zip')
+        fields = ('dataset_zip', 'notify_email')
 
     def save(self, commit=True):
         instance = super().save(commit=False)
