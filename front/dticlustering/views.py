@@ -31,6 +31,23 @@ class DTIClusteringStatus(DetailView):
     template_name = 'dticlustering/status.html'
     context_object_name = 'clustering'
 
+class DTIClusteringProgress(SingleObjectMixin, View):
+    """
+    Clustering progress
+    """
+    model = DTIClustering
+    context_object_name = 'clustering'
+
+    def get(self, *args, **kwargs):
+        if not hasattr(self, "object"):
+            self.object = self.get_object()
+        return JsonResponse({
+            "status": self.object.status,
+            "is_finished": self.object.is_finished,
+            "log": self.object.get_progress(),
+        })
+
+
 # Cancel a clustering
 class DTIClusteringCancel(DetailView):
     """

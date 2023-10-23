@@ -1,10 +1,11 @@
 from flask import request
 from slugify import slugify
 import uuid
+from dramatiq import get_broker
 from dramatiq_abort import abort
 
 from .main import app
-from .tasks import train_dti
+from .tasks import train_dti, result_key_for_tracking_id
 
 @app.route("/clustering/start", methods=["POST"])
 def start_clustering():
@@ -60,10 +61,9 @@ def status(tracking_id:str):
     """
     Get the status of a DTI clustering task
     """
-    task = train_dti.AsyncResult(tracking_id)
+    log = get_broker().client.get(result_key_for_tracking_id(tracking_id))
 
     return {
         "tracking_id": tracking_id,
-        "status": task.status,
-        "log": task.info
+        "log": log.decode("utf-8") if log else None,
     }

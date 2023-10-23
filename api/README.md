@@ -19,7 +19,7 @@ Create a python virtual environment and install the required packages:
 You can now run the API worker:
 
     . venv/bin/activate
-    celery -A app.main:celery worker -l INFO -c 1 -P threads
+    dramatiq app.main -p 1 -t 1
 
 And the server:
 

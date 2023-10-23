@@ -107,3 +107,18 @@ class DTIClustering(models.Model):
         self.is_finished = True
         self.write_log(f"Clustering finished: {data}")
         self.save()
+
+    def get_progress(self):
+        """
+        Queries the API to get the task progress
+        """
+        api_query = requests.get(
+            f"{DTI_API_URL}/clustering/{self.api_tracking_id}/status",
+        )
+        try:
+            return api_query.json()
+        except:
+            self.write_log(f"Error getting clustering progress: {api_query.text}")
+            return {
+                "status": "UNKNOWN",
+            }

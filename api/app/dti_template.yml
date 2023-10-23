@@ -15,7 +15,7 @@ model:
   curriculum_learning: [300]
 training:
   batch_size: 64
-  n_workers: 0 # Avoid multiprocessing issues
+  n_workers: 5 # Avoid multiprocessing issues
   optimizer:
     name: adam
     lr: 1.0e-3

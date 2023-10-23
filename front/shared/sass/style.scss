@@ -1,6 +1,14 @@
 $main-color: #a0d3b4;
 $bg-color: lighten(desaturate($main-color, 20%), 20%);
 $head-color: saturate(darken($main-color, 30%), 15%);
+$dark-color: desaturate(darken($head-color, 30%), 5%);
+$border-radius: 3px;
+$red: #c81307;
+$headfont: "Helvetica Neue", Helvetica, Arial, sans-serif;
+
+*, *::before, *::after {
+    box-sizing: border-box;
+}
 
 body {
     background-color: $bg-color;
@@ -40,4 +48,135 @@ header {
 
 .content {
     max-width: 1200px;
+}
+
+
+form {
+
+    &.transparent {
+        background: transparent;
+    }
+    
+    .field {
+        border: 2px solid $main-color;
+        border-radius: $border-radius;
+        margin: 5px 0;
+        display: flex;
+        background: #fff;
+        padding: 10px;
+        
+        & > label, & > .label {
+            display:inline-block;
+            width: 250px;
+            text-align: right;
+            margin-right: 12px;
+            padding-top: 5px;
+            flex-shrink: 0;
+            
+            &.required:before {
+                margin-right: 5px;
+                content:"*";
+                color: $red;
+            }
+        }
+
+        ul li{
+            margin: 5px 0;
+        }
+
+        &.field-CheckboxSelectMultiple, &.field-RadioSelect {
+            .input {
+                input {
+                    position: relative;
+                    z-index: 2;
+                }
+                li {
+                    margin-top: 0.3em;
+                    display: flex;
+                    gap: 0.4em;
+                    align-items: center;
+                }
+                label {
+                    color: $bg-color;
+                    border-radius: 2em;
+                    padding: 0.35em 0.8em;
+                    margin-left: -2.2em;
+                    padding-left: 2.2em;
+                }
+                :checked+label {
+                    background-color: $dark-color;
+                    color: #fff;
+                }
+            }
+        }
+        
+        label {
+            font-family: $headfont;
+            font-weight: bold;
+        }
+        .help, &.field-PasswordInput ul li {
+            font-style: italic;
+            font-size: 0.9em;
+            color: lighten(desaturate($dark-color, 10%), 10%);
+        }
+        .input {
+            display:inline-block;
+            flex-grow:1;
+            margin-right:10px;
+            label, .label {
+                font-weight: 500;
+            }
+        }
+    }
+}
+
+
+input[type='text'], input[type='password'],
+input[type='email'], input[type='number'], textarea, select {
+    font-family: $headfont;
+    font-weight: normal;
+    border: none;
+    border-bottom: 1px solid $main-color;
+    width: 100%;
+    max-width: 100%;
+    padding: 0.6em 1em;
+    transition: border 1s ease-out, background 1s ease-out;
+    background-color: $bg-color;
+    &:focus-visible {
+        outline: 2px solid $main-color;
+    }
+}
+
+input[type="submit"], input[type="file"], .btn {
+    white-space: normal;
+    text-align: center;
+    font: 16px $headfont;
+    font-weight: 500;
+    background-color: $head-color;
+    color: #fff;
+    border: 6px double #fff;
+    padding: 12px 17px;
+    display: inline-block;
+    &.annule, &.valide {
+        color: #fff;
+        padding: 0 5px;
+    }
+    &.annule {
+        background: #c81307;
+        border-color: darken(#c81307, 20%);
+    }
+    &.valide {
+        background:#89d813;
+        border-color: darken(#89d813, 20%);
+    }
+}
+
+pre {
+    max-width: 900px;
+    overflow: auto;
+    white-space: pre-wrap;
+    background: #eee;
+    border: 2px solid #ccc;
+    padding: 1em;
+    text-indent: 0;
 }

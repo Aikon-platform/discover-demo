@@ -7,8 +7,24 @@
     <a href="{% url "dticlustering:cancel" object.id %}">Cancel</a>
     <a href="{{ object.dataset.zip_file.url }}">Download dataset</a>
     {% if object.is_finished %}
-    <pre>
-        {{ object.get_full_log }}
-    </pre>
+    <pre>{{ object.get_full_log }}</pre>
+    {% else %}
+    <pre id="status"></pre>
+    <script type="text/javascript">
+        let $status = document.getElementById("status");
+        const PROGRESS_URL = "{% url "dticlustering:progress" object.id %}";
+        // refresh regularly with fetch
+        function refresh() {
+            fetch(PROGRESS_URL)
+                .then(response => response.text())
+                .then(data => {
+                    $status.innerHTML = data;
+                    /*if (data.status == "finished") {
+                        window.location.reload();
+                    }*/
+                });
+        }
+        setInterval(refresh, 5000);
+    </script>
     {% endif %}
 {% endblock %}

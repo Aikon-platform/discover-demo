@@ -5,7 +5,7 @@ requests
 pyyaml
 tqdm
 django-environ
-slugify
+python-slugify
 
 pandas
 Pillow<10.0

@@ -1,30 +1,15 @@
 import dramatiq
-from yaml import load, Loader, dump, Dumper
+from dramatiq.middleware import CurrentMessage
 from typing import Optional
 import requests
 from zipfile import ZipFile
-from pathlib import Path
 import traceback
 
-from . import config # overrides dti_source config
+from . import config
+from .training import run_training, DATASETS_PATH
 
-from .dti.src.kmeans_trainer import Trainer
-from .dti.src.utils.path import RUNS_PATH, DATASETS_PATH, CONFIGS_PATH
-
-def _run_training(clustering_id: str, dataset_id: str, parameters: dict):
-    train_config = load(open(Path(__file__).parent / "dti_template.yml"), Loader=Loader)
-
-    train_config["dataset"]["tag"] = dataset_id
-    run_dir = RUNS_PATH / clustering_id
-
-    # TODO update train_config with parameters
-
-    config_file = CONFIGS_PATH / f"{clustering_id}.yml"
-    CONFIGS_PATH.mkdir(parents=True, exist_ok=True)
-    dump(train_config, open(config_file, "w"), Dumper=Dumper)
-
-    trainer = Trainer(config_file, run_dir, seed=train_config["training"]["seed"])
-    trainer.run(seed=train_config["training"]["seed"])
+def result_key_for_tracking_id(tracking_id: str):
+    return f"result:{tracking_id}"
 
 @dramatiq.actor
 def train_dti(
@@ -35,6 +20,10 @@ def train_dti(
     callback_url: Optional[str]=None):
 
     try:
+        current_task = CurrentMessage.get_current_message()
+        logging_key = result_key_for_tracking_id(current_task.message_id)
+        print(logging_key)
+
         # Download and extract dataset to local storage
         dataset_path = DATASETS_PATH / "generic" / dataset_id
         dataset_ready_file = dataset_path / "ready.meta"
@@ -59,7 +48,7 @@ def train_dti(
             dataset_ready_file.touch()
 
         # Start training
-        _run_training(clustering_id, dataset_id, parameters)
+        run_training(clustering_id, dataset_id, parameters, logging_key)
 
         # Upload results
         if callback_url:

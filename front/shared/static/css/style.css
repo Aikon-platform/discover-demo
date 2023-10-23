@@ -1,3 +1,7 @@
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
 body {
   background-color: #e9f0ec;
   font: 100% Helvetica, sans-serif;
@@ -29,4 +33,121 @@ header {
 
 .content {
   max-width: 1200px;
+}
+
+form.transparent {
+  background: transparent;
+}
+form .field {
+  border: 2px solid #a0d3b4;
+  border-radius: 3px;
+  margin: 5px 0;
+  display: flex;
+  background: #fff;
+  padding: 10px;
+}
+form .field > label, form .field > .label {
+  display: inline-block;
+  width: 250px;
+  text-align: right;
+  margin-right: 12px;
+  padding-top: 5px;
+  flex-shrink: 0;
+}
+form .field > label.required:before, form .field > .label.required:before {
+  margin-right: 5px;
+  content: "*";
+  color: #c81307;
+}
+form .field ul li {
+  margin: 5px 0;
+}
+form .field.field-CheckboxSelectMultiple .input input, form .field.field-RadioSelect .input input {
+  position: relative;
+  z-index: 2;
+}
+form .field.field-CheckboxSelectMultiple .input li, form .field.field-RadioSelect .input li {
+  margin-top: 0.3em;
+  display: flex;
+  gap: 0.4em;
+  align-items: center;
+}
+form .field.field-CheckboxSelectMultiple .input label, form .field.field-RadioSelect .input label {
+  color: #e9f0ec;
+  border-radius: 2em;
+  padding: 0.35em 0.8em;
+  margin-left: -2.2em;
+  padding-left: 2.2em;
+}
+form .field.field-CheckboxSelectMultiple .input :checked + label, form .field.field-RadioSelect .input :checked + label {
+  background-color: #11301d;
+  color: #fff;
+}
+form .field label {
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-weight: bold;
+}
+form .field .help, form .field.field-PasswordInput ul li {
+  font-style: italic;
+  font-size: 0.9em;
+  color: #254f35;
+}
+form .field .input {
+  display: inline-block;
+  flex-grow: 1;
+  margin-right: 10px;
+}
+form .field .input label, form .field .input .label {
+  font-weight: 500;
+}
+
+input[type=text], input[type=password],
+input[type=email], input[type=number], textarea, select {
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-weight: normal;
+  border: none;
+  border-bottom: 1px solid #a0d3b4;
+  width: 100%;
+  max-width: 100%;
+  padding: 0.6em 1em;
+  transition: border 1s ease-out, background 1s ease-out;
+  background-color: #e9f0ec;
+}
+input[type=text]:focus-visible, input[type=password]:focus-visible,
+input[type=email]:focus-visible, input[type=number]:focus-visible, textarea:focus-visible, select:focus-visible {
+  outline: 2px solid #a0d3b4;
+}
+
+input[type=submit], input[type=file], .btn {
+  white-space: normal;
+  text-align: center;
+  font: 16px "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-weight: 500;
+  background-color: #35a561;
+  color: #fff;
+  border: 6px double #fff;
+  padding: 12px 17px;
+  display: inline-block;
+}
+input[type=submit].annule, input[type=submit].valide, input[type=file].annule, input[type=file].valide, .btn.annule, .btn.valide {
+  color: #fff;
+  padding: 0 5px;
+}
+input[type=submit].annule, input[type=file].annule, .btn.annule {
+  background: #c81307;
+  border-color: #650a04;
+}
+input[type=submit].valide, input[type=file].valide, .btn.valide {
+  background: #89d813;
+  border-color: #4e7a0b;
+}
+
+pre {
+  max-width: 900px;
+  overflow: auto;
+  white-space: pre-wrap;
+  background: #eee;
+  border: 2px solid #ccc;
+  padding: 1em;
+  text-indent: 0;
 }/*# sourceMappingURL=style.css.map */
