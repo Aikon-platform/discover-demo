@@ -1,11 +1,10 @@
 from flask import request
 from slugify import slugify
 import uuid
+from dramatiq_abort import abort
 
-from .app_flask import app
-from .tasks import train_dti, handle_error
-
-from celery import current_app
+from .main import app
+from .tasks import train_dti
 
 @app.route("/clustering/start", methods=["POST"])
 def start_clustering():
@@ -30,20 +29,17 @@ def start_clustering():
     clustering_id = slugify(request.form.get("clustering_id", str(uuid.uuid4())))
     dataset_id = slugify(request.form.get("dataset_id", str(uuid.uuid4())))
     callback_url = request.form.get("callback_url", None)
-    print(current_app)
 
-    task = train_dti.s(
+    task = train_dti.send(
         clustering_id=clustering_id, 
         dataset_id=dataset_id, 
         dataset_url=dataset_url, 
         parameters={}, 
         callback_url=callback_url
-    ).apply_async(
-        link_error=handle_error.s(callback_url=callback_url)
     )
 
     return {
-        "tracking_id": task.id,
+        "tracking_id": task.message_id,
         "clustering_id": clustering_id,
         "dataset_id": dataset_id
     }
@@ -53,9 +49,7 @@ def cancel_clustering(tracking_id:str):
     """
     Cancel a DTI clustering task
     """
-    task = train_dti.AsyncResult(tracking_id)
-    print("Cancelling task")
-    task.revoke(terminate=True)
+    abort(tracking_id)
 
     return {
         "tracking_id": tracking_id

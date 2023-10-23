@@ -1,5 +1,6 @@
 flask
-celery[redis]==5.*
+dramatiq[redis]
+dramatiq-abort[redis]
 requests
 pyyaml
 tqdm

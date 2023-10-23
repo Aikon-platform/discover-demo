@@ -9,7 +9,11 @@
 </head>
 <body>
     <div class="wrapper">
-        {% block content %}{% endblock %}
+        <header></header>
+        <div class="content">
+            {% block content %}{% endblock %}
+        </div>
+        <footer></footer>
     </div>
     {% block extra_js %}{% endblock %}
 </body>

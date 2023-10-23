@@ -9,4 +9,4 @@ Env.read_env(env_file=f"{BASE_DIR}/.env")
 class FLASK_CONFIG():
     pass
 
-CELERY_BROKER_URL = "redis:///1"
+BROKER_URL = "redis:///1"
