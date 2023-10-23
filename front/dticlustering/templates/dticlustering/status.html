@@ -16,12 +16,12 @@
         // refresh regularly with fetch
         function refresh() {
             fetch(PROGRESS_URL)
-                .then(response => response.text())
+                .then(response => response.json())
                 .then(data => {
-                    $status.innerHTML = data;
-                    /*if (data.status == "finished") {
+                    $status.innerHTML = data.log.log;
+                    if (data.is_finished) {
                         window.location.reload();
-                    }*/
+                    }
                 });
         }
         setInterval(refresh, 5000);
