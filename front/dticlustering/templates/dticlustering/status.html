@@ -4,27 +4,70 @@
 
 {% block content %}
     <h1>DTI Clustering #{{ object.id }}</h1>
-    <a href="{% url "dticlustering:cancel" object.id %}">Cancel</a>
-    <a href="{{ object.dataset.zip_file.url }}">Download dataset</a>
+    <p>
+        {% if not object.is_finished %}<a href="{% url "dticlustering:cancel" object.id %}">Cancel</a> - {% endif %}
+        <a href="{{ object.dataset.zip_file.url }}">Download dataset</a>
+    </p>
+    <p>Status: {{ object.status }}</p>
     {% if object.is_finished %}
+    <p>
+        {% if object.result_zip_exists %}<a href="{{ object.result_zip_url }}">Download results</a> - {% endif %}
+        <a href="{% url "dticlustering:restart" object.id %}">Start new clustering with same dataset</a>
+    </p>
+
     <pre>{{ object.get_full_log }}</pre>
-    {% else %}
-    <pre id="status"></pre>
-    <script type="text/javascript">
-        let $status = document.getElementById("status");
-        const PROGRESS_URL = "{% url "dticlustering:progress" object.id %}";
-        // refresh regularly with fetch
-        function refresh() {
-            fetch(PROGRESS_URL)
-                .then(response => response.json())
-                .then(data => {
-                    $status.innerHTML = data.log.log;
-                    if (data.is_finished) {
-                        window.location.reload();
-                    }
-                });
-        }
-        setInterval(refresh, 5000);
-    </script>
+
+    {% if object.expanded_results %}
+    <div class="dti-results">
+        <h2>Results</h2>
+        <p>Number of clusters: {{ object.expanded_results.clusters|length }}</p>
+        {% for cluster in object.expanded_results.clusters %}
+            <h3>Cluster {{ cluster.id }}</h3>
+            <div class="cluster">
+                <div class="prototype">
+                    <img src="{{ cluster.prototype }}" alt="Prototype image">
+                </div>
+                <div class="images top">
+                    {% for image in cluster.tops %}
+                    <div class="pair">
+                        <img src="{{ image.raw }}" alt="Top {{ forloop.count }} raw">
+                        <img src="{{ image.tsf }}" alt="Top {{ forloop.count }} transformed">
+                    </div>
+                    {% endfor %}
+                </div>
+                <div class="images random">
+                    {% for image in cluster.randoms %}
+                    <div class="pair">
+                        <img src="{{ image.raw }}" alt="Top {{ forloop.count }} raw">
+                        <img src="{{ image.tsf }}" alt="Top {{ forloop.count }} transformed">
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        {% endfor %}
+    </div>
     {% endif %}
+
+    {% else %}
+
+        <pre id="status"></pre>
+        <script type="text/javascript">
+            let $status = document.getElementById("status");
+            const PROGRESS_URL = "{% url "dticlustering:progress" object.id %}";
+            // refresh regularly with fetch
+            function refresh() {
+                fetch(PROGRESS_URL)
+                    .then(response => {setTimeout(refresh, 2000); return response.json()})
+                    .then(data => {
+                        $status.innerHTML = data.log.log;
+                        if (data.is_finished) {
+                            window.location.reload();
+                        }
+                    });
+            }
+            refresh();
+        </script>
+
+    {% endif %}
+
 {% endblock %}

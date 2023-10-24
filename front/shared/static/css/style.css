@@ -146,8 +146,45 @@ pre {
   max-width: 900px;
   overflow: auto;
   white-space: pre-wrap;
-  background: #eee;
+  background: #333;
+  color: #eee;
   border: 2px solid #ccc;
   padding: 1em;
   text-indent: 0;
+}
+
+.dti-results .cluster {
+  width: 100%;
+  display: flex;
+  gap: 1em;
+}
+.dti-results .cluster .prototype::before {
+  content: "Prototype";
+  font-weight: bold;
+}
+.dti-results .cluster .images {
+  display: flex;
+}
+.dti-results .cluster .images.top::before {
+  content: "Top 5";
+  font-weight: bold;
+}
+.dti-results .cluster .images.random::before {
+  content: "Random 5";
+  font-weight: bold;
+}
+.dti-results .cluster .prototype, .dti-results .cluster .images {
+  position: relative;
+  min-width: 128px;
+}
+.dti-results .cluster .prototype::before, .dti-results .cluster .images::before {
+  position: absolute;
+  top: -1em;
+}
+.dti-results .cluster .pair {
+  display: flex;
+  flex-direction: column;
+}
+.dti-results .cluster img {
+  max-width: 128px;
 }/*# sourceMappingURL=style.css.map */

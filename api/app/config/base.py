@@ -10,3 +10,5 @@ class FLASK_CONFIG():
     pass
 
 BROKER_URL = "redis:///1"
+
+DTI_RESULTS_PATH = Path(ENV("DTI_DATA_FOLDER", default=f"{BASE_DIR}/data")) / "results"

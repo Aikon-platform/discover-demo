@@ -21,8 +21,11 @@ def train_dti(
 
     try:
         current_task = CurrentMessage.get_current_message()
-        logging_key = result_key_for_tracking_id(current_task.message_id)
-        print(logging_key)
+        current_task_id = current_task.message_id
+        logging_key = result_key_for_tracking_id(current_task_id)
+        result_file = config.DTI_RESULTS_PATH / f"{current_task_id}.zip"
+        result_file.parent.mkdir(parents=True, exist_ok=True)
+        print(logging_key, result_file)
 
         # Download and extract dataset to local storage
         dataset_path = DATASETS_PATH / "generic" / dataset_id
@@ -46,31 +49,39 @@ def train_dti(
 
             # Create ready file
             dataset_ready_file.touch()
+        else:
+            print("Dataset already ready")
 
         # Start training
-        run_training(clustering_id, dataset_id, parameters, logging_key)
+        output_path = run_training(clustering_id, dataset_id, parameters, logging_key)
+
+        # zip results to config.DTI_RESULTS_PATH
+        with ZipFile(result_file, "w") as zipObj:
+            for file in output_path.glob("**/*"):
+                zipObj.write(file, file.relative_to(output_path))
 
         # Upload results
         if callback_url:
-            print(requests.post(
+            requests.post(
                 callback_url,
                 data={
-                    "tracking_id": clustering_id,
+                    "tracking_id": current_task_id,
                     "success": True,
-                    "result_url": f"{config.BASE_URL}/{clustering_id}/result"
+                    "result_url": f"{config.BASE_URL}/clustering/{current_task_id}/result"
                 }
-            ).text)
+            )
     except Exception as e:
         try:
             if callback_url:
-                print(requests.post(
+                requests.post(
                     callback_url,
                     data={
                         "tracking_id": clustering_id,
                         "success": False,
                         "error": traceback.format_exc()
                     }
-                ).text)
+                )
+            traceback.print_exc()
         except Exception as e:
-            print(e)
+            traceback.print_exc()
 

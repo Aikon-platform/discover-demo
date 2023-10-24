@@ -9,6 +9,6 @@ See [api/README.md] and [front/README.md] for individual part installations.
 
 To start everything in one killable process, run
 
-    (trap 'kill 0' SIGINT; (cd api/ && source venv/bin/activate && flask --app app.main run --debug) & (cd api/ && source venv/bin/activate && dramatiq app.main -p 1 -t 1) & (cd front/ && source venv/bin/activate && python manage.py runserver); )
+    (trap 'kill 0' SIGINT; (cd api/ && venv/bin/flask --app app.main run --debug) & (cd api/ && venv/bin/dramatiq app.main -p 1 -t 1) & (cd front/ && venv/bin/python manage.py runserver) & (cd front/ && venv/bin/python manage.py rundramatiq -p 1 -t 1); );
 
 You can add `--watch` to dramatiq part (if you have run `pip install dramatiq[watch]` first).

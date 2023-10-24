@@ -1,8 +1,10 @@
-from flask import request
+from flask import request, send_from_directory
 from slugify import slugify
 import uuid
 from dramatiq import get_broker
 from dramatiq_abort import abort
+
+from . import config
 
 from .main import app
 from .tasks import train_dti, result_key_for_tracking_id
@@ -67,3 +69,11 @@ def status(tracking_id:str):
         "tracking_id": tracking_id,
         "log": log.decode("utf-8") if log else None,
     }
+
+@app.route("/clustering/<tracking_id>/result", methods=["GET"])
+def result(tracking_id:str):
+    """
+    Get the result of a DTI clustering task
+    """
+    # return the static file
+    return send_from_directory(config.DTI_RESULTS_PATH, f"{slugify(tracking_id)}.zip")

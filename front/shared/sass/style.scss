@@ -175,8 +175,54 @@ pre {
     max-width: 900px;
     overflow: auto;
     white-space: pre-wrap;
-    background: #eee;
+    background: #333;
+    color: #eee;
     border: 2px solid #ccc;
     padding: 1em;
     text-indent: 0;
+}
+
+.dti-results {
+    .cluster {
+        width: 100%;
+        display: flex;
+        gap: 1em;
+        .prototype {
+            &::before {
+                content: "Prototype";
+                font-weight: bold;
+            }
+        }
+        .images {
+            display: flex;
+            &.top {
+                &::before {
+                    content: "Top 5";
+                    font-weight: bold;
+                }
+            }
+            &.random {
+                &::before {
+                    content: "Random 5";
+                    font-weight: bold;
+                }
+            }
+        }
+    
+        .prototype, .images {
+            position: relative;
+            min-width: 128px;
+            &::before {
+                position: absolute;
+                top: -1em;
+            }
+        }
+        .pair {
+            display: flex;
+            flex-direction: column;
+        }
+        img {
+            max-width: 128px;
+        }
+    }
 }

@@ -5,6 +5,8 @@ from django.shortcuts import redirect
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
+import json
+from typing import Any
 
 from .models import DTIClustering
 from .forms import DTIClusteringForm
@@ -22,6 +24,23 @@ class DTIClusteringStart(CreateView):
         self.object.start_clustering()
         return self.object.get_absolute_url()
     
+# Start new clustering from previous one
+class DTIClusteringStartFrom(DTIClusteringStart):
+    """
+    Request a clustering from a previous one
+    """
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        self.fromdti = DTIClustering.objects.get(id=self.kwargs["pk"])
+        kwargs["dataset"] = self.fromdti.dataset
+        return kwargs
+    
+    def get_context_data(self, **kwargs) -> dict[str, Any]:
+        context = super().get_context_data(**kwargs)
+        context["fromdti"] = self.fromdti
+        return context
+    
+
 # Clustering status
 class DTIClusteringStatus(DetailView):
     """
@@ -76,7 +95,14 @@ class DTIClusteringCallback(SingleObjectMixin, View):
         if not hasattr(self, "object"):
             self.object = self.get_object()
 
-        self.object.terminate_clustering(self.request.POST)
+        data = self.request.POST
+        # if empty, decode json
+        if not data:
+            print("Trying JSON")
+            data = self.request.body.decode("utf-8")
+            data = json.loads(data)
+
+        self.object.receive_clustering(data)
 
         return JsonResponse({
             "success": True,

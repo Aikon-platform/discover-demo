@@ -4,6 +4,7 @@ from pathlib import Path
 from django.urls import reverse
 import requests
 import uuid
+from django.utils.functional import cached_property
 
 from datasets.models import ZippedDataset
 
@@ -47,6 +48,18 @@ class DTIClustering(models.Model):
     @property
     def log_file_path(self) -> Path:
         return self.result_full_path / "log.txt"
+    
+    @property
+    def result_zip_url(self) -> str:
+        return f"{self.result_media_url}/results.zip"
+    
+    @property
+    def result_zip_exists(self) -> bool:
+        return (self.result_full_path / "results.zip").exists()
+    
+    @cached_property
+    def expanded_results(self) -> "ResultStruct":
+        return ResultStruct(self.result_full_path, self.result_media_url)
     
     def get_full_log(self):
         if not self.log_file_path.exists():
@@ -94,18 +107,35 @@ class DTIClustering(models.Model):
         )
         try:
             print(api_query.text)
+            self.status = "CANCELLED"
+            self.is_finished = True
         except:
             self.write_log(f"Error cancelling clustering: {api_query.text}")
             self.status = "ERROR"
             self.is_finished = True
+        self.save()
 
-    def terminate_clustering(self, data: dict):
+    def receive_clustering(self, data: dict):
         """
         Called by the API when the task is finished
         """
+        if data["success"]:
+            self.status = "FETCHING RESULTS"
+            self.save()
+            # start collecting results
+            from .tasks import collect_results
+            collect_results.send(str(self.pk), data["result_url"])
+        else:
+            self.finish_clustering("ERROR", data["error"])
+
+    def finish_clustering(self, status="SUCCESS", error=None):
+        """
+        Called when the task is finished
+        """
         self.status = "FINISHED"
+        if error:
+            self.write_log(error)
         self.is_finished = True
-        self.write_log(f"Clustering finished: {data}")
         self.save()
 
     def get_progress(self):
@@ -122,3 +152,43 @@ class DTIClustering(models.Model):
             return {
                 "status": "UNKNOWN",
             }
+        
+
+class ResultStruct:
+    def __init__(self, path: Path, media_url: str):
+        clusters_path = path / "clusters"
+        prototypes_path = path / "prototypes"
+
+        if not prototypes_path.exists():
+            self.clusters = []
+            return
+
+        prototypes = [
+            c.name[len("prototype"):-4]
+            for c in prototypes_path.glob("prototype*.png")
+        ]
+        self.clusters = []
+        
+        for p in prototypes:
+            proto_url = f"{media_url}/prototypes/prototype{p}.png"
+            cluster = {"prototype": proto_url, "id": p, "tops": [], "randoms": []}
+
+            cluster_dir = clusters_path / f"cluster{p}"
+            if not cluster_dir.exists():
+                continue
+
+            for top in cluster_dir.glob("top*_raw.png"):
+                cluster["tops"].append({
+                    "raw": f"{media_url}/clusters/cluster{p}/{top.name}",
+                    "tsf": f"{media_url}/clusters/cluster{p}/{top.name[:-8]}_tsf.png",
+                })
+            
+            for random in cluster_dir.glob("random*_raw.png"):
+                cluster["randoms"].append({
+                    "raw": f"{media_url}/clusters/cluster{p}/{random.name}",
+                    "tsf": f"{media_url}/clusters/cluster{p}/{random.name[:-8]}_tsf.png",
+                })
+            
+            self.clusters.append(cluster)
+
+        self.clusters.sort(key=lambda c: int(c["id"]))
