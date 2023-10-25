@@ -61,9 +61,8 @@ class DTIClusteringProgress(SingleObjectMixin, View):
         if not hasattr(self, "object"):
             self.object = self.get_object()
         return JsonResponse({
-            "status": self.object.status,
             "is_finished": self.object.is_finished,
-            "log": self.object.get_progress(),
+            **self.object.get_progress(),
         })
 
 
@@ -96,6 +95,8 @@ class DTIClusteringCallback(SingleObjectMixin, View):
             self.object = self.get_object()
 
         data = self.request.POST
+        print(data)
+        
         # if empty, decode json
         if not data:
             print("Trying JSON")

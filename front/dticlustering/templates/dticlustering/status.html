@@ -9,6 +9,7 @@
         <a href="{{ object.dataset.zip_file.url }}">Download dataset</a>
     </p>
     <p>Status: {{ object.status }}</p>
+    <pre>Parameters : {{ object.parameters }}</pre>
     {% if object.is_finished %}
     <p>
         {% if object.result_zip_exists %}<a href="{{ object.result_zip_url }}">Download results</a> - {% endif %}
@@ -21,27 +22,41 @@
     <div class="dti-results">
         <h2>Results</h2>
         <p>Number of clusters: {{ object.expanded_results.clusters|length }}</p>
+
+        {% if object.expanded_results.backgrounds %}
+        <h3>Backgrounds</h3>
+        <div class="backgrounds">
+            {% for image in object.expanded_results.backgrounds %}
+            <div class="pair">
+                <img src="{{ image }}" alt="Background {{ forloop.count }} raw">
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
         {% for cluster in object.expanded_results.clusters %}
             <h3>Cluster {{ cluster.id }}</h3>
             <div class="cluster">
                 <div class="prototype">
                     <img src="{{ cluster.prototype }}" alt="Prototype image">
                 </div>
-                <div class="images top">
-                    {% for image in cluster.tops %}
-                    <div class="pair">
-                        <img src="{{ image.raw }}" alt="Top {{ forloop.count }} raw">
-                        <img src="{{ image.tsf }}" alt="Top {{ forloop.count }} transformed">
+                <div class="images">
+                    <div class="top">
+                        {% for image in cluster.tops %}
+                        <div class="pair">
+                            <img src="{{ image.raw }}" alt="Top {{ forloop.count }} raw">
+                            <img src="{{ image.tsf }}" alt="Top {{ forloop.count }} transformed">
+                        </div>
+                        {% endfor %}
                     </div>
-                    {% endfor %}
-                </div>
-                <div class="images random">
-                    {% for image in cluster.randoms %}
-                    <div class="pair">
-                        <img src="{{ image.raw }}" alt="Top {{ forloop.count }} raw">
-                        <img src="{{ image.tsf }}" alt="Top {{ forloop.count }} transformed">
+                    <div class="random">
+                        {% for image in cluster.randoms %}
+                        <div class="pair">
+                            <img src="{{ image.raw }}" alt="Top {{ forloop.count }} raw">
+                            <img src="{{ image.tsf }}" alt="Top {{ forloop.count }} transformed">
+                        </div>
+                        {% endfor %}
                     </div>
-                    {% endfor %}
                 </div>
             </div>
         {% endfor %}
@@ -50,16 +65,41 @@
 
     {% else %}
 
+        <div id="progress-wrapper"></div>
         <pre id="status"></pre>
         <script type="text/javascript">
             let $status = document.getElementById("status");
+            let $progress_wrapper = document.getElementById("progress-wrapper");
             const PROGRESS_URL = "{% url "dticlustering:progress" object.id %}";
             // refresh regularly with fetch
             function refresh() {
                 fetch(PROGRESS_URL)
                     .then(response => {setTimeout(refresh, 2000); return response.json()})
                     .then(data => {
-                        $status.innerHTML = data.log.log;
+                        try {
+                            $status.innerHTML = data.log.infos.join("\n");
+                            $progress_wrapper.innerHTML = "";
+
+                            if (data.log.progress)
+                                for (let progress of data.log.progress) {
+                                    let $bar_wrapper = document.createElement("div");
+                                    
+                                    let $label = document.createElement("span");
+                                    $label.classList.add("label");
+                                    $label.innerHTML = progress.context + " " + progress.current + "/" + progress.total;
+                                    $bar_wrapper.appendChild($label);
+
+                                    let $bar = document.createElement("progress");
+                                    $bar.classList.add("bar");
+                                    $bar.value = progress.current;
+                                    $bar.max = progress.total;
+                                    $bar_wrapper.appendChild($bar);
+                                    
+                                    $progress_wrapper.appendChild($bar_wrapper);
+                                }
+                        } catch (e){
+                            $status.innerHTML = JSON.stringify(data);
+                        }
                         if (data.is_finished) {
                             window.location.reload();
                         }

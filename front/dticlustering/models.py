@@ -4,6 +4,7 @@ from pathlib import Path
 from django.urls import reverse
 import requests
 import uuid
+import json
 from django.utils.functional import cached_property
 
 from datasets.models import ZippedDataset
@@ -85,6 +86,7 @@ class DTIClustering(models.Model):
                 "dataset_url": f"{settings.BASE_URL}{self.dataset.zip_file.url}",
                 "dataset_id": str(self.dataset.id),
                 "clustering_id": str(self.id),
+                "parameters": json.dumps(self.parameters),
                 "callback_url": f"{settings.BASE_URL}{reverse('dticlustering:callback', kwargs={'pk': self.pk})}"
             }
         )
@@ -132,7 +134,7 @@ class DTIClustering(models.Model):
         """
         Called when the task is finished
         """
-        self.status = "FINISHED"
+        self.status = status
         if error:
             self.write_log(error)
         self.is_finished = True
@@ -165,28 +167,33 @@ class ResultStruct:
 
         prototypes = [
             c.name[len("prototype"):-4]
-            for c in prototypes_path.glob("prototype*.png")
+            for c in prototypes_path.glob("prototype*.jpg")
         ]
         self.clusters = []
         
+        self.backgrounds = [
+            f"{media_url}/backgrounds/{b.name}"
+            for b in path.glob("backgrounds/background*.jpg")
+        ]
+
         for p in prototypes:
-            proto_url = f"{media_url}/prototypes/prototype{p}.png"
+            proto_url = f"{media_url}/prototypes/prototype{p}.jpg"
             cluster = {"prototype": proto_url, "id": p, "tops": [], "randoms": []}
 
             cluster_dir = clusters_path / f"cluster{p}"
             if not cluster_dir.exists():
                 continue
 
-            for top in cluster_dir.glob("top*_raw.png"):
+            for top in cluster_dir.glob("top*_raw.jpg"):
                 cluster["tops"].append({
                     "raw": f"{media_url}/clusters/cluster{p}/{top.name}",
-                    "tsf": f"{media_url}/clusters/cluster{p}/{top.name[:-8]}_tsf.png",
+                    "tsf": f"{media_url}/clusters/cluster{p}/{top.name[:-8]}_tsf.jpg",
                 })
             
-            for random in cluster_dir.glob("random*_raw.png"):
+            for random in cluster_dir.glob("random*_raw.jpg"):
                 cluster["randoms"].append({
                     "raw": f"{media_url}/clusters/cluster{p}/{random.name}",
-                    "tsf": f"{media_url}/clusters/cluster{p}/{random.name[:-8]}_tsf.png",
+                    "tsf": f"{media_url}/clusters/cluster{p}/{random.name[:-8]}_tsf.jpg",
                 })
             
             self.clusters.append(cluster)

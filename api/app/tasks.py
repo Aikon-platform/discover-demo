@@ -4,14 +4,13 @@ from typing import Optional
 import requests
 from zipfile import ZipFile
 import traceback
+from PIL import Image
 
 from . import config
-from .training import run_training, DATASETS_PATH
+from .training import DATASETS_PATH, run_kmeans_training, run_sprites_training
+from .utils.logging import JobLogger
 
-def result_key_for_tracking_id(tracking_id: str):
-    return f"result:{tracking_id}"
-
-@dramatiq.actor
+@dramatiq.actor(time_limit=1000*60*60, max_retries=0, store_results=True)
 def train_dti(
     clustering_id: str, 
     dataset_id: str, 
@@ -20,12 +19,12 @@ def train_dti(
     callback_url: Optional[str]=None):
 
     try:
+        logger = JobLogger.getLogger(create=True)
         current_task = CurrentMessage.get_current_message()
         current_task_id = current_task.message_id
-        logging_key = result_key_for_tracking_id(current_task_id)
+
         result_file = config.DTI_RESULTS_PATH / f"{current_task_id}.zip"
         result_file.parent.mkdir(parents=True, exist_ok=True)
-        print(logging_key, result_file)
 
         # Download and extract dataset to local storage
         dataset_path = DATASETS_PATH / "generic" / dataset_id
@@ -53,18 +52,33 @@ def train_dti(
             print("Dataset already ready")
 
         # Start training
-        output_path = run_training(clustering_id, dataset_id, parameters, logging_key)
+        use_sprites = parameters.get("use_sprites", False)
+        if use_sprites:
+            output_path = run_sprites_training(clustering_id, dataset_id, parameters, logger)
+        else:
+            output_path = run_kmeans_training(clustering_id, dataset_id, parameters, logger)
 
         # zip results to config.DTI_RESULTS_PATH
         with ZipFile(result_file, "w") as zipObj:
             for file in output_path.glob("**/*"):
+                # convert png to jpg
+                if file.suffix == ".png":
+                    im = Image.open(file)
+                    rgb_im = im.convert("RGB")
+                    rgb_im.save(file.with_suffix(".jpg"), quality=90)
+                    file.unlink()
+                    file = file.with_suffix(".jpg")
+                
+                if file.suffix == ".pkl": # Don't include the model
+                    continue
+
                 zipObj.write(file, file.relative_to(output_path))
 
         # Upload results
         if callback_url:
             requests.post(
                 callback_url,
-                data={
+                json={
                     "tracking_id": current_task_id,
                     "success": True,
                     "result_url": f"{config.BASE_URL}/clustering/{current_task_id}/result"
@@ -75,7 +89,7 @@ def train_dti(
             if callback_url:
                 requests.post(
                     callback_url,
-                    data={
+                    json={
                         "tracking_id": clustering_id,
                         "success": False,
                         "error": traceback.format_exc()

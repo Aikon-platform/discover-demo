@@ -3,11 +3,14 @@ from slugify import slugify
 import uuid
 from dramatiq import get_broker
 from dramatiq_abort import abort
+from dramatiq.results import ResultMissing, ResultFailure
+import json
+import traceback
 
 from . import config
 
 from .main import app
-from .tasks import train_dti, result_key_for_tracking_id
+from .tasks import train_dti
 
 @app.route("/clustering/start", methods=["POST"])
 def start_clustering():
@@ -32,12 +35,13 @@ def start_clustering():
     clustering_id = slugify(request.form.get("clustering_id", str(uuid.uuid4())))
     dataset_id = slugify(request.form.get("dataset_id", str(uuid.uuid4())))
     callback_url = request.form.get("callback_url", None)
+    parameters = json.loads(request.form.get("parameters", "{}"))
 
     task = train_dti.send(
         clustering_id=clustering_id, 
         dataset_id=dataset_id, 
         dataset_url=dataset_url, 
-        parameters={}, 
+        parameters=parameters, 
         callback_url=callback_url
     )
 
@@ -63,11 +67,17 @@ def status(tracking_id:str):
     """
     Get the status of a DTI clustering task
     """
-    log = get_broker().client.get(result_key_for_tracking_id(tracking_id))
+    try:
+        log = train_dti.message().copy(message_id=tracking_id).get_result()
+    except ResultMissing:
+        log = None
+    except ResultFailure as e:
+        log = {"status": "ERROR", "infos": [f"Error: Actor raised {e.orig_exc_type} ({e.orig_exc_msg})"]}
+
 
     return {
         "tracking_id": tracking_id,
-        "log": log.decode("utf-8") if log else None,
+        "log": log,
     }
 
 @app.route("/clustering/<tracking_id>/result", methods=["GET"])

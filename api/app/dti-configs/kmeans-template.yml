@@ -12,7 +12,7 @@ model:
       gaussian_weights_std: 25
   encoder_name: resnet20
   transformation_sequence: identity_color #_projective
-  curriculum_learning: [300]
+  curriculum_learning: False
 training:
   batch_size: 64
   n_workers: 5 # Avoid multiprocessing issues

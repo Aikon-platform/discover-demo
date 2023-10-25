@@ -9,9 +9,12 @@
     {{ field.errors }}
     <div class="field">
         {% if field|field_type == "CheckboxInput" %}
+            <div class="label">
+                <label {% if field.field.required %}class="required"{% endif %}></label>
+            </div>
             <div class="">
                 {{ field }}
-                <label for="{{ field.id_for_label }}" class="{% if field.field.required %}required{% endif %}">{{ field.label }}</label>
+                <label for="{{ field.id_for_label }}">{{ field.label }}</label>
                 {% if field.help_text %}
                     <div class="help">{{ field.help_text }}</div>
                 {% endif %}

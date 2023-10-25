@@ -195,13 +195,18 @@ pre {
         }
         .images {
             display: flex;
-            &.top {
+            flex-direction: column;
+            gap: 1.2em;
+            & > * {
+                display: flex;
+            }
+            .top {
                 &::before {
                     content: "Top 5";
                     font-weight: bold;
                 }
             }
-            &.random {
+            .random {
                 &::before {
                     content: "Random 5";
                     font-weight: bold;
@@ -209,7 +214,7 @@ pre {
             }
         }
     
-        .prototype, .images {
+        .prototype, .images > * {
             position: relative;
             min-width: 128px;
             &::before {
@@ -234,6 +239,36 @@ pre {
         & > * {
             display: table-cell;
             padding: 0.5em;
+        }
+    }
+}
+
+#progress-wrapper {
+    & > * {
+        margin: 0.5em 0;
+        background-color: #fff;
+        display: flex;
+        align-items: center;
+        gap: 0.5em;
+        padding: 0.5em 1em;
+
+        progress {
+            flex-grow: 1;
+            margin: 0;
+            border: none;
+            appearance: none;
+            background-color: #fff;
+            border-radius: 10px;
+            border: 1px solid $head-color;
+            &::-webkit-progress-bar {
+                background-color: #fff;
+            }
+            &::-webkit-progress-value {
+                background-color: $head-color;
+            }
+            &::-moz-progress-bar {
+                background-color: $head-color;
+            }
         }
     }
 }
