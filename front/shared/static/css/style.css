@@ -187,4 +187,15 @@ pre {
 }
 .dti-results .cluster img {
   max-width: 128px;
+}
+
+.dti-list {
+  display: table;
+}
+.dti-list .row {
+  display: table-row;
+}
+.dti-list .row > * {
+  display: table-cell;
+  padding: 0.5em;
 }/*# sourceMappingURL=style.css.map */

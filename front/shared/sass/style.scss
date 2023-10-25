@@ -226,3 +226,14 @@ pre {
         }
     }
 }
+
+.dti-list {
+    display: table;
+    .row {
+        display: table-row;
+        & > * {
+            display: table-cell;
+            padding: 0.5em;
+        }
+    }
+}
