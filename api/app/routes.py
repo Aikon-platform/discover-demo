@@ -34,7 +34,7 @@ def start_clustering():
 
     clustering_id = slugify(request.form.get("clustering_id", str(uuid.uuid4())))
     dataset_id = slugify(request.form.get("dataset_id", str(uuid.uuid4())))
-    callback_url = request.form.get("callback_url", None)
+    notify_url = request.form.get("notify_url", None)
     parameters = json.loads(request.form.get("parameters", "{}"))
 
     task = train_dti.send(
@@ -42,7 +42,7 @@ def start_clustering():
         dataset_id=dataset_id, 
         dataset_url=dataset_url, 
         parameters=parameters, 
-        callback_url=callback_url
+        notify_url=notify_url
     )
 
     return {

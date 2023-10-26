@@ -187,39 +187,34 @@ pre {
         width: 100%;
         display: flex;
         gap: 1em;
-        .prototype {
-            &::before {
-                content: "Prototype";
-                font-weight: bold;
-            }
+        .prototype::before {
+            content: "Prototype";
         }
-        .images {
+        .mask::before {
+            content: "Mask";
+        }
+        .images, .models {
             display: flex;
             flex-direction: column;
             gap: 1.2em;
             & > * {
                 display: flex;
             }
-            .top {
-                &::before {
-                    content: "Top 5";
-                    font-weight: bold;
-                }
+            .top::before {
+                content: "Top 5";
             }
-            .random {
-                &::before {
-                    content: "Random 5";
-                    font-weight: bold;
-                }
+            .random::before {
+                content: "Random 5";
             }
         }
     
-        .prototype, .images > * {
+        .models > *, .images > * {
             position: relative;
             min-width: 128px;
             &::before {
                 position: absolute;
                 top: -1em;
+                font-weight: bold;
             }
         }
         .pair {

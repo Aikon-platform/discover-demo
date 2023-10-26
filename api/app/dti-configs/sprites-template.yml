@@ -12,7 +12,7 @@ model:
   prototype:
     source: data
     data:
-      freeze: [True, True, False]
+      freeze: [False, False, False]
       value: [0.0, 0.5, 0.]
       init: ["constant", "constant", "gaussian"]
       gaussian_weights_std: 16

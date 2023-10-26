@@ -62,6 +62,9 @@ class DTIClustering(models.Model):
     def expanded_results(self) -> "ResultStruct":
         return ResultStruct(self.result_full_path, self.result_media_url)
     
+    def get_token(self):
+        return uuid.uuid5(uuid.NAMESPACE_URL, str(self.id)).hex
+
     def get_full_log(self):
         if not self.log_file_path.exists():
             return "No log"
@@ -87,7 +90,7 @@ class DTIClustering(models.Model):
                 "dataset_id": str(self.dataset.id),
                 "clustering_id": str(self.id),
                 "parameters": json.dumps(self.parameters),
-                "callback_url": f"{settings.BASE_URL}{reverse('dticlustering:callback', kwargs={'pk': self.pk})}"
+                "notify_url": f"{settings.BASE_URL}{reverse('dticlustering:notify', kwargs={'pk': self.pk})}?token={self.get_token()}"
             }
         )
         try:
@@ -117,17 +120,22 @@ class DTIClustering(models.Model):
             self.is_finished = True
         self.save()
 
-    def receive_clustering(self, data: dict):
+    def receive_notification(self, data: dict):
         """
-        Called by the API when the task is finished
+        Called by the API when tasks events happen
         """
-        if data["success"]:
+        event = data["event"]
+        if event == "STARTED":
+            self.status = "PROGRESS"
+            self.save()
+            return
+        elif event == "SUCCESS":
             self.status = "FETCHING RESULTS"
             self.save()
             # start collecting results
             from .tasks import collect_results
-            collect_results.send(str(self.pk), data["result_url"])
-        else:
+            collect_results.send(str(self.pk), data["output"]["result_url"])
+        elif event == "ERROR":
             self.finish_clustering("ERROR", data["error"])
 
     def finish_clustering(self, status="SUCCESS", error=None):
@@ -160,25 +168,42 @@ class ResultStruct:
     def __init__(self, path: Path, media_url: str):
         clusters_path = path / "clusters"
         prototypes_path = path / "prototypes"
+        masks_path = path / "masks"
+        backgrounds_path = path / "backgrounds"
 
+        # Cluster_by_path csv
+        cluster_by_path_file = path / "cluster_by_path.csv"
+        if cluster_by_path_file.exists():
+            self.cluster_by_path = f"{media_url}/cluster_by_path.csv"
+
+        # no proto
         if not prototypes_path.exists():
             self.clusters = []
             return
 
+        # List prototypes
         prototypes = [
             c.name[len("prototype"):-4]
             for c in prototypes_path.glob("prototype*.jpg")
         ]
         self.clusters = []
         
+        # List backgrounds
         self.backgrounds = [
             f"{media_url}/backgrounds/{b.name}"
-            for b in path.glob("backgrounds/background*.jpg")
+            for b in backgrounds_path.glob("background*.jpg")
         ]
 
+        # Iter clusters
         for p in prototypes:
             proto_url = f"{media_url}/prototypes/prototype{p}.jpg"
+
             cluster = {"prototype": proto_url, "id": p, "tops": [], "randoms": []}
+
+            # add mask
+            mask_path = masks_path / f"mask{p}.jpg"
+            if mask_path.exists():
+                cluster["mask"] = f"{media_url}/masks/mask{p}.jpg"
 
             cluster_dir = clusters_path / f"cluster{p}"
             if not cluster_dir.exists():

@@ -160,31 +160,32 @@ pre {
 }
 .dti-results .cluster .prototype::before {
   content: "Prototype";
-  font-weight: bold;
 }
-.dti-results .cluster .images {
+.dti-results .cluster .mask::before {
+  content: "Mask";
+}
+.dti-results .cluster .images, .dti-results .cluster .models {
   display: flex;
   flex-direction: column;
   gap: 1.2em;
 }
-.dti-results .cluster .images > * {
+.dti-results .cluster .images > *, .dti-results .cluster .models > * {
   display: flex;
 }
-.dti-results .cluster .images .top::before {
+.dti-results .cluster .images .top::before, .dti-results .cluster .models .top::before {
   content: "Top 5";
-  font-weight: bold;
 }
-.dti-results .cluster .images .random::before {
+.dti-results .cluster .images .random::before, .dti-results .cluster .models .random::before {
   content: "Random 5";
-  font-weight: bold;
 }
-.dti-results .cluster .prototype, .dti-results .cluster .images > * {
+.dti-results .cluster .models > *, .dti-results .cluster .images > * {
   position: relative;
   min-width: 128px;
 }
-.dti-results .cluster .prototype::before, .dti-results .cluster .images > *::before {
+.dti-results .cluster .models > *::before, .dti-results .cluster .images > *::before {
   position: absolute;
   top: -1em;
+  font-weight: bold;
 }
 .dti-results .cluster .pair {
   display: flex;

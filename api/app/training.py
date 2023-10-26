@@ -9,7 +9,7 @@ from .dti.src.kmeans_trainer import Trainer as KMeansTrainer
 from .dti.src.sprites_trainer import Trainer as SpritesTrainer
 from .dti.src.utils.path import RUNS_PATH, DATASETS_PATH, CONFIGS_PATH
 
-from .utils.logging import TLogger
+from .utils.logging import TLogger, LoggerHelper
 
 class LoggingTrainerMixin:
     """
@@ -24,7 +24,7 @@ class LoggingTrainerMixin:
                 self.loader = loader
 
             def __iter__(self):
-                return iter(logger.iterate(self.loader, title="Iteration"))
+                return iter(logger.iterate(self.loader, title="Training step"))
             
             def __getattribute__(self, __name: str) -> Any:
                 if __name == "loader":
@@ -38,12 +38,16 @@ class LoggingTrainerMixin:
         self.jlogger.info(string)
         self.logger.info(string)
 
+    def run(self, *args, **kwargs):
+        self.jlogger.progress(self.start_epoch-1, self.n_epoches, title="Training epoch")
+        return super().run(*args, **kwargs)
+
     def update_scheduler(self, epoch, batch):
-        self.jlogger.progress(epoch, self.n_epoches, title="Epoch")
+        self.jlogger.progress(epoch-1, self.n_epoches, title="Training epoch")
         return super().update_scheduler(epoch, batch)
     
     def save_training_metrics(self):
-        self.jlogger.progress(self.n_epoches, self.n_epoches, title="Epoch", end=True)
+        self.jlogger.progress(self.n_epoches, self.n_epoches, title="Training epoch", end=True)
         self.jlogger.info("Training over, running evaluation")
         return super().save_training_metrics()
 
@@ -53,7 +57,7 @@ class LoggedKMeansTrainer(LoggingTrainerMixin, KMeansTrainer):
 class LoggedSpritesTrainer(LoggingTrainerMixin, SpritesTrainer):
     pass
 
-def run_kmeans_training(clustering_id: str, dataset_id: str, parameters: dict, logger: Optional[TLogger]=None) -> Path:
+def run_kmeans_training(clustering_id: str, dataset_id: str, parameters: dict, logger: TLogger=LoggerHelper) -> Path:
     train_config = load(open(Path(__file__).parent / "dti-configs" / "kmeans-template.yml"), Loader=Loader)
 
     train_config["dataset"]["tag"] = dataset_id
@@ -74,7 +78,7 @@ def run_kmeans_training(clustering_id: str, dataset_id: str, parameters: dict, l
 
     return run_dir
 
-def run_sprites_training(clustering_id: str, dataset_id: str, parameters: dict, logger: Optional[TLogger]=None) -> Path:
+def run_sprites_training(clustering_id: str, dataset_id: str, parameters: dict, logger: TLogger=LoggerHelper) -> Path:
     train_config = load(open(Path(__file__).parent / "dti-configs" / "sprites-template.yml"), Loader=Loader)
 
     train_config["dataset"]["tag"] = dataset_id

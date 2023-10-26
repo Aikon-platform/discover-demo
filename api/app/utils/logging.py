@@ -9,7 +9,8 @@ import traceback
 from collections.abc import Sized
 from typing import (Any, Callable, Dict, Generic, Iterable, List, Optional,
                     Type, TypeVar, Union)
-import json
+import json, requests
+
 
 """
 A module for logging progress
@@ -162,7 +163,7 @@ class JobLogger:
 
     def get_state(self, with_warnings: bool=False):
         state = {}
-        
+
         state["id"] = self._id
         
         if self.description:
@@ -283,6 +284,51 @@ class JobLogger:
             mininterval=rate_limit, 
             total=total)
 
+def notifying(func: Optional[Callable[..., Any]]=None) -> Callable[..., Any]:
+    """
+    A decorator to notify the task of the progress of a function
+    """
+    def wrapper(func: Callable[..., Any]) -> Callable[..., Any]:
+        @functools.wraps(func)
+        def execute(*args, notify_url: Optional[str]=None, **kwargs):
+            logger = JobLogger.getLogger(create=True)
+            logger.info(f"Starting task {func.__name__}")
+            current_task_id = getattr(logger, "_id", None)
+
+            def notify(event: str, **data):
+                if notify_url:
+                    requests.post(
+                        notify_url,
+                        json={
+                            "event": event,
+                            "tracking_id": current_task_id,
+                            **data
+                        }
+                    )
+
+            try:
+                notify("STARTED")
+
+                result = func(*args, **kwargs, logger=logger)
+
+                notify("SUCCESS", success=True, output=result)
+
+                return result
+            except Exception as e:
+                logger.error(f"Error in task {func.__name__}", exception=e)
+
+                try:
+                    notify("ERROR", error=traceback.format_exc())
+                except Exception as e:
+                    logger.error("Error while notifying", exception=e)
+
+        return execute
+    
+    if func is None:
+        return wrapper
+
+    return wrapper(func)
+
 class LoggedResults(Results):
     def before_process_message(self, broker, message):
         # store a result saying Progress
@@ -290,4 +336,3 @@ class LoggedResults(Results):
         if store_results:
             logger = JobLogger.getLogger(create=True)
             logger.register_backend(self.backend)
-            logger.info("Starting task")

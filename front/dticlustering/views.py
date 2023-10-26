@@ -83,27 +83,32 @@ class DTIClusteringCancel(DetailView):
     
 # Clustering callback
 @method_decorator(csrf_exempt, name='dispatch')
-class DTIClusteringCallback(SingleObjectMixin, View):
+class DTIClusteringWatcher(SingleObjectMixin, View):
     """
-    Generic page to handle a callback from a terminated clustering task
+    Generic page to handle a notification from a clustering task
+
+    Expects data in the JSON body
     """
     model = DTIClustering
     context_object_name = "task"
 
     def post(self, *args, **kwargs):
-        if not hasattr(self, "object"):
-            self.object = self.get_object()
+        object: DTIClustering = self.get_object()
 
-        data = self.request.POST
-        print(data)
-        
-        # if empty, decode json
-        if not data:
-            print("Trying JSON")
-            data = self.request.body.decode("utf-8")
-            data = json.loads(data)
+        # check token
+        token = self.request.GET.get("token")
+        if token != object.get_token():
+            return JsonResponse({
+                "success": False,
+                "error": "Invalid token"
+            })
 
-        self.object.receive_clustering(data)
+        data = self.request.body.decode("utf-8")
+        data = json.loads(data)
+
+        assert data is not None
+
+        object.receive_notification(data)
 
         return JsonResponse({
             "success": True,
