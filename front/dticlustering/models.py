@@ -63,7 +63,7 @@ class DTIClustering(models.Model):
         return ResultStruct(self.result_full_path, self.result_media_url)
     
     def get_token(self):
-        return uuid.uuid5(uuid.NAMESPACE_URL, str(self.id)).hex
+        return uuid.uuid5(uuid.NAMESPACE_URL, settings.SECRET_KEY + str(self.id)).hex
 
     def get_full_log(self):
         if not self.log_file_path.exists():
