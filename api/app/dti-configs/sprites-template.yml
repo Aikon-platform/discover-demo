@@ -2,6 +2,7 @@ dataset:
   name: generic
   tag: santaphoto
   img_size: 128
+  n_channels: 4
 model:
   name: dti_sprites
   n_sprites: 40
@@ -20,6 +21,7 @@ model:
   transformation_sequence_bkg: color_projective
   curriculum_learning: False
   curriculum_learning_bkg: False
+  input_alpha_as_weight: True
 training:
   batch_size: 32
   optimizer:

@@ -61,13 +61,15 @@ def train_dti(
     with ZipFile(result_file, "w") as zipObj:
         for file in output_path.glob("**/*"):
             # convert png to jpg
+            """
             if file.suffix == ".png":
                 im = Image.open(file)
                 rgb_im = im.convert("RGB")
                 rgb_im.save(file.with_suffix(".jpg"), quality=90)
                 file.unlink()
                 file = file.with_suffix(".jpg")
-            
+            """
+
             if file.suffix == ".pkl": # Don't include the model
                 continue
 

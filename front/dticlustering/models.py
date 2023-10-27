@@ -156,7 +156,10 @@ class DTIClustering(models.Model):
             f"{DTI_API_URL}/clustering/{self.api_tracking_id}/status",
         )
         try:
-            return api_query.json()
+            return {
+                "status": self.status,
+                **api_query.json()
+            }
         except:
             self.write_log(f"Error getting clustering progress: {api_query.text}")
             return {
@@ -165,10 +168,12 @@ class DTIClustering(models.Model):
         
 
 class ResultStruct:
+    """
+    A class to browse the result of a clustering
+    """
     def __init__(self, path: Path, media_url: str):
         clusters_path = path / "clusters"
         prototypes_path = path / "prototypes"
-        masks_path = path / "masks"
         backgrounds_path = path / "backgrounds"
 
         # Cluster_by_path csv
@@ -182,45 +187,57 @@ class ResultStruct:
             return
 
         # List prototypes
-        prototypes = [
-            c.name[len("prototype"):-4]
-            for c in prototypes_path.glob("prototype*.jpg")
-        ]
+        prototypes = {
+            int(c.name[len("prototype"):-4])
+            for c in prototypes_path.glob("prototype*")
+            if c.suffix in [".jpg", ".png"]
+        }
         self.clusters = []
         
         # List backgrounds
         self.backgrounds = [
             f"{media_url}/backgrounds/{b.name}"
-            for b in backgrounds_path.glob("background*.jpg")
+            for b in backgrounds_path.glob("background*")
+            if b.suffix in [".jpg", ".png"]
         ]
 
-        # Iter clusters
-        for p in prototypes:
-            proto_url = f"{media_url}/prototypes/prototype{p}.jpg"
+        def try_and_get_url(*try_names):
+            """
+            For each name in try_names, returns (as a URL) the first one
+            that exists (as a file), or None
+            """
+            for try_name in try_names:
+                if (path / try_name).exists():
+                    return f"{media_url}/{try_name}"
 
-            cluster = {"prototype": proto_url, "id": p, "tops": [], "randoms": []}
+        # Iter clusters
+        for p in sorted(prototypes):
+            # test if masked version exists
+            proto_url = try_and_get_url(
+                f"masked_prototypes/prototype{p}.png",
+                f"masked_prototypes/prototype{p}.jpg",
+                f"prototypes/prototype{p}.png",
+                f"prototypes/prototype{p}.jpg",
+            )
+
+            cluster = {"prototype": proto_url, "id": p, "imgs": []}
 
             # add mask
-            mask_path = masks_path / f"mask{p}.jpg"
-            if mask_path.exists():
-                cluster["mask"] = f"{media_url}/masks/mask{p}.jpg"
+            cluster["mask"] = try_and_get_url(
+                f"masks/mask{p}.png",
+                f"masks/mask{p}.jpg",
+            )
 
             cluster_dir = clusters_path / f"cluster{p}"
             if not cluster_dir.exists():
                 continue
 
-            for top in cluster_dir.glob("top*_raw.jpg"):
-                cluster["tops"].append({
-                    "raw": f"{media_url}/clusters/cluster{p}/{top.name}",
-                    "tsf": f"{media_url}/clusters/cluster{p}/{top.name[:-8]}_tsf.jpg",
-                })
-            
-            for random in cluster_dir.glob("random*_raw.jpg"):
-                cluster["randoms"].append({
-                    "raw": f"{media_url}/clusters/cluster{p}/{random.name}",
-                    "tsf": f"{media_url}/clusters/cluster{p}/{random.name[:-8]}_tsf.jpg",
+            for img in cluster_dir.glob("*_raw.*"):
+                if not img.suffix in [".jpg", ".png"]:
+                    continue
+                cluster["imgs"].append({
+                    "raw": f"{media_url}/clusters/cluster{p}/{img.name}",
+                    "tsf": f"{media_url}/clusters/cluster{p}/{img.name[:-8]}_tsf{img.suffix}",
                 })
             
             self.clusters.append(cluster)
-
-        self.clusters.sort(key=lambda c: int(c["id"]))

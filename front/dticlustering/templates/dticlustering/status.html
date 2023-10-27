@@ -53,15 +53,7 @@
                 </div>
                 <div class="images">
                     <div class="top">
-                        {% for image in cluster.tops %}
-                        <div class="pair">
-                            <img src="{{ image.raw }}" alt="Top {{ forloop.count }} raw">
-                            <img src="{{ image.tsf }}" alt="Top {{ forloop.count }} transformed">
-                        </div>
-                        {% endfor %}
-                    </div>
-                    <div class="random">
-                        {% for image in cluster.randoms %}
+                        {% for image in cluster.imgs %}
                         <div class="pair">
                             <img src="{{ image.raw }}" alt="Top {{ forloop.count }} raw">
                             <img src="{{ image.tsf }}" alt="Top {{ forloop.count }} transformed">
