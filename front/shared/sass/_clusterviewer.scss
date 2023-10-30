@@ -1,0 +1,94 @@
+@import "_variables";
+
+.cluster-viewer {
+    width: 100%;
+    max-width: 100%;
+    padding: 1em;
+    background-color: darken($bg-color, 10%);
+    align-self: stretch;
+    .cluster-list {
+        width: 100%;
+        display: table;
+        border-collapse: separate;
+        border-spacing: 0.5em 1em;
+
+        /*.cluster:not(.expanded) .samples img:nth-child(n + 5) {
+            display: none;
+        }*/
+
+        .cluster {
+            display: table-row;
+            position: relative;
+            overflow: hidden;
+            & > * {
+                background-color: $bg-color;
+                vertical-align: middle;
+                border-radius: 5px;
+                //border: 1px solid $head-color;
+                display: table-cell;
+                padding: 0.5em;
+                &:not(:last-child) {
+                    border-right: none;
+                    border-top-right-radius: 0;
+                    border-bottom-right-radius: 0;
+                }
+                &:not(:first-child) {
+                    border-left: none;
+                    border-top-left-radius: 0;
+                    border-bottom-left-radius: 0;
+                }
+            }
+            & > .props {
+                vertical-align: top;
+                .propcontent {
+                    position: sticky;
+                    top: 1em;
+                    width: 300px;
+                    h3 {
+                        margin-top: 0;
+                        padding-top: 0;
+                    }
+                    .proto img {
+                        width: 128px;
+                        height: 128px;
+                    }
+                }
+            }
+            & > .samples {
+                width: auto;
+                .samplecontent {
+                    overflow-y: auto;
+                    max-height: calc(100vh - 100px);
+
+                    & > * {
+                        width: 128px;
+                        height: 128px;
+                        border-radius: 5px;
+                        margin: 0.5em;
+                        background-color: rgba($main-color, 0.5);
+                        display: inline-block;
+                        text-align: center;
+                        vertical-align: middle;
+                        &:not(img) {
+                            color: $head-color;
+                            line-height: 128px;
+                        }
+                    }
+                }
+            }
+        }
+    }
+    .overlay {
+        position: absolute;
+        display: block;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 2;
+        background-color: transparent !important;
+    }
+    .hidden {
+        display: none !important;
+    }
+}

@@ -3,14 +3,16 @@
 {% block title %}List of previous DTI clustering tasks{% endblock %}
 
 {% block content %}
+<div class="centerwrap">
     <h1>All DTI Clusterings</h1>
     <div class="dti-list">
         {% for clustering in object_list %}
             <div class="row">
-                <p><a href="{{ clustering.get_absolute_url }}"><h2>{{ clustering.id }}</h2></a></p>
+                <p><a href="{{ clustering.get_absolute_url }}"><h2>{{ clustering.name }}-{{ clustering.id }}</h2></a></p>
                 <p>{{ clustering.status }}</p>
                 <p class="date">{{ clustering.requested_on|date:"Y-m-d h:i" }}</p>
             </div>
         {% endfor %}
     </div>
+</div>
 {% endblock %}

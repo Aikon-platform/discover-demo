@@ -2,7 +2,7 @@ from django import forms
 
 from datasets.models import ZippedDataset, path_datasets
 
-from .models import DTIClustering
+from .models import DTIClustering, SavedClustering
 
 DTI_TRANSFORM_OPTIONS = [
     ('0_identity', 'Identity'),
@@ -35,7 +35,7 @@ class DTIClusteringForm(forms.ModelForm):
 
     class Meta:
         model = DTIClustering
-        fields = ('dataset_zip', 'notify_email')
+        fields = ('name', 'dataset_zip', 'notify_email')
 
     def __init__(self, *args, **kwargs):
         self.__dataset = kwargs.pop('dataset', None)
@@ -65,4 +65,23 @@ class DTIClusteringForm(forms.ModelForm):
         if commit:
             instance.save()
 
+        return instance
+    
+class SavedClusteringForm(forms.ModelForm):
+    class Meta:
+        model = SavedClustering
+        fields = ('clustering_data',)
+        widgets = {
+            'clustering_data': forms.HiddenInput()
+        }
+    
+    def __init__(self, *args, **kwargs):
+        self.__from_dti = kwargs.pop('from_dti', None)
+        super().__init__(*args, **kwargs)
+    
+    def save(self, commit=True):
+        instance = super().save(commit=False)
+        instance.from_dti = self.__from_dti
+        if commit:
+            instance.save()
         return instance

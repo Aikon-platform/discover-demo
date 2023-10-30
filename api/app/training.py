@@ -55,7 +55,7 @@ class LoggingTrainerMixin:
             shuffle=False,
         )
         cluster_by_path = []
-        count_per_cluster = np.zeros(self.n_prototypes, dtype=np.int32)
+        k_image = 0
 
         for k in range(self.n_prototypes):
             path = (cluster_path / f"cluster{k}")
@@ -63,26 +63,25 @@ class LoggingTrainerMixin:
 
         for images, labels, path in train_loader:
             images = images.to(self.device)
-            argmin_idx = self._get_cluster_argmin_idx(images) # depends on the method
+            distances, argmin_idx = self._get_cluster_argmin_idx(images) # depends on the method
             transformed_images = self.model.transform(images)
             argmin_idx = argmin_idx.astype(np.int32)
-            cluster_by_path += [
-                (os.path.relpath(p, train_loader.dataset.data_path), argmin_idx[i]) 
-                for i, p in enumerate(path)]
 
-            for img, idx, p, tsf_imgs in zip(images, argmin_idx, path, transformed_images):
+            for img, idx, d, p, tsf_imgs in zip(images, argmin_idx, distances, path, transformed_images):
                 convert_to_img(img).save(
-                    cluster_path / f"cluster{idx}" / f"{count_per_cluster[idx]}_raw.png"
+                    cluster_path / f"cluster{idx}" / f"{k_image}_raw.png"
                 )
                 convert_to_img(tsf_imgs[idx]).save(
-                    cluster_path / f"cluster{idx}" / f"{count_per_cluster[idx]}_tsf.png"
+                    cluster_path / f"cluster{idx}" / f"{k_image}_tsf.png"
                 )
-                count_per_cluster[idx] += 1
+                cluster_by_path.append((k_image, os.path.relpath(p, dataset.data_path), idx, d))
+                k_image += 1
 
         cluster_by_path = pd.DataFrame(
-            cluster_by_path, columns=["path", "cluster_id"]
-        ).set_index("path")
+            cluster_by_path, columns=["image_id", "path", "cluster_id", "distance"]
+        ).set_index("image_id")
         cluster_by_path.to_csv(self.run_dir / "cluster_by_path.csv")
+        cluster_by_path.to_json(self.run_dir / "cluster_by_path.json", orient="index")
 
         return [np.array([]) for k in range(self.n_prototypes)]
 
@@ -95,7 +94,7 @@ class LoggedKMeansTrainer(LoggingTrainerMixin, KMeansTrainer):
     def _get_cluster_argmin_idx(self, images):
         out = self.model(images)[1:]
         dist_min_by_sample, argmin_idx = map(lambda t: t.cpu().numpy(), out)
-        return argmin_idx
+        return dist_min_by_sample, argmin_idx
 
 class LoggedSpritesTrainer(LoggingTrainerMixin, SpritesTrainer):
     @torch.no_grad()
@@ -106,7 +105,7 @@ class LoggedSpritesTrainer(LoggingTrainerMixin, SpritesTrainer):
                 images.size(0), self.n_prototypes, self.n_backgrounds
             ).min(2)[0]
         dist_min_by_sample, argmin_idx = map(lambda t: t.cpu().numpy(), dist.min(1))
-        return argmin_idx
+        return dist_min_by_sample, argmin_idx
 
 def run_kmeans_training(clustering_id: str, dataset_id: str, parameters: dict, logger: TLogger=LoggerHelper) -> Path:
     train_config = load(open(Path(__file__).parent / "dti-configs" / "kmeans-template.yml"), Loader=Loader)

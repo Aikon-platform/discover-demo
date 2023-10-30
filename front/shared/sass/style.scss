@@ -1,10 +1,4 @@
-$main-color: #a0d3b4;
-$bg-color: lighten(desaturate($main-color, 20%), 20%);
-$head-color: saturate(darken($main-color, 30%), 15%);
-$dark-color: desaturate(darken($head-color, 30%), 5%);
-$border-radius: 3px;
-$red: #c81307;
-$headfont: "Helvetica Neue", Helvetica, Arial, sans-serif;
+@import "_variables";
 
 *, *::before, *::after {
     box-sizing: border-box;
@@ -47,9 +41,18 @@ header {
 }
 
 .content {
-    max-width: 1200px;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
 }
 
+.centerwrap {
+    max-width: 900px;
+    width: 100%;
+    margin: 0 auto;
+}
+
+// FORMS AND INPUTS
 
 form {
 
@@ -171,6 +174,8 @@ input[type="submit"], input[type="file"], .btn {
     }
 }
 
+// TASK PROGRESS TRACKING
+
 pre {
     max-width: 900px;
     overflow: auto;
@@ -180,62 +185,6 @@ pre {
     border: 2px solid #ccc;
     padding: 1em;
     text-indent: 0;
-}
-
-.dti-results {
-    .cluster {
-        width: 100%;
-        display: flex;
-        gap: 1em;
-        .prototype::before {
-            content: "Prototype";
-        }
-        .mask::before {
-            content: "Mask";
-        }
-        .images, .models {
-            display: flex;
-            flex-direction: column;
-            gap: 1.2em;
-            & > * {
-                display: flex;
-            }
-            .top::before {
-                content: "Top 5";
-            }
-            .random::before {
-                content: "Random 5";
-            }
-        }
-    
-        .models > *, .images > * {
-            position: relative;
-            min-width: 128px;
-            &::before {
-                position: absolute;
-                top: -1em;
-                font-weight: bold;
-            }
-        }
-        .pair {
-            display: flex;
-            flex-direction: column;
-        }
-        img {
-            max-width: 128px;
-        }
-    }
-}
-
-.dti-list {
-    display: table;
-    .row {
-        display: table-row;
-        & > * {
-            display: table-cell;
-            padding: 0.5em;
-        }
-    }
 }
 
 #progress-wrapper {
@@ -267,3 +216,18 @@ pre {
         }
     }
 }
+
+// DTI: List of tasks
+
+.dti-list {
+    display: table;
+    .row {
+        display: table-row;
+        & > * {
+            display: table-cell;
+            padding: 0.5em;
+        }
+    }
+}
+
+@import "_clusterviewer"

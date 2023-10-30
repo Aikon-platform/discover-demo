@@ -12,9 +12,13 @@ from datasets.models import ZippedDataset
 DTI_API_URL = getattr(settings, 'DTI_API_URL', 'http://localhost:5000')
 BASE_URL = getattr(settings, 'BASE_URL', 'http://localhost:8000')
 
-# A simple model for a clustering query and result
 class DTIClustering(models.Model):
+    """
+    Main model for a clustering query and result
+    """
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    name = models.CharField(max_length=64, default="dti", blank=True, 
+                            verbose_name="Clustering name", help_text="An optional name to identify this clustering")
 
     notify_email = models.EmailField(
         verbose_name="Email address to notify",
@@ -34,50 +38,75 @@ class DTIClustering(models.Model):
     class Meta:
         ordering = ['-requested_on']
 
+    def get_absolute_url(self):
+        return reverse("dticlustering:status", kwargs={"pk": self.pk})
+
+    # Util URLs and Paths
     @property
     def result_media_path(self) -> str:
+        """
+        Path to the result folder, relative to MEDIA_ROOT
+        """
         return f"dticlustering/{self.id}/result"
     
     @property
-    def result_media_url(self) -> str:
-        return f"{settings.MEDIA_URL}{self.result_media_path}"
-    
-    @property
     def result_full_path(self) -> Path:
+        """
+        Full path to the result folder
+        """
         return Path(settings.MEDIA_ROOT) / self.result_media_path
     
     @property
     def log_file_path(self) -> Path:
+        """
+        Full path to the log file
+        """
         return self.result_full_path / "log.txt"
     
     @property
+    def result_media_url(self) -> str:
+        """
+        URL to the result folder, including MEDIA_URL
+        """
+        return f"{settings.MEDIA_URL}{self.result_media_path}"
+    
+    @property
     def result_zip_url(self) -> str:
+        """
+        URL to the result zip file
+        """
         return f"{self.result_media_url}/results.zip"
     
     @property
     def result_zip_exists(self) -> bool:
+        """
+        True if the result zip file exists
+        """
         return (self.result_full_path / "results.zip").exists()
     
     @cached_property
-    def expanded_results(self) -> "ResultStruct":
-        return ResultStruct(self.result_full_path, self.result_media_url)
-    
-    def get_token(self):
-        return uuid.uuid5(uuid.NAMESPACE_URL, settings.SECRET_KEY + str(self.id)).hex
-
-    def get_full_log(self):
+    def full_log(self):
+        """
+        Returns the full log file content
+        """
         if not self.log_file_path.exists():
-            return "No log"
+            return None
         with open(self.log_file_path, "r") as f:
             return f.read()
     
     def write_log(self, text: str):
+        """
+        Writes text to the log file
+        """
         self.log_file_path.parent.mkdir(parents=True, exist_ok=True)
         with open(self.log_file_path, "a") as f:
             f.write(text)
 
-    def get_absolute_url(self):
-        return reverse("dticlustering:status", kwargs={"pk": self.pk})
+    def get_token(self):
+        """
+        Returns a unique token to secure in the notification callback URL
+        """
+        return uuid.uuid5(uuid.NAMESPACE_URL, settings.SECRET_KEY + str(self.id)).hex
 
     def start_clustering(self):
         """
@@ -165,25 +194,38 @@ class DTIClustering(models.Model):
             return {
                 "status": "UNKNOWN",
             }
-        
+    
+    @cached_property
+    def expanded_results(self):
+        """
+        Returns a dict with all the result data
+        """
 
-class ResultStruct:
-    """
-    A class to browse the result of a clustering
-    """
-    def __init__(self, path: Path, media_url: str):
+        path = self.result_full_path
+        media_url = self.result_media_url
+        result_dict = {}
+
         clusters_path = path / "clusters"
         prototypes_path = path / "prototypes"
         backgrounds_path = path / "backgrounds"
 
+        result_dict["base_url"] = media_url + "/"
+
         # Cluster_by_path csv
         cluster_by_path_file = path / "cluster_by_path.csv"
         if cluster_by_path_file.exists():
-            self.cluster_by_path = f"{media_url}/cluster_by_path.csv"
+            result_dict["csv_export_file"] = "cluster_by_path.csv"
+
+        # Image data json
+        image_data_file = path / "cluster_by_path.json"
+        image_data = {}
+        if image_data_file.exists():
+            with open(image_data_file, "r") as f:
+                image_data = json.load(f)
 
         # no proto
         if not prototypes_path.exists():
-            self.clusters = []
+            result_dict["clusters"] = []
             return
 
         # List prototypes
@@ -192,11 +234,13 @@ class ResultStruct:
             for c in prototypes_path.glob("prototype*")
             if c.suffix in [".jpg", ".png"]
         }
-        self.clusters = []
-        
+
+        clusters = []
+        result_dict["clusters"] = clusters
+
         # List backgrounds
-        self.backgrounds = [
-            f"{media_url}/backgrounds/{b.name}"
+        result_dict["backgrounds"] = [
+            "backgrounds/{b.name}"
             for b in backgrounds_path.glob("background*")
             if b.suffix in [".jpg", ".png"]
         ]
@@ -208,11 +252,11 @@ class ResultStruct:
             """
             for try_name in try_names:
                 if (path / try_name).exists():
-                    return f"{media_url}/{try_name}"
+                    return f"{try_name}"
 
         # Iter clusters
         for p in sorted(prototypes):
-            # test if masked version exists
+            # Display the masked prototype if it exists, otherwise the original
             proto_url = try_and_get_url(
                 f"masked_prototypes/prototype{p}.png",
                 f"masked_prototypes/prototype{p}.jpg",
@@ -220,10 +264,16 @@ class ResultStruct:
                 f"prototypes/prototype{p}.jpg",
             )
 
-            cluster = {"prototype": proto_url, "id": p, "imgs": []}
+            cluster = {
+                "proto_url": proto_url, 
+                "id": p, 
+                "name": f"Cluster {p}", 
+                "images": []
+            }
+            clusters.append(cluster)
 
             # add mask
-            cluster["mask"] = try_and_get_url(
+            cluster["mask_url"] = try_and_get_url(
                 f"masks/mask{p}.png",
                 f"masks/mask{p}.jpg",
             )
@@ -235,9 +285,41 @@ class ResultStruct:
             for img in cluster_dir.glob("*_raw.*"):
                 if not img.suffix in [".jpg", ".png"]:
                     continue
-                cluster["imgs"].append({
-                    "raw": f"{media_url}/clusters/cluster{p}/{img.name}",
-                    "tsf": f"{media_url}/clusters/cluster{p}/{img.name[:-8]}_tsf{img.suffix}",
-                })
-            
-            self.clusters.append(cluster)
+                img_id = int(img.stem[: -len("_raw")])
+                img_data = {
+                    "raw_url": f"clusters/cluster{p}/{img.name}",
+                    "tsf_url": f"clusters/cluster{p}/{img_id}_tsf{img.suffix}",
+                    "path": None,
+                    "distance": 100.,
+                    "id": img_id,
+                }
+                if img_id in image_data:
+                    img_ext_data = image_data[img_id]
+                    assert img_ext_data["cluster"] == p
+                    img_data["path"] = img_ext_data["path"]
+                    img_data["distance"] = img_ext_data["distance"]
+                
+                cluster["images"].append(img_data)
+
+        # sort clusters by id
+        clusters.sort(key=lambda c: c["id"])
+
+        return result_dict
+
+class SavedClustering(models.Model):
+    """
+    Model for saving clustering modifications made by user
+    """
+    from_dti = models.ForeignKey(DTIClustering, on_delete=models.CASCADE, related_name="saved_clustering")
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+
+    date = models.DateTimeField(auto_now=True, editable=False)
+
+    clustering_data = models.JSONField(null=True)
+
+    class Meta:
+        ordering = ['-date']
+        verbose_name = "Manual clustering"
+
+    def get_absolute_url(self):
+        return reverse("dticlustering:saved", kwargs={"pk": self.pk, "from_pk": self.from_dti_id})

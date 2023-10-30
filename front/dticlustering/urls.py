@@ -10,5 +10,7 @@ urlpatterns = [
     path('<uuid:pk>/cancel', DTIClusteringCancel.as_view(), name='cancel'),
     path('<uuid:pk>/watch', DTIClusteringWatcher.as_view(), name='notify'),
     path('<uuid:pk>/restart', DTIClusteringStartFrom.as_view(), name='restart'),
+    path('<uuid:from_pk>/saved/create', SavedClusteringFromDTI.as_view(), name='saved_create'),
+    path('<uuid:from_pk>/saved/<uuid:pk>', SavedClusteringEdit.as_view(), name='saved'),
     path('list', DTIClusteringList.as_view(), name='list'),
 ]

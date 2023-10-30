@@ -1,0 +1,26 @@
+{% extends "demowebsite/base.html" %}
+{% load static %}
+
+{% block title %}DTI clustering{% endblock %}
+
+{% block content %}
+<div class="centerwrap">
+    {% if request.user.is_authenticated %}<p class="breadcrumbs"><a href="{% url "dticlustering:list" %}">&lt; clustering list</a></p>{% endif %}
+    <h1>Clustering result {{ object.id }}</h1>
+    <p>Based on DTI task <a href="{{ from_dti.get_absolute_url }}">#{{ from_dti.name }}-{{ from_dti.id }}</a></h1>
+    <form action="" method="POST">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <input type="submit" value="Save" />
+    </form>
+</div>
+
+<div id="result" class="cluster-viewer"></div>
+    <script type="text/javascript" src="{% static "dist/build.js" %}"></script>
+    <script type="text/javascript">
+        console.log(document.getElementById("id_clustering_data"))
+        let result_data = JSON.parse(document.getElementById("id_clustering_data").value);
+        DemoTools.initClusterViewer("result", result_data);
+    </script>
+</div>
+{% endblock %}

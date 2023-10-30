@@ -1,77 +1,60 @@
 {% extends "demowebsite/base.html" %}
+{% load static %}
 
-{% block title %}DTI clustering task #{{ object.id }}{% endblock %}
+{% block title %}DTI clustering task #{{ object.name }}-{{ object.id }}{% endblock %}
 
 {% block content %}
-    <h1>DTI Clustering #{{ object.id }}</h1>
+<div class="centerwrap">
+    {% if request.user.is_authenticated %}<p class="breadcrumbs"><a href="{% url "dticlustering:list" %}">&lt; clustering list</a></p>{% endif %}
+    <h1>DTI Clustering #{{ object.name }}-{{ object.id }}</h1>
     <p>
         {% if not object.is_finished %}<a href="{% url "dticlustering:cancel" object.id %}">Cancel</a> - {% endif %}
         <a href="{{ object.dataset.zip_file.url }}">Download dataset</a>
+        {% if object.is_finished %}- <a href="{% url "dticlustering:restart" object.id %}">Start new clustering with same dataset</a>{% endif %}
     </p>
-    <p>Status: {{ object.status }}</p>
     <pre>Parameters : {{ object.parameters }}</pre>
-    {% if object.is_finished %}
-    <p>
-        {% if object.result_zip_exists %}<a href="{{ object.result_zip_url }}">Download results</a> - {% endif %}
-        <a href="{% url "dticlustering:restart" object.id %}">Start new clustering with same dataset</a>
-    </p>
 
-    <pre>{{ object.get_full_log }}</pre>
+    {% if object.is_finished %}
+    <p>Status: {{ object.status }}</p>
+
+    {% if object.full_log %}<pre>{{ object.full_log }}</pre>{% endif %}
 
     {% if object.expanded_results %}
-    <div class="dti-results">
-        <h2>Results</h2>
-        <p>Number of clusters: {{ object.expanded_results.clusters|length }}. 
-            {% if object.expanded_results.cluster_by_path %}
-            <a href="{{ object.expanded_results.cluster_by_path }}">Export cluster assignation as csv</a>
-            {% endif %}
-        </p>
-
-        {% if object.expanded_results.backgrounds %}
-        <h3>Backgrounds</h3>
-        <div class="backgrounds">
-            {% for image in object.expanded_results.backgrounds %}
-            <div class="pair">
-                <img src="{{ image }}" alt="Background {{ forloop.count }} raw">
-            </div>
-            {% endfor %}
-        </div>
-        {% endif %}
-
-        {% for cluster in object.expanded_results.clusters %}
-            <h3>Cluster {{ cluster.id }}</h3>
-            <div class="cluster">
-                <div class="models">
-                    <div class="prototype">
-                        <img src="{{ cluster.prototype }}" alt="Prototype image">
-                    </div>
-                    {% if cluster.mask %}
-                    <div class="mask">
-                        <img src="{{ cluster.mask }}" alt="Prototype mask">
-                    </div>
-                    {% endif %}
-                </div>
-                <div class="images">
-                    <div class="top">
-                        {% for image in cluster.imgs %}
-                        <div class="pair">
-                            <img src="{{ image.raw }}" alt="Top {{ forloop.count }} raw">
-                            <img src="{{ image.tsf }}" alt="Top {{ forloop.count }} transformed">
-                        </div>
-                        {% endfor %}
-                    </div>
-                </div>
-            </div>
+    <h2>Results</h2>
+    <p>
+    {% if object.result_zip_exists %}<a href="{{ object.result_zip_url }}">Download results</a>{% endif %}
+    {% if object.expanded_results.cluster_by_path %}
+        - <a href="{{ object.expanded_results.base_url}}{{ object.expanded_results.cluster_by_path }}">Export cluster assignation as csv</a>
+    {% endif %}
+    </p>
+    <h3>Manually edited clusterings:</h3>
+    <ul>
+        {% for clustering in object.saved_clustering.all %}
+        <li><a href="{% url "dticlustering:saved" object.pk clustering.pk %}">{{ clustering.pk }} (Edited on {{ clustering.date }})</a></li>
+        {% empty %}
+        <li>No saved clustering</li>
         {% endfor %}
-    </div>
+        <li><a href="{% url "dticlustering:saved_create" object.pk %}">-&gt; Edit the result in a new file</a></li>
+    </ul>
+</div>
+
+<div id="result" class="cluster-viewer"></div>
+    {{ object.expanded_results|json_script:"result_data" }}
+    <script type="text/javascript" src="{% static "dist/build.js" %}"></script>
+    <script type="text/javascript">
+        let result_data = JSON.parse(document.getElementById("result_data").textContent);
+        DemoTools.initClusterViewer("result", result_data);
+    </script>
     {% endif %}
 
     {% else %}
 
+        <p>Status: <span id="status-value">{{ object.status }}</span></p>
         <div id="progress-wrapper"></div>
         <pre id="status"></pre>
         <script type="text/javascript">
             let $status = document.getElementById("status");
+            let $status_string = document.getElementById("status-value");
             let $progress_wrapper = document.getElementById("progress-wrapper");
             const PROGRESS_URL = "{% url "dticlustering:progress" object.id %}";
             // refresh regularly with fetch
@@ -80,6 +63,7 @@
                     .then(response => {setTimeout(refresh, 2000); return response.json()})
                     .then(data => {
                         try {
+                            $status_string.innerText = data.status;
                             if (data.status == "PENDING") {
                                 $status.innerHTML = "\nWaiting for a worker...";
                                 return;
@@ -116,5 +100,5 @@
         </script>
 
     {% endif %}
-
+</div>
 {% endblock %}
