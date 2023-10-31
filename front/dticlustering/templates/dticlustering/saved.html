@@ -19,8 +19,9 @@
     <script type="text/javascript" src="{% static "dist/build.js" %}"></script>
     <script type="text/javascript">
         console.log(document.getElementById("id_clustering_data"))
-        let result_data = JSON.parse(document.getElementById("id_clustering_data").value);
-        DemoTools.initClusterViewer("result", result_data);
+        const FORM_FIELD = document.getElementById("id_clustering_data");
+        let result_data = JSON.parse(FORM_FIELD.value);
+        DemoTools.initClusterViewer(document.getElementById("result"), result_data, true, {{ editing|yesno:"true,false"}}, FORM_FIELD);
     </script>
 </div>
 {% endblock %}

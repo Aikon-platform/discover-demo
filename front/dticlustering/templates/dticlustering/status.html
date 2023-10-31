@@ -43,7 +43,7 @@
     <script type="text/javascript" src="{% static "dist/build.js" %}"></script>
     <script type="text/javascript">
         let result_data = JSON.parse(document.getElementById("result_data").textContent);
-        DemoTools.initClusterViewer("result", result_data);
+        DemoTools.initClusterViewer(document.getElementById("result"), result_data);
     </script>
     {% endif %}
 

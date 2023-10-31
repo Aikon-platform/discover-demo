@@ -3,10 +3,12 @@
 .cluster-viewer {
     width: 100%;
     max-width: 100%;
-    padding: 1em;
+    padding: 0;
     background-color: darken($bg-color, 10%);
     align-self: stretch;
-    .cluster-list {
+
+    .cl-cluster-list {
+        margin: 1em;
         width: 100%;
         display: table;
         border-collapse: separate;
@@ -16,7 +18,7 @@
             display: none;
         }*/
 
-        .cluster {
+        .cl-cluster {
             display: table-row;
             position: relative;
             overflow: hidden;
@@ -38,9 +40,9 @@
                     border-bottom-left-radius: 0;
                 }
             }
-            & > .props {
+            & > .cl-props {
                 vertical-align: top;
-                .propcontent {
+                .cl-propcontent {
                     position: sticky;
                     top: 1em;
                     width: 300px;
@@ -48,15 +50,15 @@
                         margin-top: 0;
                         padding-top: 0;
                     }
-                    .proto img {
+                    .cl-proto img {
                         width: 128px;
                         height: 128px;
                     }
                 }
             }
-            & > .samples {
+            & > .cl-samples {
                 width: auto;
-                .samplecontent {
+                .cl-samplecontent {
                     overflow-y: auto;
                     max-height: calc(100vh - 100px);
 
@@ -72,13 +74,14 @@
                         &:not(img) {
                             color: $head-color;
                             line-height: 128px;
+                            text-decoration: none;
                         }
                     }
                 }
             }
         }
     }
-    .overlay {
+    .cl-overlay {
         position: absolute;
         display: block;
         top: 0;
@@ -88,7 +91,20 @@
         z-index: 2;
         background-color: transparent !important;
     }
-    .hidden {
+    .cl-hidden {
         display: none !important;
+    }
+    .cl-editor-toolbar {
+        position: sticky;
+        top: 0;
+        background-color: #fff;
+        padding: 1em;
+        display: flex;
+        width: 100%;
+        justify-content: space-between;
+        z-index: 10;
+        .cl-editor-tools {
+            display: flex;
+        }
     }
 }

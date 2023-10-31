@@ -34725,11 +34725,13 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   "default": () => (/* binding */ ClusterApp)
 /* harmony export */ });
 /* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react/jsx-runtime */ "./node_modules/react/jsx-runtime.js");
-/* harmony import */ var _ClusterElement__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./ClusterElement */ "./src/ClusterElement.tsx");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "./node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _ClusterElement__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./ClusterElement */ "./src/ClusterElement.tsx");
 
 
-function ClusterApp({ result_data }) {
-    console.log(result_data);
+
+function ClusterApp({ result_data, editing = false, editable = false, formfield }) {
     const clusters = result_data.clusters.map((cluster) => {
         const images = cluster.images.map((image) => {
             return {
@@ -34744,9 +34746,34 @@ function ClusterApp({ result_data }) {
             images: images,
             proto_url: result_data.base_url + cluster.proto_url,
             mask_url: cluster.mask_url ? result_data.base_url + cluster.mask_url : undefined,
+            name: cluster.name
         };
     }).sort((a, b) => b.images.length - a.images.length);
-    return ((0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxs)("div", { children: [(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("h1", { children: "Cluster Viewer" }), (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("div", { className: "cluster-list", children: clusters.map((cluster) => ((0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)(_ClusterElement__WEBPACK_IMPORTED_MODULE_1__.ClusterElement, Object.assign({}, cluster), cluster.id))) })] }));
+    let [showEditor, setShowEditor] = (0,react__WEBPACK_IMPORTED_MODULE_1__.useState)(editable && editing);
+    let [editingCluster, setEditingCluster] = (0,react__WEBPACK_IMPORTED_MODULE_1__.useState)(null);
+    (0,react__WEBPACK_IMPORTED_MODULE_1__.useEffect)(() => {
+        if (formfield) {
+            formfield.value = JSON.stringify(clusters);
+        }
+    }, [clusters]);
+    const save = () => {
+        if (formfield) {
+            formfield.value = JSON.stringify(clusters);
+            formfield.form.submit();
+        }
+    };
+    const setEditing = (target, active) => {
+        console.log("setEditing", target, active);
+        if (!editable) {
+            return;
+        }
+        if (!active) {
+            return setEditingCluster(null);
+        }
+        setEditingCluster(target.id);
+    };
+    return ((0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxs)("div", { className: showEditor ? "cl-editor" : "", children: [(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxs)("div", { className: "cl-editor-toolbar", children: [(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxs)("h1", { children: ["Cluster ", showEditor ? "Editor" : "Viewer"] }), editable &&
+                        (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxs)("div", { className: "cl-editor-tools", children: [!showEditor && (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("button", { onClick: () => { setShowEditor(true); }, children: "Edit " }), showEditor && (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("button", { onClick: save, children: "Save changes" })] })] }), (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("div", { className: "cl-cluster-list", children: clusters.map((cluster) => ((0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)(_ClusterElement__WEBPACK_IMPORTED_MODULE_2__.ClusterElement, Object.assign({ editable: showEditor, editing: editingCluster == cluster.id, onEdit: setEditing }, cluster), cluster.id))) })] }));
 }
 
 
@@ -34771,7 +34798,22 @@ const N_SHOWN = 10;
 function ClusterElement(props) {
     const [expanded, setExpanded] = (0,react__WEBPACK_IMPORTED_MODULE_1__.useState)(false);
     const [transformed, setTransformed] = (0,react__WEBPACK_IMPORTED_MODULE_1__.useState)(false);
-    return ((0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxs)("div", { className: "cluster" + (expanded ? " expanded" : ""), children: [(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("div", { className: "props", children: (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxs)("div", { className: "propcontent", children: [(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxs)("h3", { children: ["Cluster ", props.id] }), (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxs)("p", { children: [props.images.length, " images"] }), props.proto_url && (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxs)((react__WEBPACK_IMPORTED_MODULE_1___default().Fragment), { children: [(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("p", { children: (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("a", { href: "javascript:void(0);", onClick: () => { setTransformed(!transformed); }, children: transformed ? "Show original images" : "Show transformed prototypes" }) }), (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxs)("div", { className: "proto", children: [(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("img", { src: props.proto_url, alt: "proto", className: "prototype" }), props.mask_url && false && 0] })] })] }) }), (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("div", { className: "samples", children: (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxs)("div", { className: "samplecontent", children: [props.images.slice(0, expanded ? undefined : N_SHOWN).map((image) => ((0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("img", { src: transformed ? image.tsf_url : image.raw_url, alt: image.origpath, title: image.distance.toFixed(4) }))), props.images.length === 0 && (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("p", { children: "(No image)" }), props.images.length > N_SHOWN && (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxs)("a", { className: "more", href: "javascript:void(0)", onClick: () => { setExpanded(!expanded); }, children: [expanded ? "–" : "+", props.images.length - N_SHOWN] })] }) }), (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("a", { className: "overlay hidden", href: "javascript:void(0)" })] }));
+    const [renaming, setRenaming] = (0,react__WEBPACK_IMPORTED_MODULE_1__.useState)(false);
+    const nameInput = react__WEBPACK_IMPORTED_MODULE_1___default().createRef();
+    const onRenameSubmit = (e) => {
+        e.preventDefault();
+        const val = nameInput.current.value;
+        setRenaming(false);
+        if (!props.onChangeName) {
+            return;
+        }
+        props.onChangeName(props, val);
+    };
+    return ((0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxs)("div", { className: "cl-cluster" + (expanded ? " cl-expanded" : ""), children: [(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("div", { className: "cl-props", children: (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxs)("div", { className: "cl-propcontent", children: [!(renaming && props.editing) ?
+                            (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxs)("h3", { children: [props.name, " ", (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("a", { href: "javascript:void(0)", onClick: () => { props.onEdit(props, true); setRenaming(true); }, children: "Rename" })] }) :
+                            (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxs)("form", { onSubmit: onRenameSubmit, children: [(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("input", { type: "text", ref: nameInput, value: props.name }), " ", (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("input", { type: "submit", value: "Save" })] }), (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxs)("p", { children: ["Cluster #", props.id, ", ", props.images.length, " images"] }), props.editable &&
+                            (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("p", { children: (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("a", { href: "javascript:void(0);", onClick: () => { props.onEdit(props, !props.editing); }, children: props.editing ? "End edit" : "Edit" }) }), props.proto_url &&
+                            (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxs)((react__WEBPACK_IMPORTED_MODULE_1___default().Fragment), { children: [(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("p", { children: (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("a", { href: "javascript:void(0);", onClick: () => { setTransformed(!transformed); }, children: transformed ? "Show original images" : "Show transformed prototypes" }) }), (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxs)("div", { className: "cl-proto", children: [(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("img", { src: props.proto_url, alt: "cl-proto", className: "prototype" }), props.mask_url && false && 0] })] })] }) }), (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("div", { className: "cl-samples", children: (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxs)("div", { className: "cl-samplecontent", children: [props.images.slice(0, expanded ? undefined : N_SHOWN).map((image) => ((0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("img", { src: transformed ? image.tsf_url : image.raw_url, alt: image.origpath, title: image.distance.toFixed(4) }))), props.images.length === 0 && (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("p", { children: "(No image)" }), props.images.length > N_SHOWN && (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxs)("a", { className: "cl-more", href: "javascript:void(0)", onClick: () => { setExpanded(!expanded); }, children: [expanded ? "–" : "+", props.images.length - N_SHOWN] })] }) }), (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("a", { className: "cl-overlay cl-hidden", href: "javascript:void(0)" })] }));
 }
 
 
@@ -34873,8 +34915,8 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
-function initClusterViewer(element_id, result_data, base_media_url) {
-    (0,react_dom_client__WEBPACK_IMPORTED_MODULE_1__.createRoot)(document.getElementById(element_id)).render((0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)(_ClusterApp__WEBPACK_IMPORTED_MODULE_2__["default"], { result_data: result_data }));
+function initClusterViewer(target_root, result_data, editable, editing, formfield) {
+    (0,react_dom_client__WEBPACK_IMPORTED_MODULE_1__.createRoot)(target_root).render((0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)(_ClusterApp__WEBPACK_IMPORTED_MODULE_2__["default"], { result_data: result_data, editable: editable, editing: editing, formfield: formfield }));
 }
 
 

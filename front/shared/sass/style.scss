@@ -150,7 +150,7 @@ input[type='email'], input[type='number'], textarea, select {
     }
 }
 
-input[type="submit"], input[type="file"], .btn {
+input[type="submit"], input[type="file"], button, .btn {
     white-space: normal;
     text-align: center;
     font: 16px $headfont;

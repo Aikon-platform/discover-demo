@@ -1,8 +1,15 @@
 import { createRoot } from 'react-dom/client';
 import ClusterApp from "./ClusterApp";
 
-function initClusterViewer(element_id: string, result_data: any, base_media_url: string) {
-    createRoot(document.getElementById(element_id)!).render(<ClusterApp result_data={result_data} />);
+function initClusterViewer(
+  target_root: HTMLElement, 
+  result_data: any, 
+  editable?: boolean, 
+  editing?: boolean,
+  formfield?: HTMLInputElement) {
+    createRoot(target_root).render(
+      <ClusterApp result_data={result_data} editable={editable} editing={editing} formfield={formfield} />
+    );
   }
 
 export { initClusterViewer };

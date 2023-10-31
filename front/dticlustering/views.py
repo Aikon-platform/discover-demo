@@ -145,7 +145,7 @@ class SavedClusteringFromDTI(CreateView):
     def get_context_data(self, **kwargs) -> dict[str, Any]:
         context = super().get_context_data(**kwargs)
         context["from_dti"] = self.from_dti
-        context["edit"] = True
+        context["editing"] = True
         return context
 
 

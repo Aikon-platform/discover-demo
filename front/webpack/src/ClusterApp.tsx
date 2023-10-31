@@ -1,10 +1,11 @@
-import { useEffect } from "react";
-import { ClusterElement, ClusterProps, ImageProps } from "./ClusterElement";
+import { useEffect, useState } from "react";
+import { ClusterElement, ClusterProps } from "./ClusterElement";
 
 interface AppProps {
   result_data: {
     clusters: {
       id: number;
+      name: string;
       proto_url: string;
       mask_url: string;
       images: {
@@ -17,10 +18,12 @@ interface AppProps {
     }[];
     base_url: string;
   };
+  editing?: boolean;
+  editable?: boolean;
+  formfield?: HTMLInputElement;
 }
 
-export default function ClusterApp({ result_data }: AppProps) {
-  console.log(result_data);
+export default function ClusterApp({ result_data, editing=false, editable=false, formfield }: AppProps) {
   const clusters = result_data.clusters.map((cluster) => {
     const images = cluster.images.map((image) => {
       return {
@@ -35,15 +38,51 @@ export default function ClusterApp({ result_data }: AppProps) {
       images: images,
       proto_url: result_data.base_url + cluster.proto_url,
       mask_url: cluster.mask_url ? result_data.base_url + cluster.mask_url : undefined,
+      name: cluster.name
     };
   }).sort((a, b) => b.images.length - a.images.length);
 
+  let [showEditor, setShowEditor] = useState(editable && editing);
+  let [editingCluster, setEditingCluster] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (formfield) {
+      formfield.value = JSON.stringify(clusters);
+    }
+  }, [clusters]);
+
+  const save = () => {
+    if (formfield) {
+      formfield.value = JSON.stringify(clusters);
+      formfield.form!.submit();
+    }
+  }
+
+  const setEditing = (target: ClusterProps, active: boolean) => {
+    console.log("setEditing", target, active);
+    if (!editable) {
+      return;
+    }
+    if (!active) {
+      return setEditingCluster(null);
+    }
+    setEditingCluster(target.id);
+  }
+
   return (
-    <div>
-      <h1>Cluster Viewer</h1>
-      <div className="cluster-list">
+    <div className={showEditor ? "cl-editor" : ""}>
+      <div className="cl-editor-toolbar">
+        <h1>Cluster {showEditor ? "Editor" : "Viewer"}</h1>
+        {editable && 
+          <div className="cl-editor-tools">
+            {!showEditor && <button onClick={() => {setShowEditor(true)}}>Edit </button>}
+            {showEditor && <button onClick={save}>Save changes</button>}
+          </div>
+      }
+      </div>        
+      <div className="cl-cluster-list">
       {clusters.map((cluster) => (
-        <ClusterElement key={cluster.id} {...cluster} />
+        <ClusterElement key={cluster.id} editable={showEditor} editing={editingCluster == cluster.id} onEdit={setEditing} {...cluster} />
       ))}
       </div>
     </div>

@@ -126,7 +126,7 @@ input[type=email]:focus-visible, input[type=number]:focus-visible, textarea:focu
   outline: 2px solid #a0d3b4;
 }
 
-input[type=submit], input[type=file], .btn {
+input[type=submit], input[type=file], button, .btn {
   white-space: normal;
   text-align: center;
   font: 16px "Helvetica Neue", Helvetica, Arial, sans-serif;
@@ -137,15 +137,15 @@ input[type=submit], input[type=file], .btn {
   padding: 12px 17px;
   display: inline-block;
 }
-input[type=submit].annule, input[type=submit].valide, input[type=file].annule, input[type=file].valide, .btn.annule, .btn.valide {
+input[type=submit].annule, input[type=submit].valide, input[type=file].annule, input[type=file].valide, button.annule, button.valide, .btn.annule, .btn.valide {
   color: #fff;
   padding: 0 5px;
 }
-input[type=submit].annule, input[type=file].annule, .btn.annule {
+input[type=submit].annule, input[type=file].annule, button.annule, .btn.annule {
   background: #c81307;
   border-color: #650a04;
 }
-input[type=submit].valide, input[type=file].valide, .btn.valide {
+input[type=submit].valide, input[type=file].valide, button.valide, .btn.valide {
   background: #89d813;
   border-color: #4e7a0b;
 }
@@ -204,11 +204,12 @@ pre {
 .cluster-viewer {
   width: 100%;
   max-width: 100%;
-  padding: 1em;
+  padding: 0;
   background-color: #ccdad1;
   align-self: stretch;
 }
-.cluster-viewer .cluster-list {
+.cluster-viewer .cl-cluster-list {
+  margin: 1em;
   width: 100%;
   display: table;
   border-collapse: separate;
@@ -217,52 +218,52 @@ pre {
       display: none;
   }*/
 }
-.cluster-viewer .cluster-list .cluster {
+.cluster-viewer .cl-cluster-list .cl-cluster {
   display: table-row;
   position: relative;
   overflow: hidden;
 }
-.cluster-viewer .cluster-list .cluster > * {
+.cluster-viewer .cl-cluster-list .cl-cluster > * {
   background-color: #e9f0ec;
   vertical-align: middle;
   border-radius: 5px;
   display: table-cell;
   padding: 0.5em;
 }
-.cluster-viewer .cluster-list .cluster > *:not(:last-child) {
+.cluster-viewer .cl-cluster-list .cl-cluster > *:not(:last-child) {
   border-right: none;
   border-top-right-radius: 0;
   border-bottom-right-radius: 0;
 }
-.cluster-viewer .cluster-list .cluster > *:not(:first-child) {
+.cluster-viewer .cl-cluster-list .cl-cluster > *:not(:first-child) {
   border-left: none;
   border-top-left-radius: 0;
   border-bottom-left-radius: 0;
 }
-.cluster-viewer .cluster-list .cluster > .props {
+.cluster-viewer .cl-cluster-list .cl-cluster > .cl-props {
   vertical-align: top;
 }
-.cluster-viewer .cluster-list .cluster > .props .propcontent {
+.cluster-viewer .cl-cluster-list .cl-cluster > .cl-props .cl-propcontent {
   position: sticky;
   top: 1em;
   width: 300px;
 }
-.cluster-viewer .cluster-list .cluster > .props .propcontent h3 {
+.cluster-viewer .cl-cluster-list .cl-cluster > .cl-props .cl-propcontent h3 {
   margin-top: 0;
   padding-top: 0;
 }
-.cluster-viewer .cluster-list .cluster > .props .propcontent .proto img {
+.cluster-viewer .cl-cluster-list .cl-cluster > .cl-props .cl-propcontent .cl-proto img {
   width: 128px;
   height: 128px;
 }
-.cluster-viewer .cluster-list .cluster > .samples {
+.cluster-viewer .cl-cluster-list .cl-cluster > .cl-samples {
   width: auto;
 }
-.cluster-viewer .cluster-list .cluster > .samples .samplecontent {
+.cluster-viewer .cl-cluster-list .cl-cluster > .cl-samples .cl-samplecontent {
   overflow-y: auto;
   max-height: calc(100vh - 100px);
 }
-.cluster-viewer .cluster-list .cluster > .samples .samplecontent > * {
+.cluster-viewer .cl-cluster-list .cl-cluster > .cl-samples .cl-samplecontent > * {
   width: 128px;
   height: 128px;
   border-radius: 5px;
@@ -272,11 +273,12 @@ pre {
   text-align: center;
   vertical-align: middle;
 }
-.cluster-viewer .cluster-list .cluster > .samples .samplecontent > *:not(img) {
+.cluster-viewer .cl-cluster-list .cl-cluster > .cl-samples .cl-samplecontent > *:not(img) {
   color: #35a561;
   line-height: 128px;
+  text-decoration: none;
 }
-.cluster-viewer .overlay {
+.cluster-viewer .cl-overlay {
   position: absolute;
   display: block;
   top: 0;
@@ -286,6 +288,19 @@ pre {
   z-index: 2;
   background-color: transparent !important;
 }
-.cluster-viewer .hidden {
+.cluster-viewer .cl-hidden {
   display: none !important;
+}
+.cluster-viewer .cl-editor-toolbar {
+  position: sticky;
+  top: 0;
+  background-color: #fff;
+  padding: 1em;
+  display: flex;
+  width: 100%;
+  justify-content: space-between;
+  z-index: 10;
+}
+.cluster-viewer .cl-editor-toolbar .cl-editor-tools {
+  display: flex;
 }/*# sourceMappingURL=style.css.map */
