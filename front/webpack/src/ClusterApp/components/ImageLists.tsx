@@ -1,5 +1,5 @@
 import React from "react";
-import { ClusterEditorContext } from "../context";
+import { ClusterEditorContext } from "../actions";
 import { ImageInfo } from "../types";
 
 export function SelectableImageList(props: { images: ImageInfo[]; limit?: number; transformed: boolean; expander?: React.ReactNode; }) {

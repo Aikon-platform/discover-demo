@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { ClusterEditorContext } from "../context";
+import { ClusterEditorContext } from "../actions";
 import { Icon } from "@iconify/react";
 import { ClusterInfo, ClusterProps } from "../types";
 import { BasicImageList, SelectableImageList } from "./ImageLists";

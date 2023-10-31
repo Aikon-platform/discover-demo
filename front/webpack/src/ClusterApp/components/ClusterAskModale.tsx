@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { MiniClusterElement } from "./ClusterElement";
 import { ClusterInfo } from "../types";
-import { ClusterEditorContext } from "../context";
+import { ClusterEditorContext } from "../actions";
 import { Icon } from "@iconify/react";
 import { IconBtn } from "../../utils/IconBtn";
 

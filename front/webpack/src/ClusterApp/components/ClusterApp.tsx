@@ -2,7 +2,7 @@ import { Icon } from "@iconify/react";
 import React, { useReducer } from "react";
 import { ClusterElement } from "./ClusterElement";
 import { unserializeClusterFile, ImageInfo, serializeClusterFile, AppProps } from "../types";
-import { ClusterEditorContext, editorReducer } from "../context";
+import { ClusterEditorContext, editorReducer } from "../actions";
 import { ClusterAskModale } from "./ClusterAskModale";
 import { IconBtn } from "../../utils/IconBtn";
 

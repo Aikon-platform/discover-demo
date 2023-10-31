@@ -24,6 +24,7 @@ export const editorReducer = (state: EditorState, action: EditorAction) => {
   if (!state.editing) return state;
 
   switch (action_prefix) {
+    // CLUSTER ACTIONS
     case "cluster":
       const new_clusters = new Map(state.content.clusters);
       switch (action.type) {
@@ -48,8 +49,9 @@ export const editorReducer = (state: EditorState, action: EditorAction) => {
           return { ...state, askingCluster: { not_cluster_id: action.cluster_id, for_action: action.for_action! } };
       }
       return { ...state, content: { ...state.content, clusters: new_clusters } };
-      break;
 
+
+    // SELECTION ACTIONS
     case "selection":
       const selection = new Set<ImageInfo>(state.image_selection);
       if (state.editingCluster === null) {
