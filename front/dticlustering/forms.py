@@ -81,7 +81,8 @@ class SavedClusteringForm(forms.ModelForm):
     
     def save(self, commit=True):
         instance = super().save(commit=False)
-        instance.from_dti = self.__from_dti
+        if self.__from_dti:
+            instance.from_dti = self.__from_dti
         if commit:
             instance.save()
         return instance

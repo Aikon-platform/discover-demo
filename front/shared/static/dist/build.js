@@ -34722,6 +34722,7 @@ if (false) {} else {
 
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   ClusterEditorContext: () => (/* binding */ ClusterEditorContext),
 /* harmony export */   "default": () => (/* binding */ ClusterApp)
 /* harmony export */ });
 /* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react/jsx-runtime */ "./node_modules/react/jsx-runtime.js");
@@ -34731,49 +34732,153 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
-function ClusterApp({ result_data, editing = false, editable = false, formfield }) {
-    const clusters = result_data.clusters.map((cluster) => {
-        const images = cluster.images.map((image) => {
-            return {
-                origpath: image.path,
-                raw_url: result_data.base_url + image.raw_url,
-                tsf_url: result_data.base_url + image.tsf_url,
-                distance: image.distance,
-            };
+
+const ClusterEditorContext = react__WEBPACK_IMPORTED_MODULE_1___default().createContext(undefined);
+const editorReducer = (state, action) => {
+    console.log("editorReducer", state, action);
+    // Basic actions
+    if (action.type == "edit")
+        return Object.assign(Object.assign({}, state), { editing: true });
+    if (action.type == "edit_cluster") {
+        if (state.editingCluster == action.cluster_id)
+            return state;
+        return Object.assign(Object.assign({}, state), { editingCluster: action.cluster_id, image_selection: new Set() });
+    }
+    const action_prefix = action.type.split("_")[0];
+    if (!state.editing)
+        return state;
+    switch (action_prefix) {
+        case "cluster":
+            switch (action.type) {
+                case "cluster_rename":
+                    return Object.assign(Object.assign({}, state), { content: Object.assign(Object.assign({}, state.content), { clusters: state.content.clusters.map((cluster) => {
+                                if (cluster.id == action.cluster_id) {
+                                    return Object.assign(Object.assign({}, cluster), { name: action.name });
+                                }
+                                return cluster;
+                            }) }) });
+                case "cluster_merge":
+                    // move images from cluster2 to cluster1
+                    return state;
+                case "cluster_delete":
+                    // move cluster's images to garbage cluster
+                    return state;
+                case "cluster_ask":
+                    if (action.cluster_id === null) {
+                        return Object.assign(Object.assign({}, state), { askingCluster: null });
+                    }
+                    return Object.assign(Object.assign({}, state), { askingCluster: { not_cluster_id: action.cluster_id, for_action: action.for_action } });
+            }
+            break;
+        case "selection":
+            const selection = new Set(state.image_selection);
+            if (state.editingCluster === null) {
+                return state;
+            }
+            switch (action.type) {
+                case "selection_change":
+                    for (const image of action.images) {
+                        if (action.selected) {
+                            selection.add(image);
+                        }
+                        else {
+                            selection.delete(image);
+                        }
+                    }
+                    console.log("selection_change", selection);
+                    return Object.assign(Object.assign({}, state), { image_selection: selection });
+                case "selection_invert":
+                    const inverted = new Set(state.content.clusters.find((cluster) => cluster.id == state.editingCluster).images);
+                    selection.forEach(item => inverted.delete(item));
+                    return Object.assign(Object.assign({}, state), { image_selection: inverted });
+                case "selection_clear":
+                    return Object.assign(Object.assign({}, state), { image_selection: new Set() });
+                case "selection_move":
+                    if (action.cluster_id === null) {
+                        return Object.assign(Object.assign({}, state), { askingCluster: null });
+                    }
+                    // remove image obsolete metadata inside selection
+                    const new_images = Array.from(selection).map((image) => { return { path: image.path, raw_url: image.raw_url, id: image.id, distance: image.id + 1000 }; });
+                    // remove images from current cluster
+                    const orig_cluster = state.content.clusters.find((cluster) => cluster.id == state.editingCluster);
+                    const new_orig_cluster = Object.assign(Object.assign({}, orig_cluster), { images: orig_cluster.images.filter((image) => !selection.has(image)) });
+                    let new_cluster;
+                    if (action.cluster_id == -1) {
+                        const new_id = state.content.clusters.reduce((max, cluster) => Math.max(max, cluster.id), 0) + 1;
+                        new_cluster = {
+                            id: new_id,
+                            name: "Cluster " + new_id,
+                            images: new_images
+                        };
+                    }
+                    else {
+                        new_cluster = state.content.clusters.find((cluster) => cluster.id == action.cluster_id);
+                        new_cluster.images.push(...new_images);
+                    }
+                    const new_clusters = state.content.clusters.filter((cluster) => cluster.id != state.editingCluster && cluster.id != action.cluster_id);
+                    console.log("selection_move", new_orig_cluster, new_cluster, new_clusters);
+                    new_clusters.push(new_orig_cluster);
+                    new_clusters.push(new_cluster);
+                    return Object.assign(Object.assign({}, state), { content: Object.assign(Object.assign({}, state.content), { clusters: new_clusters }), editingCluster: null, image_selection: new Set(), askingCluster: null });
+            }
+            break;
+    }
+    throw new Error("Invalid action type");
+};
+function ClusterAskModale(props) {
+    const editorContext = react__WEBPACK_IMPORTED_MODULE_1___default().useContext(ClusterEditorContext);
+    const cluster = editorContext.state.content.clusters.find((cluster) => cluster.id == props.not_cluster_id);
+    const [selected, setSelected] = (0,react__WEBPACK_IMPORTED_MODULE_1__.useState)(null);
+    const doAction = () => {
+        editorContext.dispatch({
+            type: props.for_action,
+            cluster_id: selected.id,
+            other: props.not_cluster_id
         });
-        return {
-            id: cluster.id,
-            images: images,
-            proto_url: result_data.base_url + cluster.proto_url,
-            mask_url: cluster.mask_url ? result_data.base_url + cluster.mask_url : undefined,
-            name: cluster.name
-        };
-    }).sort((a, b) => b.images.length - a.images.length);
-    let [showEditor, setShowEditor] = (0,react__WEBPACK_IMPORTED_MODULE_1__.useState)(editable && editing);
-    let [editingCluster, setEditingCluster] = (0,react__WEBPACK_IMPORTED_MODULE_1__.useState)(null);
-    (0,react__WEBPACK_IMPORTED_MODULE_1__.useEffect)(() => {
+        editorContext.dispatch({ type: "cluster_ask", cluster_id: null });
+    };
+    const action_name = {
+        "cluster_merge": "Merge",
+        "selection_move": "Move"
+    }[props.for_action];
+    // sort clusters by size
+    const additional_cluster = { id: -1, name: "New cluster", images: [] };
+    const clusters = [
+        ...editorContext.state.content.clusters.sort((a, b) => b.images.length - a.images.length),
+        additional_cluster
+    ];
+    return ((0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("div", { className: "cl-modale", children: (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("div", { className: "cl-modale-wrapper", children: (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxs)("div", { className: "cl-modale-content", children: [(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("h2", { children: "Choose target cluster" }), (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxs)("div", { className: "cl-ask-select", children: [(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("div", { className: "cl-ask-list", children: clusters.map((cluster) => (cluster.id != props.not_cluster_id &&
+                                    (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("div", { className: "cl-ask-cluster", children: (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)(_ClusterElement__WEBPACK_IMPORTED_MODULE_2__.MiniClusterElement, { info: cluster, selected: (selected === null || selected === void 0 ? void 0 : selected.id) == cluster.id, onClick: () => setSelected(cluster) }) }, cluster.id))) }), (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxs)("div", { className: "cl-ask-buttons", children: [(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("button", { onClick: () => { editorContext.dispatch({ type: "cluster_ask", cluster_id: null }); }, children: "Cancel" }), (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("button", { onClick: doAction, disabled: selected === null, children: action_name })] })] })] }) }) }));
+}
+function ClusterApp({ clustering_data, editing = false, editable = false, formfield, base_url }) {
+    const [editorState, dispatchEditor] = (0,react__WEBPACK_IMPORTED_MODULE_1__.useReducer)(editorReducer, {
+        editing: editable && editing,
+        editingCluster: null,
+        askingCluster: null,
+        content: clustering_data,
+        base_url: base_url,
+        image_selection: new Set()
+    });
+    const updateFormField = () => {
         if (formfield) {
-            formfield.value = JSON.stringify(clusters);
+            formfield.value = JSON.stringify(editorState.content);
         }
-    }, [clusters]);
+    };
     const save = () => {
         if (formfield) {
-            formfield.value = JSON.stringify(clusters);
+            updateFormField();
             formfield.form.submit();
         }
     };
-    const setEditing = (target, active) => {
-        console.log("setEditing", target, active);
-        if (!editable) {
-            return;
-        }
-        if (!active) {
-            return setEditingCluster(null);
-        }
-        setEditingCluster(target.id);
-    };
-    return ((0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxs)("div", { className: showEditor ? "cl-editor" : "", children: [(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxs)("div", { className: "cl-editor-toolbar", children: [(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxs)("h1", { children: ["Cluster ", showEditor ? "Editor" : "Viewer"] }), editable &&
-                        (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxs)("div", { className: "cl-editor-tools", children: [!showEditor && (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("button", { onClick: () => { setShowEditor(true); }, children: "Edit " }), showEditor && (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("button", { onClick: save, children: "Save changes" })] })] }), (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("div", { className: "cl-cluster-list", children: clusters.map((cluster) => ((0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)(_ClusterElement__WEBPACK_IMPORTED_MODULE_2__.ClusterElement, Object.assign({ editable: showEditor, editing: editingCluster == cluster.id, onEdit: setEditing }, cluster), cluster.id))) })] }));
+    // sort clusters by size
+    const clusters = editorState.content.clusters.sort((a, b) => b.images.length - a.images.length);
+    return ((0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)(ClusterEditorContext.Provider, { value: { state: editorState, dispatch: dispatchEditor }, children: (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxs)("div", { className: editorState.editing ? "cl-editor" : "", children: [(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxs)("div", { className: "cl-editor-toolbar", children: [(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxs)("h1", { children: ["Cluster ", editorState.editing ? "Editor" : "Viewer"] }), editable &&
+                            (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxs)("div", { className: "cl-editor-tools", children: [editorState.editingCluster !== null && editorState.image_selection.size > 0 &&
+                                        (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxs)((react__WEBPACK_IMPORTED_MODULE_1___default().Fragment), { children: [(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("button", { onClick: () => { dispatchEditor({ type: "cluster_ask", for_action: "selection_move", cluster_id: editorState.editingCluster }); }, children: "Move to cluster..." }), (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("button", { onClick: () => { dispatchEditor({ type: "selection_clear" }); }, children: "Clear selection" })] }), editorState.editingCluster !== null &&
+                                        (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)((react__WEBPACK_IMPORTED_MODULE_1___default().Fragment), { children: (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("button", { onClick: () => { dispatchEditor({ type: "selection_invert" }); }, children: "Invert selection" }) }), editorState.editing ?
+                                        (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("button", { onClick: save, children: "Save changes" }) :
+                                        (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("button", { onClick: () => { dispatchEditor({ type: "edit" }); }, children: "Edit" })] })] }), (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("div", { className: "cl-cluster-list", children: clusters.map((cluster) => ((0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)(_ClusterElement__WEBPACK_IMPORTED_MODULE_2__.ClusterElement, { editing: editorState.editingCluster == cluster.id, info: cluster }, cluster.id))) }), editorState.askingCluster !== null &&
+                    (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)(ClusterAskModale, Object.assign({}, editorState.askingCluster))] }) }));
 }
 
 
@@ -34787,33 +34892,69 @@ function ClusterApp({ result_data, editing = false, editable = false, formfield 
 
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   ClusterElement: () => (/* binding */ ClusterElement)
+/* harmony export */   ClusterElement: () => (/* binding */ ClusterElement),
+/* harmony export */   MiniClusterElement: () => (/* binding */ MiniClusterElement)
 /* harmony export */ });
 /* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react/jsx-runtime */ "./node_modules/react/jsx-runtime.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "./node_modules/react/index.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _ClusterApp__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./ClusterApp */ "./src/ClusterApp.tsx");
+
 
 
 const N_SHOWN = 10;
+function ClusterImage(props) {
+    const editorContext = react__WEBPACK_IMPORTED_MODULE_1___default().useContext(_ClusterApp__WEBPACK_IMPORTED_MODULE_2__.ClusterEditorContext);
+    const image = props.image;
+    return ((0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxs)("div", { className: "cl-image" + (props.selected ? " cl-selected" : ""), onClick: props.onClick, children: [props.selectable && (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("a", { href: "javascript:void(0)", className: "cl-selecter" }), (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("img", { src: editorContext.state.base_url + ((props.transformed && image.tsf_url) ? image.tsf_url : image.raw_url), alt: image.id.toString(), title: image.path })] }));
+}
+function SelectableImageList(props) {
+    const editorContext = react__WEBPACK_IMPORTED_MODULE_1___default().useContext(_ClusterApp__WEBPACK_IMPORTED_MODULE_2__.ClusterEditorContext);
+    const selection = editorContext.state.image_selection;
+    const toggleSelection = (image) => {
+        editorContext.dispatch({ type: "selection_change", images: [image], selected: !selection.has(image) });
+    };
+    return ((0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxs)("div", { className: "cl-images cl-selectable", children: [props.images.slice(0, props.limit).map((image) => ((0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)(ClusterImage, { image: image, transformed: props.transformed, selectable: true, selected: selection.has(image), onClick: () => toggleSelection(image) }, image.path))), props.images.length === 0 && (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("p", { children: "\u2205" }), props.expander] }));
+}
+function BasicImageList(props) {
+    const editorContext = react__WEBPACK_IMPORTED_MODULE_1___default().useContext(_ClusterApp__WEBPACK_IMPORTED_MODULE_2__.ClusterEditorContext);
+    return ((0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxs)("div", { className: "cl-images", children: [props.images.slice(0, props.limit).map((image) => ((0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)(ClusterImage, { image: image, transformed: props.transformed, selectable: false }, image.path))), props.images.length === 0 && (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("p", { children: "\u2205" }), props.expander] }));
+}
+function MiniClusterElement(props) {
+    const editorContext = react__WEBPACK_IMPORTED_MODULE_1___default().useContext(_ClusterApp__WEBPACK_IMPORTED_MODULE_2__.ClusterEditorContext);
+    const cluster = props.info;
+    return ((0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxs)("div", { className: "cl-cluster" + (props.selected ? " cl-selected" : ""), onClick: props.onClick, children: [(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("div", { className: "cl-props", children: (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxs)("div", { className: "cl-propcontent", children: [(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("h3", { children: cluster.name }), (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxs)("p", { children: [cluster.id > 0 && (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxs)((react__WEBPACK_IMPORTED_MODULE_1___default().Fragment), { children: ["Cluster #", cluster.id, ", ", cluster.images.length, " images"] }), "\u00A0"] })] }) }), (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("div", { className: "cl-samples", children: (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)(BasicImageList, { images: cluster.images, transformed: false, limit: 5 }) }), (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("a", { className: "cl-overlay", href: "javascript:void(0)" })] }));
+}
 function ClusterElement(props) {
     const [expanded, setExpanded] = (0,react__WEBPACK_IMPORTED_MODULE_1__.useState)(false);
     const [transformed, setTransformed] = (0,react__WEBPACK_IMPORTED_MODULE_1__.useState)(false);
     const [renaming, setRenaming] = (0,react__WEBPACK_IMPORTED_MODULE_1__.useState)(false);
     const nameInput = react__WEBPACK_IMPORTED_MODULE_1___default().createRef();
+    const selectionRef = react__WEBPACK_IMPORTED_MODULE_1___default().createRef();
+    const editorContext = react__WEBPACK_IMPORTED_MODULE_1___default().useContext(_ClusterApp__WEBPACK_IMPORTED_MODULE_2__.ClusterEditorContext);
+    const cluster = props.info;
+    const editable = editorContext === null || editorContext === void 0 ? void 0 : editorContext.state.editing;
     const onRenameSubmit = (e) => {
         e.preventDefault();
         const val = nameInput.current.value;
-        setRenaming(false);
-        if (!props.onChangeName) {
-            return;
+        if (val) {
+            editorContext === null || editorContext === void 0 ? void 0 : editorContext.dispatch({ type: "cluster_rename", cluster_id: cluster.id, name: val });
         }
-        props.onChangeName(props, val);
+        setRenaming(false);
     };
+    const toggleEdition = (val) => {
+        editorContext === null || editorContext === void 0 ? void 0 : editorContext.dispatch({ type: "edit_cluster", cluster_id: val ? cluster.id : null });
+        setRenaming(false);
+    };
+    const expanderBtn = (cluster.images.length > N_SHOWN &&
+        (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxs)("a", { className: "cl-more", href: "javascript:void(0)", onClick: () => { setExpanded(!expanded); }, children: [expanded ? "–" : "+", cluster.images.length - N_SHOWN] }));
     return ((0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxs)("div", { className: "cl-cluster" + (expanded ? " cl-expanded" : ""), children: [(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("div", { className: "cl-props", children: (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxs)("div", { className: "cl-propcontent", children: [!(renaming && props.editing) ?
-                            (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxs)("h3", { children: [props.name, " ", (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("a", { href: "javascript:void(0)", onClick: () => { props.onEdit(props, true); setRenaming(true); }, children: "Rename" })] }) :
-                            (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxs)("form", { onSubmit: onRenameSubmit, children: [(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("input", { type: "text", ref: nameInput, value: props.name }), " ", (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("input", { type: "submit", value: "Save" })] }), (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxs)("p", { children: ["Cluster #", props.id, ", ", props.images.length, " images"] }), props.editable &&
-                            (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("p", { children: (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("a", { href: "javascript:void(0);", onClick: () => { props.onEdit(props, !props.editing); }, children: props.editing ? "End edit" : "Edit" }) }), props.proto_url &&
-                            (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxs)((react__WEBPACK_IMPORTED_MODULE_1___default().Fragment), { children: [(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("p", { children: (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("a", { href: "javascript:void(0);", onClick: () => { setTransformed(!transformed); }, children: transformed ? "Show original images" : "Show transformed prototypes" }) }), (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxs)("div", { className: "cl-proto", children: [(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("img", { src: props.proto_url, alt: "cl-proto", className: "prototype" }), props.mask_url && false && 0] })] })] }) }), (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("div", { className: "cl-samples", children: (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxs)("div", { className: "cl-samplecontent", children: [props.images.slice(0, expanded ? undefined : N_SHOWN).map((image) => ((0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("img", { src: transformed ? image.tsf_url : image.raw_url, alt: image.origpath, title: image.distance.toFixed(4) }))), props.images.length === 0 && (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("p", { children: "(No image)" }), props.images.length > N_SHOWN && (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxs)("a", { className: "cl-more", href: "javascript:void(0)", onClick: () => { setExpanded(!expanded); }, children: [expanded ? "–" : "+", props.images.length - N_SHOWN] })] }) }), (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("a", { className: "cl-overlay cl-hidden", href: "javascript:void(0)" })] }));
+                            (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxs)("h3", { children: [cluster.name, " ", editable && (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("a", { href: "javascript:void(0)", onClick: () => { toggleEdition(true); setRenaming(true); }, children: "Rename" })] }) :
+                            (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxs)("form", { onSubmit: onRenameSubmit, children: [(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("input", { type: "text", ref: nameInput, defaultValue: cluster.name }), " ", (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("input", { type: "submit", value: "Save" })] }), (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("p", { children: cluster.id > 0 && (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxs)((react__WEBPACK_IMPORTED_MODULE_1___default().Fragment), { children: ["Cluster #", cluster.id, ", ", cluster.images.length, " images"] }) }), editable &&
+                            (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("p", { children: (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("a", { href: "javascript:void(0);", onClick: () => { toggleEdition(!props.editing); }, children: props.editing ? "End edit" : "Edit" }) }), cluster.proto_url &&
+                            (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxs)((react__WEBPACK_IMPORTED_MODULE_1___default().Fragment), { children: [(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("p", { children: (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("a", { href: "javascript:void(0);", onClick: () => { setTransformed(!transformed); }, children: transformed ? "Show original images" : "Show transformed prototypes" }) }), (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxs)("div", { className: "cl-proto", children: [(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("img", { src: (editorContext === null || editorContext === void 0 ? void 0 : editorContext.state.base_url) + cluster.proto_url, alt: "cl-proto", className: "prototype" }), cluster.mask_url && false && 0] })] })] }) }), (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("div", { className: "cl-samples", children: props.editing ?
+                    (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)(SelectableImageList, { images: cluster.images, limit: expanded ? undefined : N_SHOWN, transformed: transformed, expander: expanderBtn }) :
+                    (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)(BasicImageList, { images: cluster.images, transformed: transformed, limit: expanded ? undefined : N_SHOWN, expander: expanderBtn }) }), (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("a", { className: "cl-overlay cl-hidden", href: "javascript:void(0)" })] }));
 }
 
 
@@ -34915,8 +35056,8 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
-function initClusterViewer(target_root, result_data, editable, editing, formfield) {
-    (0,react_dom_client__WEBPACK_IMPORTED_MODULE_1__.createRoot)(target_root).render((0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)(_ClusterApp__WEBPACK_IMPORTED_MODULE_2__["default"], { result_data: result_data, editable: editable, editing: editing, formfield: formfield }));
+function initClusterViewer(target_root, clustering_data, base_media_url, editable, editing, formfield) {
+    (0,react_dom_client__WEBPACK_IMPORTED_MODULE_1__.createRoot)(target_root).render((0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)(_ClusterApp__WEBPACK_IMPORTED_MODULE_2__["default"], { clustering_data: clustering_data, base_url: base_media_url, editable: editable, editing: editing, formfield: formfield }));
 }
 
 

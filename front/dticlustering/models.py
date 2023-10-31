@@ -209,8 +209,6 @@ class DTIClustering(models.Model):
         prototypes_path = path / "prototypes"
         backgrounds_path = path / "backgrounds"
 
-        result_dict["base_url"] = media_url + "/"
-
         # Cluster_by_path csv
         cluster_by_path_file = path / "cluster_by_path.csv"
         if cluster_by_path_file.exists():
@@ -239,7 +237,7 @@ class DTIClustering(models.Model):
         result_dict["clusters"] = clusters
 
         # List backgrounds
-        result_dict["backgrounds"] = [
+        result_dict["background_urls"] = [
             "backgrounds/{b.name}"
             for b in backgrounds_path.glob("background*")
             if b.suffix in [".jpg", ".png"]
@@ -293,9 +291,9 @@ class DTIClustering(models.Model):
                     "distance": 100.,
                     "id": img_id,
                 }
-                if img_id in image_data:
-                    img_ext_data = image_data[img_id]
-                    assert img_ext_data["cluster"] == p
+                if str(img_id) in image_data:
+                    img_ext_data = image_data[str(img_id)]
+                    assert img_ext_data["cluster_id"] == p
                     img_data["path"] = img_ext_data["path"]
                     img_data["distance"] = img_ext_data["distance"]
                 
