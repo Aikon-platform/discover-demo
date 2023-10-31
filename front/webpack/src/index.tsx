@@ -1,5 +1,6 @@
 import { createRoot } from 'react-dom/client';
-import ClusterApp from "./ClusterApp";
+import { ClusterApp } from "./ClusterApp/components/ClusterApp";
+import { TaskProgressTracker } from './ProgressTracker';
 
 function initClusterViewer(
   target_root: HTMLElement, 
@@ -14,4 +15,13 @@ function initClusterViewer(
     );
   }
 
-export { initClusterViewer };
+function initProgressTracker(target_root: HTMLElement, tracking_url: string) {
+    createRoot(target_root).render(
+      <TaskProgressTracker tracking_url={tracking_url} />
+    );
+}
+
+export {
+  initClusterViewer,
+  initProgressTracker
+};

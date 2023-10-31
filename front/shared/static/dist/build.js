@@ -34714,26 +34714,249 @@ if (false) {} else {
 
 /***/ }),
 
-/***/ "./src/ClusterApp.tsx":
-/*!****************************!*\
-  !*** ./src/ClusterApp.tsx ***!
-  \****************************/
+/***/ "./src/ClusterApp/components/ClusterApp.tsx":
+/*!**************************************************!*\
+  !*** ./src/ClusterApp/components/ClusterApp.tsx ***!
+  \**************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   ClusterApp: () => (/* binding */ ClusterApp)
+/* harmony export */ });
+/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react/jsx-runtime */ "./node_modules/react/jsx-runtime.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "./node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _ClusterElement__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./ClusterElement */ "./src/ClusterApp/components/ClusterElement.tsx");
+/* harmony import */ var _types__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../types */ "./src/ClusterApp/types.tsx");
+/* harmony import */ var _context__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../context */ "./src/ClusterApp/context.tsx");
+/* harmony import */ var _ClusterAskModale__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./ClusterAskModale */ "./src/ClusterApp/components/ClusterAskModale.tsx");
+/* harmony import */ var _utils_IconBtn__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../../utils/IconBtn */ "./src/utils/IconBtn.tsx");
+
+
+
+
+
+
+
+function ClusterApp({ clustering_data, editing = false, editable = false, formfield, base_url }) {
+    // transform clustering_data.clusters to Map<number, ClusterInfo>
+    const [editorState, dispatchEditor] = (0,react__WEBPACK_IMPORTED_MODULE_1__.useReducer)(_context__WEBPACK_IMPORTED_MODULE_4__.editorReducer, {
+        editing: editable && editing,
+        editingCluster: null,
+        askingCluster: null,
+        content: (0,_types__WEBPACK_IMPORTED_MODULE_3__.unserializeClusterFile)(clustering_data),
+        base_url: base_url,
+        image_selection: new Set()
+    });
+    const updateFormField = () => {
+        if (formfield) {
+            formfield.value = JSON.stringify((0,_types__WEBPACK_IMPORTED_MODULE_3__.serializeClusterFile)(editorState.content));
+        }
+    };
+    const save = () => {
+        if (formfield) {
+            updateFormField();
+            formfield.form.submit();
+        }
+    };
+    // sort clusters by size
+    const clusters = Array.from(editorState.content.clusters.values()).sort((a, b) => b.images.length - a.images.length);
+    return ((0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)(_context__WEBPACK_IMPORTED_MODULE_4__.ClusterEditorContext.Provider, { value: { state: editorState, dispatch: dispatchEditor }, children: (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxs)("div", { className: editorState.editing ? "cl-editor" : "", children: [(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxs)("div", { className: "cl-editor-toolbar", children: [(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxs)("h2", { children: ["Cluster ", editorState.editing ? "Editor" : "Viewer"] }), editable &&
+                            (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxs)("div", { className: "cl-editor-tools", children: [editorState.editingCluster !== null && editorState.image_selection.size > 0 &&
+                                        (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)((react__WEBPACK_IMPORTED_MODULE_1___default().Fragment), { children: (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)(_utils_IconBtn__WEBPACK_IMPORTED_MODULE_6__.IconBtn, { onClick: () => { dispatchEditor({ type: "cluster_ask", for_action: "selection_move", cluster_id: editorState.editingCluster }); }, icon: "mdi:folder-move", label: "Move to cluster..." }) }), editorState.editingCluster !== null &&
+                                        (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxs)("div", { className: "cl-select-tools", children: [(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("span", { children: "Selection:" }), editorState.image_selection.size == 0 ?
+                                                    (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)(_utils_IconBtn__WEBPACK_IMPORTED_MODULE_6__.IconBtn, { onClick: () => { dispatchEditor({ type: "selection_all" }); }, icon: "mdi:select-all", label: "All" }) :
+                                                    (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxs)((react__WEBPACK_IMPORTED_MODULE_1___default().Fragment), { children: [(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)(_utils_IconBtn__WEBPACK_IMPORTED_MODULE_6__.IconBtn, { onClick: () => { dispatchEditor({ type: "selection_clear" }); }, icon: "mdi:close", label: "Clear" }), (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)(_utils_IconBtn__WEBPACK_IMPORTED_MODULE_6__.IconBtn, { onClick: () => { dispatchEditor({ type: "selection_invert" }); }, icon: "mdi:select-inverse", label: "Invert" })] })] }), editorState.editing ?
+                                        (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)(_utils_IconBtn__WEBPACK_IMPORTED_MODULE_6__.IconBtn, { onClick: save, icon: "mdi:content-save", className: "big", label: "Save" }) :
+                                        (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)(_utils_IconBtn__WEBPACK_IMPORTED_MODULE_6__.IconBtn, { onClick: () => { dispatchEditor({ type: "edit" }); }, className: "big", icon: "mdi:edit", label: "Edit" })] })] }), (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("div", { className: "cl-cluster-list", children: clusters.map((cluster) => ((0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)(_ClusterElement__WEBPACK_IMPORTED_MODULE_2__.ClusterElement, { editing: editorState.editingCluster == cluster.id, info: cluster }, cluster.id))) }), editorState.askingCluster !== null &&
+                    (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)(_ClusterAskModale__WEBPACK_IMPORTED_MODULE_5__.ClusterAskModale, Object.assign({}, editorState.askingCluster))] }) }));
+}
+
+
+/***/ }),
+
+/***/ "./src/ClusterApp/components/ClusterAskModale.tsx":
+/*!********************************************************!*\
+  !*** ./src/ClusterApp/components/ClusterAskModale.tsx ***!
+  \********************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   ClusterAskModale: () => (/* binding */ ClusterAskModale)
+/* harmony export */ });
+/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react/jsx-runtime */ "./node_modules/react/jsx-runtime.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "./node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _ClusterElement__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./ClusterElement */ "./src/ClusterApp/components/ClusterElement.tsx");
+/* harmony import */ var _context__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../context */ "./src/ClusterApp/context.tsx");
+/* harmony import */ var _utils_IconBtn__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../utils/IconBtn */ "./src/utils/IconBtn.tsx");
+
+
+
+
+
+function ClusterAskModale(props) {
+    const editorContext = react__WEBPACK_IMPORTED_MODULE_1___default().useContext(_context__WEBPACK_IMPORTED_MODULE_3__.ClusterEditorContext);
+    const cluster = editorContext.state.content.clusters.get(props.not_cluster_id);
+    const [selected, setSelected] = (0,react__WEBPACK_IMPORTED_MODULE_1__.useState)(null);
+    const doAction = () => {
+        editorContext.dispatch({
+            type: props.for_action,
+            cluster_id: selected.id,
+            other: props.not_cluster_id
+        });
+        editorContext.dispatch({ type: "cluster_ask", cluster_id: null });
+    };
+    const [action_icon, action_label] = {
+        "cluster_merge": ["mdi:merge", "Merge into this cluster"],
+        "selection_move": ["mdi:folder-move", "Move images to this cluster"]
+    }[props.for_action];
+    // sort clusters by size
+    const additional_cluster = { id: -1, name: "New cluster", images: [] };
+    const clusters = [
+        ...editorContext.state.content.clusters.values(),
+        ...(props.for_action == "selection_move" ? [additional_cluster] : [])
+    ].sort((a, b) => b.images.length - a.images.length);
+    return ((0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("div", { className: "cl-modale", children: (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("div", { className: "cl-modale-wrapper", children: (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxs)("div", { className: "cl-modale-content", children: [(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("h2", { children: "Choose target cluster" }), (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("div", { className: "cl-ask-select", children: (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("div", { className: "cl-ask-list", children: clusters.map((cluster) => (cluster.id != props.not_cluster_id &&
+                                (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("div", { className: "cl-ask-cluster", children: (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)(_ClusterElement__WEBPACK_IMPORTED_MODULE_2__.MiniClusterElement, { info: cluster, selected: (selected === null || selected === void 0 ? void 0 : selected.id) == cluster.id, onClick: () => setSelected(cluster) }) }, cluster.id))) }) }), (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxs)("div", { className: "cl-modale-actions", children: [(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)(_utils_IconBtn__WEBPACK_IMPORTED_MODULE_4__.IconBtn, { onClick: () => { editorContext.dispatch({ type: "cluster_ask", cluster_id: null }); }, icon: "mdi:close", label: "Cancel" }), (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)(_utils_IconBtn__WEBPACK_IMPORTED_MODULE_4__.IconBtn, { onClick: doAction, icon: action_icon, label: action_label, disabled: selected === null })] })] }) }) }));
+}
+
+
+/***/ }),
+
+/***/ "./src/ClusterApp/components/ClusterElement.tsx":
+/*!******************************************************!*\
+  !*** ./src/ClusterApp/components/ClusterElement.tsx ***!
+  \******************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   ClusterElement: () => (/* binding */ ClusterElement),
+/* harmony export */   MiniClusterElement: () => (/* binding */ MiniClusterElement)
+/* harmony export */ });
+/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react/jsx-runtime */ "./node_modules/react/jsx-runtime.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "./node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _context__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../context */ "./src/ClusterApp/context.tsx");
+/* harmony import */ var _iconify_react__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! @iconify/react */ "./node_modules/@iconify/react/dist/iconify.mjs");
+/* harmony import */ var _ImageLists__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./ImageLists */ "./src/ClusterApp/components/ImageLists.tsx");
+/* harmony import */ var _utils_IconBtn__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../utils/IconBtn */ "./src/utils/IconBtn.tsx");
+
+
+
+
+
+
+const N_SHOWN = 10;
+// Lightweight cluster element for the cluster list
+function MiniClusterElement(props) {
+    const editorContext = react__WEBPACK_IMPORTED_MODULE_1___default().useContext(_context__WEBPACK_IMPORTED_MODULE_2__.ClusterEditorContext);
+    const cluster = props.info;
+    return ((0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxs)("div", { className: "cl-cluster" + (props.selected ? " cl-selected" : ""), onClick: props.onClick, children: [(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("div", { className: "cl-props", children: (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxs)("div", { className: "cl-propcontent", children: [(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("h3", { children: cluster.name }), (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxs)("p", { children: [cluster.id >= 0 && (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxs)((react__WEBPACK_IMPORTED_MODULE_1___default().Fragment), { children: ["Cluster #", cluster.id, ", ", cluster.images.length, " images"] }), "\u00A0"] })] }) }), (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("div", { className: "cl-samples", children: (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)(_ImageLists__WEBPACK_IMPORTED_MODULE_4__.BasicImageList, { images: cluster.images, transformed: false, limit: 5 }) }), (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("a", { className: "cl-overlay", href: "javascript:void(0)" })] }));
+}
+function ClusterElement(props) {
+    const [expanded, setExpanded] = (0,react__WEBPACK_IMPORTED_MODULE_1__.useState)(false);
+    const [transformed, setTransformed] = (0,react__WEBPACK_IMPORTED_MODULE_1__.useState)(false);
+    const [renaming, setRenaming] = (0,react__WEBPACK_IMPORTED_MODULE_1__.useState)(false);
+    const nameInput = react__WEBPACK_IMPORTED_MODULE_1___default().createRef();
+    const editorContext = react__WEBPACK_IMPORTED_MODULE_1___default().useContext(_context__WEBPACK_IMPORTED_MODULE_2__.ClusterEditorContext);
+    const elRef = react__WEBPACK_IMPORTED_MODULE_1___default().useRef(null);
+    const cluster = props.info;
+    const editable = editorContext === null || editorContext === void 0 ? void 0 : editorContext.state.editing;
+    const onRenameSubmit = (e) => {
+        e.preventDefault();
+        const val = nameInput.current.value;
+        if (val) {
+            editorContext === null || editorContext === void 0 ? void 0 : editorContext.dispatch({ type: "cluster_rename", cluster_id: cluster.id, name: val });
+        }
+        setRenaming(false);
+    };
+    const toggleEdition = (val) => {
+        editorContext === null || editorContext === void 0 ? void 0 : editorContext.dispatch({ type: "edit_cluster", cluster_id: val ? cluster.id : null });
+        setTimeout(() => { var _a; return (_a = elRef.current) === null || _a === void 0 ? void 0 : _a.scrollIntoView({ behavior: "smooth", block: "start" }); }, 100);
+        setRenaming(false);
+    };
+    const askForMerge = () => {
+        editorContext === null || editorContext === void 0 ? void 0 : editorContext.dispatch({ type: "cluster_ask", cluster_id: cluster.id, for_action: "cluster_merge" });
+    };
+    const expanderBtn = (cluster.images.length > N_SHOWN &&
+        (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxs)("a", { className: "cl-more", href: "javascript:void(0)", onClick: () => { setExpanded(!expanded); }, children: [expanded ? "–" : "+", cluster.images.length - N_SHOWN] }));
+    return ((0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxs)("div", { ref: elRef, className: "cl-cluster" + (expanded ? " cl-expanded" : ""), children: [(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("div", { className: "cl-props", children: (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxs)("div", { className: "cl-propcontent", children: [(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("p", { className: "cl-cluster-title", children: (renaming && props.editing) ?
+                                ((0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxs)("form", { onSubmit: onRenameSubmit, children: [(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("input", { type: "text", ref: nameInput, defaultValue: cluster.name, autoFocus: true }), (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("a", { href: "javascript:void(0)", onClick: onRenameSubmit, className: "btn", children: (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)(_iconify_react__WEBPACK_IMPORTED_MODULE_3__.Icon, { icon: "mdi:check-bold" }) })] })) :
+                                ((0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxs)((react__WEBPACK_IMPORTED_MODULE_1___default().Fragment), { children: [(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("span", { children: cluster.name }), props.editing && (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("a", { href: "javascript:void(0)", className: "btn is-edit", onClick: () => { toggleEdition(true); setRenaming(true); }, title: "Rename", children: (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)(_iconify_react__WEBPACK_IMPORTED_MODULE_3__.Icon, { icon: "mdi:edit" }) })] })) }), (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("p", { children: cluster.id >= 0 && (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxs)((react__WEBPACK_IMPORTED_MODULE_1___default().Fragment), { children: ["Cluster #", cluster.id, ", ", cluster.images.length, " images"] }) }), editable &&
+                            (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("p", { children: props.editing ?
+                                    (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxs)((react__WEBPACK_IMPORTED_MODULE_1___default().Fragment), { children: [(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)(_utils_IconBtn__WEBPACK_IMPORTED_MODULE_5__.IconBtn, { icon: "mdi:merge", label: "Merge with...", onClick: askForMerge }), (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)(_utils_IconBtn__WEBPACK_IMPORTED_MODULE_5__.IconBtn, { icon: "mdi:check-bold", label: "End edition", onClick: () => toggleEdition(false) })] }) :
+                                    (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)(_utils_IconBtn__WEBPACK_IMPORTED_MODULE_5__.IconBtn, { icon: "mdi:edit", label: "Edit cluster", onClick: () => toggleEdition(true) }) }), cluster.proto_url &&
+                            (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxs)((react__WEBPACK_IMPORTED_MODULE_1___default().Fragment), { children: [(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("p", { children: (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("a", { href: "javascript:void(0);", onClick: () => { setTransformed(!transformed); }, children: transformed ? "Show original images" : "Show transformed prototypes" }) }), (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxs)("div", { className: "cl-proto", children: [(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("img", { src: (editorContext === null || editorContext === void 0 ? void 0 : editorContext.state.base_url) + cluster.proto_url, alt: "cl-proto", className: "prototype" }), cluster.mask_url && false && 0] })] })] }) }), (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("div", { className: "cl-samples", children: props.editing ?
+                    (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)(_ImageLists__WEBPACK_IMPORTED_MODULE_4__.SelectableImageList, { images: cluster.images, transformed: transformed, expander: expanderBtn }) :
+                    (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)(_ImageLists__WEBPACK_IMPORTED_MODULE_4__.BasicImageList, { images: cluster.images, transformed: transformed, limit: expanded ? undefined : N_SHOWN, expander: expanderBtn }) }), editable && !props.editing &&
+                (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxs)("a", { className: "cl-overlay cl-hoveroptions", href: "javascript:void(0)", onClick: () => toggleEdition(true), children: [(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)(_utils_IconBtn__WEBPACK_IMPORTED_MODULE_5__.IconBtn, { icon: "mdi:edit", label: "Edit cluster" }), (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)(_utils_IconBtn__WEBPACK_IMPORTED_MODULE_5__.IconBtn, { icon: "mdi:merge", label: "Merge with...", onClick: (e) => { e.stopPropagation(); askForMerge(); } })] })] }));
+}
+
+
+/***/ }),
+
+/***/ "./src/ClusterApp/components/ImageLists.tsx":
+/*!**************************************************!*\
+  !*** ./src/ClusterApp/components/ImageLists.tsx ***!
+  \**************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   BasicImageList: () => (/* binding */ BasicImageList),
+/* harmony export */   ClusterImage: () => (/* binding */ ClusterImage),
+/* harmony export */   SelectableImageList: () => (/* binding */ SelectableImageList)
+/* harmony export */ });
+/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react/jsx-runtime */ "./node_modules/react/jsx-runtime.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "./node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _context__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../context */ "./src/ClusterApp/context.tsx");
+
+
+
+function SelectableImageList(props) {
+    const editorContext = react__WEBPACK_IMPORTED_MODULE_1___default().useContext(_context__WEBPACK_IMPORTED_MODULE_2__.ClusterEditorContext);
+    const selection = editorContext.state.image_selection;
+    const toggleSelection = (image) => {
+        editorContext.dispatch({ type: "selection_change", images: [image], selected: !selection.has(image) });
+    };
+    return ((0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxs)("div", { className: "cl-images cl-selectable", children: [props.images.slice(0, props.limit).map((image) => ((0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)(ClusterImage, { image: image, transformed: props.transformed, selectable: true, selected: selection.has(image), onClick: () => toggleSelection(image) }, image.path))), props.images.length === 0 && (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("p", { children: "\u2205" }), props.expander] }));
+}
+function BasicImageList(props) {
+    const editorContext = react__WEBPACK_IMPORTED_MODULE_1___default().useContext(_context__WEBPACK_IMPORTED_MODULE_2__.ClusterEditorContext);
+    return ((0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxs)("div", { className: "cl-images", children: [props.images.slice(0, props.limit).map((image) => ((0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)(ClusterImage, { image: image, transformed: props.transformed, selectable: false }, image.path))), props.images.length === 0 && (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("p", { children: "\u2205" }), props.expander] }));
+}
+function ClusterImage(props) {
+    const editorContext = react__WEBPACK_IMPORTED_MODULE_1___default().useContext(_context__WEBPACK_IMPORTED_MODULE_2__.ClusterEditorContext);
+    const image = props.image;
+    return ((0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxs)("div", { className: "cl-image" + (props.selected ? " cl-selected" : ""), onClick: props.onClick, children: [props.selectable && (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("a", { href: "javascript:void(0)", className: "cl-selecter" }), (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("img", { src: editorContext.state.base_url + ((props.transformed && image.tsf_url) ? image.tsf_url : image.raw_url), alt: image.id.toString(), title: image.path })] }));
+}
+
+
+/***/ }),
+
+/***/ "./src/ClusterApp/context.tsx":
+/*!************************************!*\
+  !*** ./src/ClusterApp/context.tsx ***!
+  \************************************/
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   ClusterEditorContext: () => (/* binding */ ClusterEditorContext),
-/* harmony export */   "default": () => (/* binding */ ClusterApp)
+/* harmony export */   editorReducer: () => (/* binding */ editorReducer)
 /* harmony export */ });
-/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react/jsx-runtime */ "./node_modules/react/jsx-runtime.js");
-/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "./node_modules/react/index.js");
-/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var _ClusterElement__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./ClusterElement */ "./src/ClusterElement.tsx");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "./node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
 
-
-
-
-const ClusterEditorContext = react__WEBPACK_IMPORTED_MODULE_1___default().createContext(undefined);
+const ClusterEditorContext = react__WEBPACK_IMPORTED_MODULE_0___default().createContext(undefined);
+function eraseImagesMetadata(images) {
+    return images.map((image) => { return { path: image.path, raw_url: image.raw_url, id: image.id, distance: image.id + 10 }; });
+}
 const editorReducer = (state, action) => {
     console.log("editorReducer", state, action);
     // Basic actions
@@ -34749,17 +34972,19 @@ const editorReducer = (state, action) => {
         return state;
     switch (action_prefix) {
         case "cluster":
+            const new_clusters = new Map(state.content.clusters);
             switch (action.type) {
                 case "cluster_rename":
-                    return Object.assign(Object.assign({}, state), { content: Object.assign(Object.assign({}, state.content), { clusters: state.content.clusters.map((cluster) => {
-                                if (cluster.id == action.cluster_id) {
-                                    return Object.assign(Object.assign({}, cluster), { name: action.name });
-                                }
-                                return cluster;
-                            }) }) });
+                    new_clusters.set(action.cluster_id, Object.assign(Object.assign({}, new_clusters.get(action.cluster_id)), { name: action.name }));
+                    break;
                 case "cluster_merge":
                     // move images from cluster2 to cluster1
-                    return state;
+                    const cluster1 = state.content.clusters.get(action.cluster_id);
+                    const cluster2 = state.content.clusters.get(action.other);
+                    const new_cluster1 = Object.assign(Object.assign({}, cluster1), { images: [...cluster1.images, ...eraseImagesMetadata(cluster2.images)] });
+                    new_clusters.delete(action.other);
+                    new_clusters.set(action.cluster_id, new_cluster1);
+                    break;
                 case "cluster_delete":
                     // move cluster's images to garbage cluster
                     return state;
@@ -34769,6 +34994,7 @@ const editorReducer = (state, action) => {
                     }
                     return Object.assign(Object.assign({}, state), { askingCluster: { not_cluster_id: action.cluster_id, for_action: action.for_action } });
             }
+            return Object.assign(Object.assign({}, state), { content: Object.assign(Object.assign({}, state.content), { clusters: new_clusters }) });
             break;
         case "selection":
             const selection = new Set(state.image_selection);
@@ -34788,9 +35014,12 @@ const editorReducer = (state, action) => {
                     console.log("selection_change", selection);
                     return Object.assign(Object.assign({}, state), { image_selection: selection });
                 case "selection_invert":
-                    const inverted = new Set(state.content.clusters.find((cluster) => cluster.id == state.editingCluster).images);
+                    const inverted = new Set(state.content.clusters.get(state.editingCluster).images);
                     selection.forEach(item => inverted.delete(item));
                     return Object.assign(Object.assign({}, state), { image_selection: inverted });
+                case "selection_all":
+                    const all = new Set(state.content.clusters.get(state.editingCluster).images);
+                    return Object.assign(Object.assign({}, state), { image_selection: all });
                 case "selection_clear":
                     return Object.assign(Object.assign({}, state), { image_selection: new Set() });
                 case "selection_move":
@@ -34798,13 +35027,13 @@ const editorReducer = (state, action) => {
                         return Object.assign(Object.assign({}, state), { askingCluster: null });
                     }
                     // remove image obsolete metadata inside selection
-                    const new_images = Array.from(selection).map((image) => { return { path: image.path, raw_url: image.raw_url, id: image.id, distance: image.id + 1000 }; });
+                    const new_images = eraseImagesMetadata(Array.from(selection));
                     // remove images from current cluster
-                    const orig_cluster = state.content.clusters.find((cluster) => cluster.id == state.editingCluster);
+                    const orig_cluster = state.content.clusters.get(state.editingCluster);
                     const new_orig_cluster = Object.assign(Object.assign({}, orig_cluster), { images: orig_cluster.images.filter((image) => !selection.has(image)) });
                     let new_cluster;
                     if (action.cluster_id == -1) {
-                        const new_id = state.content.clusters.reduce((max, cluster) => Math.max(max, cluster.id), 0) + 1;
+                        const new_id = Math.max(...state.content.clusters.keys()) + 1;
                         new_cluster = {
                             id: new_id,
                             name: "Cluster " + new_id,
@@ -34812,150 +35041,2172 @@ const editorReducer = (state, action) => {
                         };
                     }
                     else {
-                        new_cluster = state.content.clusters.find((cluster) => cluster.id == action.cluster_id);
+                        new_cluster = Object.assign({}, state.content.clusters.get(action.cluster_id));
                         new_cluster.images.push(...new_images);
                     }
-                    const new_clusters = state.content.clusters.filter((cluster) => cluster.id != state.editingCluster && cluster.id != action.cluster_id);
-                    console.log("selection_move", new_orig_cluster, new_cluster, new_clusters);
-                    new_clusters.push(new_orig_cluster);
-                    new_clusters.push(new_cluster);
+                    const new_clusters = new Map(state.content.clusters);
+                    new_clusters.set(new_orig_cluster.id, new_orig_cluster);
+                    new_clusters.set(new_cluster.id, new_cluster);
                     return Object.assign(Object.assign({}, state), { content: Object.assign(Object.assign({}, state.content), { clusters: new_clusters }), editingCluster: null, image_selection: new Set(), askingCluster: null });
             }
             break;
     }
     throw new Error("Invalid action type");
 };
-function ClusterAskModale(props) {
-    const editorContext = react__WEBPACK_IMPORTED_MODULE_1___default().useContext(ClusterEditorContext);
-    const cluster = editorContext.state.content.clusters.find((cluster) => cluster.id == props.not_cluster_id);
-    const [selected, setSelected] = (0,react__WEBPACK_IMPORTED_MODULE_1__.useState)(null);
-    const doAction = () => {
-        editorContext.dispatch({
-            type: props.for_action,
-            cluster_id: selected.id,
-            other: props.not_cluster_id
-        });
-        editorContext.dispatch({ type: "cluster_ask", cluster_id: null });
+
+
+/***/ }),
+
+/***/ "./src/ClusterApp/types.tsx":
+/*!**********************************!*\
+  !*** ./src/ClusterApp/types.tsx ***!
+  \**********************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   serializeClusterFile: () => (/* binding */ serializeClusterFile),
+/* harmony export */   unserializeClusterFile: () => (/* binding */ unserializeClusterFile)
+/* harmony export */ });
+function unserializeClusterFile(file) {
+    return {
+        clusters: new Map(Object.entries(file.clusters).map(([key, value]) => [parseInt(key), value])),
+        background_urls: file.background_urls
     };
-    const action_name = {
-        "cluster_merge": "Merge",
-        "selection_move": "Move"
-    }[props.for_action];
-    // sort clusters by size
-    const additional_cluster = { id: -1, name: "New cluster", images: [] };
-    const clusters = [
-        ...editorContext.state.content.clusters.sort((a, b) => b.images.length - a.images.length),
-        additional_cluster
-    ];
-    return ((0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("div", { className: "cl-modale", children: (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("div", { className: "cl-modale-wrapper", children: (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxs)("div", { className: "cl-modale-content", children: [(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("h2", { children: "Choose target cluster" }), (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxs)("div", { className: "cl-ask-select", children: [(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("div", { className: "cl-ask-list", children: clusters.map((cluster) => (cluster.id != props.not_cluster_id &&
-                                    (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("div", { className: "cl-ask-cluster", children: (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)(_ClusterElement__WEBPACK_IMPORTED_MODULE_2__.MiniClusterElement, { info: cluster, selected: (selected === null || selected === void 0 ? void 0 : selected.id) == cluster.id, onClick: () => setSelected(cluster) }) }, cluster.id))) }), (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxs)("div", { className: "cl-ask-buttons", children: [(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("button", { onClick: () => { editorContext.dispatch({ type: "cluster_ask", cluster_id: null }); }, children: "Cancel" }), (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("button", { onClick: doAction, disabled: selected === null, children: action_name })] })] })] }) }) }));
 }
-function ClusterApp({ clustering_data, editing = false, editable = false, formfield, base_url }) {
-    const [editorState, dispatchEditor] = (0,react__WEBPACK_IMPORTED_MODULE_1__.useReducer)(editorReducer, {
-        editing: editable && editing,
-        editingCluster: null,
-        askingCluster: null,
-        content: clustering_data,
-        base_url: base_url,
-        image_selection: new Set()
-    });
-    const updateFormField = () => {
-        if (formfield) {
-            formfield.value = JSON.stringify(editorState.content);
-        }
+function serializeClusterFile(file) {
+    return {
+        clusters: Object.fromEntries(file.clusters.entries()),
+        background_urls: file.background_urls
     };
-    const save = () => {
-        if (formfield) {
-            updateFormField();
-            formfield.form.submit();
-        }
-    };
-    // sort clusters by size
-    const clusters = editorState.content.clusters.sort((a, b) => b.images.length - a.images.length);
-    return ((0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)(ClusterEditorContext.Provider, { value: { state: editorState, dispatch: dispatchEditor }, children: (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxs)("div", { className: editorState.editing ? "cl-editor" : "", children: [(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxs)("div", { className: "cl-editor-toolbar", children: [(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxs)("h1", { children: ["Cluster ", editorState.editing ? "Editor" : "Viewer"] }), editable &&
-                            (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxs)("div", { className: "cl-editor-tools", children: [editorState.editingCluster !== null && editorState.image_selection.size > 0 &&
-                                        (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxs)((react__WEBPACK_IMPORTED_MODULE_1___default().Fragment), { children: [(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("button", { onClick: () => { dispatchEditor({ type: "cluster_ask", for_action: "selection_move", cluster_id: editorState.editingCluster }); }, children: "Move to cluster..." }), (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("button", { onClick: () => { dispatchEditor({ type: "selection_clear" }); }, children: "Clear selection" })] }), editorState.editingCluster !== null &&
-                                        (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)((react__WEBPACK_IMPORTED_MODULE_1___default().Fragment), { children: (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("button", { onClick: () => { dispatchEditor({ type: "selection_invert" }); }, children: "Invert selection" }) }), editorState.editing ?
-                                        (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("button", { onClick: save, children: "Save changes" }) :
-                                        (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("button", { onClick: () => { dispatchEditor({ type: "edit" }); }, children: "Edit" })] })] }), (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("div", { className: "cl-cluster-list", children: clusters.map((cluster) => ((0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)(_ClusterElement__WEBPACK_IMPORTED_MODULE_2__.ClusterElement, { editing: editorState.editingCluster == cluster.id, info: cluster }, cluster.id))) }), editorState.askingCluster !== null &&
-                    (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)(ClusterAskModale, Object.assign({}, editorState.askingCluster))] }) }));
 }
 
 
 /***/ }),
 
-/***/ "./src/ClusterElement.tsx":
-/*!********************************!*\
-  !*** ./src/ClusterElement.tsx ***!
-  \********************************/
+/***/ "./src/ProgressTracker/index.tsx":
+/*!***************************************!*\
+  !*** ./src/ProgressTracker/index.tsx ***!
+  \***************************************/
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   ClusterElement: () => (/* binding */ ClusterElement),
-/* harmony export */   MiniClusterElement: () => (/* binding */ MiniClusterElement)
+/* harmony export */   TaskProgressTracker: () => (/* binding */ TaskProgressTracker)
 /* harmony export */ });
 /* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react/jsx-runtime */ "./node_modules/react/jsx-runtime.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "./node_modules/react/index.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var _ClusterApp__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./ClusterApp */ "./src/ClusterApp.tsx");
 
 
-
-const N_SHOWN = 10;
-function ClusterImage(props) {
-    const editorContext = react__WEBPACK_IMPORTED_MODULE_1___default().useContext(_ClusterApp__WEBPACK_IMPORTED_MODULE_2__.ClusterEditorContext);
-    const image = props.image;
-    return ((0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxs)("div", { className: "cl-image" + (props.selected ? " cl-selected" : ""), onClick: props.onClick, children: [props.selectable && (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("a", { href: "javascript:void(0)", className: "cl-selecter" }), (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("img", { src: editorContext.state.base_url + ((props.transformed && image.tsf_url) ? image.tsf_url : image.raw_url), alt: image.id.toString(), title: image.path })] }));
+function TaskProgressTracker(props) {
+    var _a, _b;
+    const [status, setStatus] = react__WEBPACK_IMPORTED_MODULE_1___default().useState(null);
+    const [is_finished, setFinished] = react__WEBPACK_IMPORTED_MODULE_1___default().useState(false);
+    const [error, setError] = react__WEBPACK_IMPORTED_MODULE_1___default().useState(null);
+    // regular polling using setTimeout after results
+    const poll = react__WEBPACK_IMPORTED_MODULE_1___default().useCallback(() => {
+        fetch(props.tracking_url)
+            .then(response => response.json())
+            .then(data => {
+            setStatus(data);
+            if (data.status === "finished") {
+                setFinished(true);
+            }
+            else {
+                setTimeout(poll, 1000);
+            }
+        })
+            .catch(error => {
+            setError(error.toString());
+            setTimeout(poll, 1000);
+        });
+    }, [props.tracking_url]);
+    react__WEBPACK_IMPORTED_MODULE_1___default().useEffect(() => {
+        poll();
+    }, [poll]);
+    if (error)
+        return (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("div", { className: "tck-progress", children: (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("div", { className: "tck-error", children: error }) });
+    if (is_finished) {
+        window.location.reload();
+        return (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("div", { className: "tck-progress", children: "Done!" });
+    }
+    return ((0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxs)("div", { className: "tck-progress", children: [(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxs)("p", { children: ["Status: ", status === null || status === void 0 ? void 0 : status.status] }), ((_a = status === null || status === void 0 ? void 0 : status.log) === null || _a === void 0 ? void 0 : _a.progress) &&
+                (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("div", { className: "tck-bar-list", children: status.log.progress.map((progress, i) => (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxs)("div", { children: [(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxs)("span", { className: "label", children: [progress.context, " ", progress.current, "/", progress.total] }), (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("progress", { className: "bar", value: progress.current, max: progress.total })] }, i)) }), (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("pre", { children: (_b = status === null || status === void 0 ? void 0 : status.log.infos) === null || _b === void 0 ? void 0 : _b.join("\n") })] }));
 }
-function SelectableImageList(props) {
-    const editorContext = react__WEBPACK_IMPORTED_MODULE_1___default().useContext(_ClusterApp__WEBPACK_IMPORTED_MODULE_2__.ClusterEditorContext);
-    const selection = editorContext.state.image_selection;
-    const toggleSelection = (image) => {
-        editorContext.dispatch({ type: "selection_change", images: [image], selected: !selection.has(image) });
+
+
+/***/ }),
+
+/***/ "./src/utils/IconBtn.tsx":
+/*!*******************************!*\
+  !*** ./src/utils/IconBtn.tsx ***!
+  \*******************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   IconBtn: () => (/* binding */ IconBtn)
+/* harmony export */ });
+/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react/jsx-runtime */ "./node_modules/react/jsx-runtime.js");
+/* harmony import */ var _iconify_react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @iconify/react */ "./node_modules/@iconify/react/dist/iconify.mjs");
+
+
+function IconBtn(props) {
+    return ((0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxs)("a", { className: props.className + (props.disabled ? " disabled" : "") + " btn", href: "javascript:void(0)", onClick: props.onClick, children: [(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)(_iconify_react__WEBPACK_IMPORTED_MODULE_1__.Icon, { icon: props.icon }), props.label && (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("span", { children: props.label })] }));
+}
+
+
+/***/ }),
+
+/***/ "./node_modules/@iconify/react/dist/iconify.mjs":
+/*!******************************************************!*\
+  !*** ./node_modules/@iconify/react/dist/iconify.mjs ***!
+  \******************************************************/
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   Icon: () => (/* binding */ Icon),
+/* harmony export */   InlineIcon: () => (/* binding */ InlineIcon),
+/* harmony export */   _api: () => (/* binding */ _api),
+/* harmony export */   addAPIProvider: () => (/* binding */ addAPIProvider),
+/* harmony export */   addCollection: () => (/* binding */ addCollection),
+/* harmony export */   addIcon: () => (/* binding */ addIcon),
+/* harmony export */   buildIcon: () => (/* binding */ iconToSVG),
+/* harmony export */   calculateSize: () => (/* binding */ calculateSize),
+/* harmony export */   disableCache: () => (/* binding */ disableCache),
+/* harmony export */   enableCache: () => (/* binding */ enableCache),
+/* harmony export */   getIcon: () => (/* binding */ getIcon),
+/* harmony export */   iconExists: () => (/* binding */ iconExists),
+/* harmony export */   listIcons: () => (/* binding */ listIcons),
+/* harmony export */   loadIcon: () => (/* binding */ loadIcon),
+/* harmony export */   loadIcons: () => (/* binding */ loadIcons),
+/* harmony export */   replaceIDs: () => (/* binding */ replaceIDs)
+/* harmony export */ });
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "./node_modules/react/index.js");
+
+
+const matchIconName = /^[a-z0-9]+(-[a-z0-9]+)*$/;
+const stringToIcon = (value, validate, allowSimpleName, provider = "") => {
+  const colonSeparated = value.split(":");
+  if (value.slice(0, 1) === "@") {
+    if (colonSeparated.length < 2 || colonSeparated.length > 3) {
+      return null;
+    }
+    provider = colonSeparated.shift().slice(1);
+  }
+  if (colonSeparated.length > 3 || !colonSeparated.length) {
+    return null;
+  }
+  if (colonSeparated.length > 1) {
+    const name2 = colonSeparated.pop();
+    const prefix = colonSeparated.pop();
+    const result = {
+      // Allow provider without '@': "provider:prefix:name"
+      provider: colonSeparated.length > 0 ? colonSeparated[0] : provider,
+      prefix,
+      name: name2
     };
-    return ((0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxs)("div", { className: "cl-images cl-selectable", children: [props.images.slice(0, props.limit).map((image) => ((0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)(ClusterImage, { image: image, transformed: props.transformed, selectable: true, selected: selection.has(image), onClick: () => toggleSelection(image) }, image.path))), props.images.length === 0 && (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("p", { children: "\u2205" }), props.expander] }));
+    return validate && !validateIconName(result) ? null : result;
+  }
+  const name = colonSeparated[0];
+  const dashSeparated = name.split("-");
+  if (dashSeparated.length > 1) {
+    const result = {
+      provider,
+      prefix: dashSeparated.shift(),
+      name: dashSeparated.join("-")
+    };
+    return validate && !validateIconName(result) ? null : result;
+  }
+  if (allowSimpleName && provider === "") {
+    const result = {
+      provider,
+      prefix: "",
+      name
+    };
+    return validate && !validateIconName(result, allowSimpleName) ? null : result;
+  }
+  return null;
+};
+const validateIconName = (icon, allowSimpleName) => {
+  if (!icon) {
+    return false;
+  }
+  return !!((icon.provider === "" || icon.provider.match(matchIconName)) && (allowSimpleName && icon.prefix === "" || icon.prefix.match(matchIconName)) && icon.name.match(matchIconName));
+};
+
+const defaultIconDimensions = Object.freeze(
+  {
+    left: 0,
+    top: 0,
+    width: 16,
+    height: 16
+  }
+);
+const defaultIconTransformations = Object.freeze({
+  rotate: 0,
+  vFlip: false,
+  hFlip: false
+});
+const defaultIconProps = Object.freeze({
+  ...defaultIconDimensions,
+  ...defaultIconTransformations
+});
+const defaultExtendedIconProps = Object.freeze({
+  ...defaultIconProps,
+  body: "",
+  hidden: false
+});
+
+function mergeIconTransformations(obj1, obj2) {
+  const result = {};
+  if (!obj1.hFlip !== !obj2.hFlip) {
+    result.hFlip = true;
+  }
+  if (!obj1.vFlip !== !obj2.vFlip) {
+    result.vFlip = true;
+  }
+  const rotate = ((obj1.rotate || 0) + (obj2.rotate || 0)) % 4;
+  if (rotate) {
+    result.rotate = rotate;
+  }
+  return result;
 }
-function BasicImageList(props) {
-    const editorContext = react__WEBPACK_IMPORTED_MODULE_1___default().useContext(_ClusterApp__WEBPACK_IMPORTED_MODULE_2__.ClusterEditorContext);
-    return ((0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxs)("div", { className: "cl-images", children: [props.images.slice(0, props.limit).map((image) => ((0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)(ClusterImage, { image: image, transformed: props.transformed, selectable: false }, image.path))), props.images.length === 0 && (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("p", { children: "\u2205" }), props.expander] }));
+
+function mergeIconData(parent, child) {
+  const result = mergeIconTransformations(parent, child);
+  for (const key in defaultExtendedIconProps) {
+    if (key in defaultIconTransformations) {
+      if (key in parent && !(key in result)) {
+        result[key] = defaultIconTransformations[key];
+      }
+    } else if (key in child) {
+      result[key] = child[key];
+    } else if (key in parent) {
+      result[key] = parent[key];
+    }
+  }
+  return result;
 }
-function MiniClusterElement(props) {
-    const editorContext = react__WEBPACK_IMPORTED_MODULE_1___default().useContext(_ClusterApp__WEBPACK_IMPORTED_MODULE_2__.ClusterEditorContext);
-    const cluster = props.info;
-    return ((0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxs)("div", { className: "cl-cluster" + (props.selected ? " cl-selected" : ""), onClick: props.onClick, children: [(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("div", { className: "cl-props", children: (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxs)("div", { className: "cl-propcontent", children: [(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("h3", { children: cluster.name }), (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxs)("p", { children: [cluster.id > 0 && (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxs)((react__WEBPACK_IMPORTED_MODULE_1___default().Fragment), { children: ["Cluster #", cluster.id, ", ", cluster.images.length, " images"] }), "\u00A0"] })] }) }), (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("div", { className: "cl-samples", children: (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)(BasicImageList, { images: cluster.images, transformed: false, limit: 5 }) }), (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("a", { className: "cl-overlay", href: "javascript:void(0)" })] }));
+
+function getIconsTree(data, names) {
+  const icons = data.icons;
+  const aliases = data.aliases || /* @__PURE__ */ Object.create(null);
+  const resolved = /* @__PURE__ */ Object.create(null);
+  function resolve(name) {
+    if (icons[name]) {
+      return resolved[name] = [];
+    }
+    if (!(name in resolved)) {
+      resolved[name] = null;
+      const parent = aliases[name] && aliases[name].parent;
+      const value = parent && resolve(parent);
+      if (value) {
+        resolved[name] = [parent].concat(value);
+      }
+    }
+    return resolved[name];
+  }
+  (names || Object.keys(icons).concat(Object.keys(aliases))).forEach(resolve);
+  return resolved;
 }
-function ClusterElement(props) {
-    const [expanded, setExpanded] = (0,react__WEBPACK_IMPORTED_MODULE_1__.useState)(false);
-    const [transformed, setTransformed] = (0,react__WEBPACK_IMPORTED_MODULE_1__.useState)(false);
-    const [renaming, setRenaming] = (0,react__WEBPACK_IMPORTED_MODULE_1__.useState)(false);
-    const nameInput = react__WEBPACK_IMPORTED_MODULE_1___default().createRef();
-    const selectionRef = react__WEBPACK_IMPORTED_MODULE_1___default().createRef();
-    const editorContext = react__WEBPACK_IMPORTED_MODULE_1___default().useContext(_ClusterApp__WEBPACK_IMPORTED_MODULE_2__.ClusterEditorContext);
-    const cluster = props.info;
-    const editable = editorContext === null || editorContext === void 0 ? void 0 : editorContext.state.editing;
-    const onRenameSubmit = (e) => {
-        e.preventDefault();
-        const val = nameInput.current.value;
-        if (val) {
-            editorContext === null || editorContext === void 0 ? void 0 : editorContext.dispatch({ type: "cluster_rename", cluster_id: cluster.id, name: val });
+
+function internalGetIconData(data, name, tree) {
+  const icons = data.icons;
+  const aliases = data.aliases || /* @__PURE__ */ Object.create(null);
+  let currentProps = {};
+  function parse(name2) {
+    currentProps = mergeIconData(
+      icons[name2] || aliases[name2],
+      currentProps
+    );
+  }
+  parse(name);
+  tree.forEach(parse);
+  return mergeIconData(data, currentProps);
+}
+
+function parseIconSet(data, callback) {
+  const names = [];
+  if (typeof data !== "object" || typeof data.icons !== "object") {
+    return names;
+  }
+  if (data.not_found instanceof Array) {
+    data.not_found.forEach((name) => {
+      callback(name, null);
+      names.push(name);
+    });
+  }
+  const tree = getIconsTree(data);
+  for (const name in tree) {
+    const item = tree[name];
+    if (item) {
+      callback(name, internalGetIconData(data, name, item));
+      names.push(name);
+    }
+  }
+  return names;
+}
+
+const optionalPropertyDefaults = {
+  provider: "",
+  aliases: {},
+  not_found: {},
+  ...defaultIconDimensions
+};
+function checkOptionalProps(item, defaults) {
+  for (const prop in defaults) {
+    if (prop in item && typeof item[prop] !== typeof defaults[prop]) {
+      return false;
+    }
+  }
+  return true;
+}
+function quicklyValidateIconSet(obj) {
+  if (typeof obj !== "object" || obj === null) {
+    return null;
+  }
+  const data = obj;
+  if (typeof data.prefix !== "string" || !obj.icons || typeof obj.icons !== "object") {
+    return null;
+  }
+  if (!checkOptionalProps(obj, optionalPropertyDefaults)) {
+    return null;
+  }
+  const icons = data.icons;
+  for (const name in icons) {
+    const icon = icons[name];
+    if (!name.match(matchIconName) || typeof icon.body !== "string" || !checkOptionalProps(
+      icon,
+      defaultExtendedIconProps
+    )) {
+      return null;
+    }
+  }
+  const aliases = data.aliases || /* @__PURE__ */ Object.create(null);
+  for (const name in aliases) {
+    const icon = aliases[name];
+    const parent = icon.parent;
+    if (!name.match(matchIconName) || typeof parent !== "string" || !icons[parent] && !aliases[parent] || !checkOptionalProps(
+      icon,
+      defaultExtendedIconProps
+    )) {
+      return null;
+    }
+  }
+  return data;
+}
+
+const dataStorage = /* @__PURE__ */ Object.create(null);
+function newStorage(provider, prefix) {
+  return {
+    provider,
+    prefix,
+    icons: /* @__PURE__ */ Object.create(null),
+    missing: /* @__PURE__ */ new Set()
+  };
+}
+function getStorage(provider, prefix) {
+  const providerStorage = dataStorage[provider] || (dataStorage[provider] = /* @__PURE__ */ Object.create(null));
+  return providerStorage[prefix] || (providerStorage[prefix] = newStorage(provider, prefix));
+}
+function addIconSet(storage, data) {
+  if (!quicklyValidateIconSet(data)) {
+    return [];
+  }
+  return parseIconSet(data, (name, icon) => {
+    if (icon) {
+      storage.icons[name] = icon;
+    } else {
+      storage.missing.add(name);
+    }
+  });
+}
+function addIconToStorage(storage, name, icon) {
+  try {
+    if (typeof icon.body === "string") {
+      storage.icons[name] = { ...icon };
+      return true;
+    }
+  } catch (err) {
+  }
+  return false;
+}
+function listIcons(provider, prefix) {
+  let allIcons = [];
+  const providers = typeof provider === "string" ? [provider] : Object.keys(dataStorage);
+  providers.forEach((provider2) => {
+    const prefixes = typeof provider2 === "string" && typeof prefix === "string" ? [prefix] : Object.keys(dataStorage[provider2] || {});
+    prefixes.forEach((prefix2) => {
+      const storage = getStorage(provider2, prefix2);
+      allIcons = allIcons.concat(
+        Object.keys(storage.icons).map(
+          (name) => (provider2 !== "" ? "@" + provider2 + ":" : "") + prefix2 + ":" + name
+        )
+      );
+    });
+  });
+  return allIcons;
+}
+
+let simpleNames = false;
+function allowSimpleNames(allow) {
+  if (typeof allow === "boolean") {
+    simpleNames = allow;
+  }
+  return simpleNames;
+}
+function getIconData(name) {
+  const icon = typeof name === "string" ? stringToIcon(name, true, simpleNames) : name;
+  if (icon) {
+    const storage = getStorage(icon.provider, icon.prefix);
+    const iconName = icon.name;
+    return storage.icons[iconName] || (storage.missing.has(iconName) ? null : void 0);
+  }
+}
+function addIcon(name, data) {
+  const icon = stringToIcon(name, true, simpleNames);
+  if (!icon) {
+    return false;
+  }
+  const storage = getStorage(icon.provider, icon.prefix);
+  return addIconToStorage(storage, icon.name, data);
+}
+function addCollection(data, provider) {
+  if (typeof data !== "object") {
+    return false;
+  }
+  if (typeof provider !== "string") {
+    provider = data.provider || "";
+  }
+  if (simpleNames && !provider && !data.prefix) {
+    let added = false;
+    if (quicklyValidateIconSet(data)) {
+      data.prefix = "";
+      parseIconSet(data, (name, icon) => {
+        if (icon && addIcon(name, icon)) {
+          added = true;
         }
-        setRenaming(false);
-    };
-    const toggleEdition = (val) => {
-        editorContext === null || editorContext === void 0 ? void 0 : editorContext.dispatch({ type: "edit_cluster", cluster_id: val ? cluster.id : null });
-        setRenaming(false);
-    };
-    const expanderBtn = (cluster.images.length > N_SHOWN &&
-        (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxs)("a", { className: "cl-more", href: "javascript:void(0)", onClick: () => { setExpanded(!expanded); }, children: [expanded ? "–" : "+", cluster.images.length - N_SHOWN] }));
-    return ((0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxs)("div", { className: "cl-cluster" + (expanded ? " cl-expanded" : ""), children: [(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("div", { className: "cl-props", children: (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxs)("div", { className: "cl-propcontent", children: [!(renaming && props.editing) ?
-                            (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxs)("h3", { children: [cluster.name, " ", editable && (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("a", { href: "javascript:void(0)", onClick: () => { toggleEdition(true); setRenaming(true); }, children: "Rename" })] }) :
-                            (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxs)("form", { onSubmit: onRenameSubmit, children: [(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("input", { type: "text", ref: nameInput, defaultValue: cluster.name }), " ", (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("input", { type: "submit", value: "Save" })] }), (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("p", { children: cluster.id > 0 && (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxs)((react__WEBPACK_IMPORTED_MODULE_1___default().Fragment), { children: ["Cluster #", cluster.id, ", ", cluster.images.length, " images"] }) }), editable &&
-                            (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("p", { children: (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("a", { href: "javascript:void(0);", onClick: () => { toggleEdition(!props.editing); }, children: props.editing ? "End edit" : "Edit" }) }), cluster.proto_url &&
-                            (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxs)((react__WEBPACK_IMPORTED_MODULE_1___default().Fragment), { children: [(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("p", { children: (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("a", { href: "javascript:void(0);", onClick: () => { setTransformed(!transformed); }, children: transformed ? "Show original images" : "Show transformed prototypes" }) }), (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxs)("div", { className: "cl-proto", children: [(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("img", { src: (editorContext === null || editorContext === void 0 ? void 0 : editorContext.state.base_url) + cluster.proto_url, alt: "cl-proto", className: "prototype" }), cluster.mask_url && false && 0] })] })] }) }), (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("div", { className: "cl-samples", children: props.editing ?
-                    (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)(SelectableImageList, { images: cluster.images, limit: expanded ? undefined : N_SHOWN, transformed: transformed, expander: expanderBtn }) :
-                    (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)(BasicImageList, { images: cluster.images, transformed: transformed, limit: expanded ? undefined : N_SHOWN, expander: expanderBtn }) }), (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("a", { className: "cl-overlay cl-hidden", href: "javascript:void(0)" })] }));
+      });
+    }
+    return added;
+  }
+  const prefix = data.prefix;
+  if (!validateIconName({
+    provider,
+    prefix,
+    name: "a"
+  })) {
+    return false;
+  }
+  const storage = getStorage(provider, prefix);
+  return !!addIconSet(storage, data);
 }
+function iconExists(name) {
+  return !!getIconData(name);
+}
+function getIcon(name) {
+  const result = getIconData(name);
+  return result ? {
+    ...defaultIconProps,
+    ...result
+  } : null;
+}
+
+const defaultIconSizeCustomisations = Object.freeze({
+  width: null,
+  height: null
+});
+const defaultIconCustomisations = Object.freeze({
+  // Dimensions
+  ...defaultIconSizeCustomisations,
+  // Transformations
+  ...defaultIconTransformations
+});
+
+const unitsSplit = /(-?[0-9.]*[0-9]+[0-9.]*)/g;
+const unitsTest = /^-?[0-9.]*[0-9]+[0-9.]*$/g;
+function calculateSize(size, ratio, precision) {
+  if (ratio === 1) {
+    return size;
+  }
+  precision = precision || 100;
+  if (typeof size === "number") {
+    return Math.ceil(size * ratio * precision) / precision;
+  }
+  if (typeof size !== "string") {
+    return size;
+  }
+  const oldParts = size.split(unitsSplit);
+  if (oldParts === null || !oldParts.length) {
+    return size;
+  }
+  const newParts = [];
+  let code = oldParts.shift();
+  let isNumber = unitsTest.test(code);
+  while (true) {
+    if (isNumber) {
+      const num = parseFloat(code);
+      if (isNaN(num)) {
+        newParts.push(code);
+      } else {
+        newParts.push(Math.ceil(num * ratio * precision) / precision);
+      }
+    } else {
+      newParts.push(code);
+    }
+    code = oldParts.shift();
+    if (code === void 0) {
+      return newParts.join("");
+    }
+    isNumber = !isNumber;
+  }
+}
+
+const isUnsetKeyword = (value) => value === "unset" || value === "undefined" || value === "none";
+function iconToSVG(icon, customisations) {
+  const fullIcon = {
+    ...defaultIconProps,
+    ...icon
+  };
+  const fullCustomisations = {
+    ...defaultIconCustomisations,
+    ...customisations
+  };
+  const box = {
+    left: fullIcon.left,
+    top: fullIcon.top,
+    width: fullIcon.width,
+    height: fullIcon.height
+  };
+  let body = fullIcon.body;
+  [fullIcon, fullCustomisations].forEach((props) => {
+    const transformations = [];
+    const hFlip = props.hFlip;
+    const vFlip = props.vFlip;
+    let rotation = props.rotate;
+    if (hFlip) {
+      if (vFlip) {
+        rotation += 2;
+      } else {
+        transformations.push(
+          "translate(" + (box.width + box.left).toString() + " " + (0 - box.top).toString() + ")"
+        );
+        transformations.push("scale(-1 1)");
+        box.top = box.left = 0;
+      }
+    } else if (vFlip) {
+      transformations.push(
+        "translate(" + (0 - box.left).toString() + " " + (box.height + box.top).toString() + ")"
+      );
+      transformations.push("scale(1 -1)");
+      box.top = box.left = 0;
+    }
+    let tempValue;
+    if (rotation < 0) {
+      rotation -= Math.floor(rotation / 4) * 4;
+    }
+    rotation = rotation % 4;
+    switch (rotation) {
+      case 1:
+        tempValue = box.height / 2 + box.top;
+        transformations.unshift(
+          "rotate(90 " + tempValue.toString() + " " + tempValue.toString() + ")"
+        );
+        break;
+      case 2:
+        transformations.unshift(
+          "rotate(180 " + (box.width / 2 + box.left).toString() + " " + (box.height / 2 + box.top).toString() + ")"
+        );
+        break;
+      case 3:
+        tempValue = box.width / 2 + box.left;
+        transformations.unshift(
+          "rotate(-90 " + tempValue.toString() + " " + tempValue.toString() + ")"
+        );
+        break;
+    }
+    if (rotation % 2 === 1) {
+      if (box.left !== box.top) {
+        tempValue = box.left;
+        box.left = box.top;
+        box.top = tempValue;
+      }
+      if (box.width !== box.height) {
+        tempValue = box.width;
+        box.width = box.height;
+        box.height = tempValue;
+      }
+    }
+    if (transformations.length) {
+      body = '<g transform="' + transformations.join(" ") + '">' + body + "</g>";
+    }
+  });
+  const customisationsWidth = fullCustomisations.width;
+  const customisationsHeight = fullCustomisations.height;
+  const boxWidth = box.width;
+  const boxHeight = box.height;
+  let width;
+  let height;
+  if (customisationsWidth === null) {
+    height = customisationsHeight === null ? "1em" : customisationsHeight === "auto" ? boxHeight : customisationsHeight;
+    width = calculateSize(height, boxWidth / boxHeight);
+  } else {
+    width = customisationsWidth === "auto" ? boxWidth : customisationsWidth;
+    height = customisationsHeight === null ? calculateSize(width, boxHeight / boxWidth) : customisationsHeight === "auto" ? boxHeight : customisationsHeight;
+  }
+  const attributes = {};
+  const setAttr = (prop, value) => {
+    if (!isUnsetKeyword(value)) {
+      attributes[prop] = value.toString();
+    }
+  };
+  setAttr("width", width);
+  setAttr("height", height);
+  attributes.viewBox = box.left.toString() + " " + box.top.toString() + " " + boxWidth.toString() + " " + boxHeight.toString();
+  return {
+    attributes,
+    body
+  };
+}
+
+const regex = /\sid="(\S+)"/g;
+const randomPrefix = "IconifyId" + Date.now().toString(16) + (Math.random() * 16777216 | 0).toString(16);
+let counter = 0;
+function replaceIDs(body, prefix = randomPrefix) {
+  const ids = [];
+  let match;
+  while (match = regex.exec(body)) {
+    ids.push(match[1]);
+  }
+  if (!ids.length) {
+    return body;
+  }
+  const suffix = "suffix" + (Math.random() * 16777216 | Date.now()).toString(16);
+  ids.forEach((id) => {
+    const newID = typeof prefix === "function" ? prefix(id) : prefix + (counter++).toString();
+    const escapedID = id.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    body = body.replace(
+      // Allowed characters before id: [#;"]
+      // Allowed characters after id: [)"], .[a-z]
+      new RegExp('([#;"])(' + escapedID + ')([")]|\\.[a-z])', "g"),
+      "$1" + newID + suffix + "$3"
+    );
+  });
+  body = body.replace(new RegExp(suffix, "g"), "");
+  return body;
+}
+
+const storage = /* @__PURE__ */ Object.create(null);
+function setAPIModule(provider, item) {
+  storage[provider] = item;
+}
+function getAPIModule(provider) {
+  return storage[provider] || storage[""];
+}
+
+function createAPIConfig(source) {
+  let resources;
+  if (typeof source.resources === "string") {
+    resources = [source.resources];
+  } else {
+    resources = source.resources;
+    if (!(resources instanceof Array) || !resources.length) {
+      return null;
+    }
+  }
+  const result = {
+    // API hosts
+    resources,
+    // Root path
+    path: source.path || "/",
+    // URL length limit
+    maxURL: source.maxURL || 500,
+    // Timeout before next host is used.
+    rotate: source.rotate || 750,
+    // Timeout before failing query.
+    timeout: source.timeout || 5e3,
+    // Randomise default API end point.
+    random: source.random === true,
+    // Start index
+    index: source.index || 0,
+    // Receive data after time out (used if time out kicks in first, then API module sends data anyway).
+    dataAfterTimeout: source.dataAfterTimeout !== false
+  };
+  return result;
+}
+const configStorage = /* @__PURE__ */ Object.create(null);
+const fallBackAPISources = [
+  "https://api.simplesvg.com",
+  "https://api.unisvg.com"
+];
+const fallBackAPI = [];
+while (fallBackAPISources.length > 0) {
+  if (fallBackAPISources.length === 1) {
+    fallBackAPI.push(fallBackAPISources.shift());
+  } else {
+    if (Math.random() > 0.5) {
+      fallBackAPI.push(fallBackAPISources.shift());
+    } else {
+      fallBackAPI.push(fallBackAPISources.pop());
+    }
+  }
+}
+configStorage[""] = createAPIConfig({
+  resources: ["https://api.iconify.design"].concat(fallBackAPI)
+});
+function addAPIProvider(provider, customConfig) {
+  const config = createAPIConfig(customConfig);
+  if (config === null) {
+    return false;
+  }
+  configStorage[provider] = config;
+  return true;
+}
+function getAPIConfig(provider) {
+  return configStorage[provider];
+}
+function listAPIProviders() {
+  return Object.keys(configStorage);
+}
+
+const detectFetch = () => {
+  let callback;
+  try {
+    callback = fetch;
+    if (typeof callback === "function") {
+      return callback;
+    }
+  } catch (err) {
+  }
+};
+let fetchModule = detectFetch();
+function setFetch(fetch2) {
+  fetchModule = fetch2;
+}
+function getFetch() {
+  return fetchModule;
+}
+function calculateMaxLength(provider, prefix) {
+  const config = getAPIConfig(provider);
+  if (!config) {
+    return 0;
+  }
+  let result;
+  if (!config.maxURL) {
+    result = 0;
+  } else {
+    let maxHostLength = 0;
+    config.resources.forEach((item) => {
+      const host = item;
+      maxHostLength = Math.max(maxHostLength, host.length);
+    });
+    const url = prefix + ".json?icons=";
+    result = config.maxURL - maxHostLength - config.path.length - url.length;
+  }
+  return result;
+}
+function shouldAbort(status) {
+  return status === 404;
+}
+const prepare = (provider, prefix, icons) => {
+  const results = [];
+  const maxLength = calculateMaxLength(provider, prefix);
+  const type = "icons";
+  let item = {
+    type,
+    provider,
+    prefix,
+    icons: []
+  };
+  let length = 0;
+  icons.forEach((name, index) => {
+    length += name.length + 1;
+    if (length >= maxLength && index > 0) {
+      results.push(item);
+      item = {
+        type,
+        provider,
+        prefix,
+        icons: []
+      };
+      length = name.length;
+    }
+    item.icons.push(name);
+  });
+  results.push(item);
+  return results;
+};
+function getPath(provider) {
+  if (typeof provider === "string") {
+    const config = getAPIConfig(provider);
+    if (config) {
+      return config.path;
+    }
+  }
+  return "/";
+}
+const send = (host, params, callback) => {
+  if (!fetchModule) {
+    callback("abort", 424);
+    return;
+  }
+  let path = getPath(params.provider);
+  switch (params.type) {
+    case "icons": {
+      const prefix = params.prefix;
+      const icons = params.icons;
+      const iconsList = icons.join(",");
+      const urlParams = new URLSearchParams({
+        icons: iconsList
+      });
+      path += prefix + ".json?" + urlParams.toString();
+      break;
+    }
+    case "custom": {
+      const uri = params.uri;
+      path += uri.slice(0, 1) === "/" ? uri.slice(1) : uri;
+      break;
+    }
+    default:
+      callback("abort", 400);
+      return;
+  }
+  let defaultError = 503;
+  fetchModule(host + path).then((response) => {
+    const status = response.status;
+    if (status !== 200) {
+      setTimeout(() => {
+        callback(shouldAbort(status) ? "abort" : "next", status);
+      });
+      return;
+    }
+    defaultError = 501;
+    return response.json();
+  }).then((data) => {
+    if (typeof data !== "object" || data === null) {
+      setTimeout(() => {
+        if (data === 404) {
+          callback("abort", data);
+        } else {
+          callback("next", defaultError);
+        }
+      });
+      return;
+    }
+    setTimeout(() => {
+      callback("success", data);
+    });
+  }).catch(() => {
+    callback("next", defaultError);
+  });
+};
+const fetchAPIModule = {
+  prepare,
+  send
+};
+
+function sortIcons(icons) {
+  const result = {
+    loaded: [],
+    missing: [],
+    pending: []
+  };
+  const storage = /* @__PURE__ */ Object.create(null);
+  icons.sort((a, b) => {
+    if (a.provider !== b.provider) {
+      return a.provider.localeCompare(b.provider);
+    }
+    if (a.prefix !== b.prefix) {
+      return a.prefix.localeCompare(b.prefix);
+    }
+    return a.name.localeCompare(b.name);
+  });
+  let lastIcon = {
+    provider: "",
+    prefix: "",
+    name: ""
+  };
+  icons.forEach((icon) => {
+    if (lastIcon.name === icon.name && lastIcon.prefix === icon.prefix && lastIcon.provider === icon.provider) {
+      return;
+    }
+    lastIcon = icon;
+    const provider = icon.provider;
+    const prefix = icon.prefix;
+    const name = icon.name;
+    const providerStorage = storage[provider] || (storage[provider] = /* @__PURE__ */ Object.create(null));
+    const localStorage = providerStorage[prefix] || (providerStorage[prefix] = getStorage(provider, prefix));
+    let list;
+    if (name in localStorage.icons) {
+      list = result.loaded;
+    } else if (prefix === "" || localStorage.missing.has(name)) {
+      list = result.missing;
+    } else {
+      list = result.pending;
+    }
+    const item = {
+      provider,
+      prefix,
+      name
+    };
+    list.push(item);
+  });
+  return result;
+}
+
+function removeCallback(storages, id) {
+  storages.forEach((storage) => {
+    const items = storage.loaderCallbacks;
+    if (items) {
+      storage.loaderCallbacks = items.filter((row) => row.id !== id);
+    }
+  });
+}
+function updateCallbacks(storage) {
+  if (!storage.pendingCallbacksFlag) {
+    storage.pendingCallbacksFlag = true;
+    setTimeout(() => {
+      storage.pendingCallbacksFlag = false;
+      const items = storage.loaderCallbacks ? storage.loaderCallbacks.slice(0) : [];
+      if (!items.length) {
+        return;
+      }
+      let hasPending = false;
+      const provider = storage.provider;
+      const prefix = storage.prefix;
+      items.forEach((item) => {
+        const icons = item.icons;
+        const oldLength = icons.pending.length;
+        icons.pending = icons.pending.filter((icon) => {
+          if (icon.prefix !== prefix) {
+            return true;
+          }
+          const name = icon.name;
+          if (storage.icons[name]) {
+            icons.loaded.push({
+              provider,
+              prefix,
+              name
+            });
+          } else if (storage.missing.has(name)) {
+            icons.missing.push({
+              provider,
+              prefix,
+              name
+            });
+          } else {
+            hasPending = true;
+            return true;
+          }
+          return false;
+        });
+        if (icons.pending.length !== oldLength) {
+          if (!hasPending) {
+            removeCallback([storage], item.id);
+          }
+          item.callback(
+            icons.loaded.slice(0),
+            icons.missing.slice(0),
+            icons.pending.slice(0),
+            item.abort
+          );
+        }
+      });
+    });
+  }
+}
+let idCounter = 0;
+function storeCallback(callback, icons, pendingSources) {
+  const id = idCounter++;
+  const abort = removeCallback.bind(null, pendingSources, id);
+  if (!icons.pending.length) {
+    return abort;
+  }
+  const item = {
+    id,
+    icons,
+    callback,
+    abort
+  };
+  pendingSources.forEach((storage) => {
+    (storage.loaderCallbacks || (storage.loaderCallbacks = [])).push(item);
+  });
+  return abort;
+}
+
+function listToIcons(list, validate = true, simpleNames = false) {
+  const result = [];
+  list.forEach((item) => {
+    const icon = typeof item === "string" ? stringToIcon(item, validate, simpleNames) : item;
+    if (icon) {
+      result.push(icon);
+    }
+  });
+  return result;
+}
+
+// src/config.ts
+var defaultConfig = {
+  resources: [],
+  index: 0,
+  timeout: 2e3,
+  rotate: 750,
+  random: false,
+  dataAfterTimeout: false
+};
+
+// src/query.ts
+function sendQuery(config, payload, query, done) {
+  const resourcesCount = config.resources.length;
+  const startIndex = config.random ? Math.floor(Math.random() * resourcesCount) : config.index;
+  let resources;
+  if (config.random) {
+    let list = config.resources.slice(0);
+    resources = [];
+    while (list.length > 1) {
+      const nextIndex = Math.floor(Math.random() * list.length);
+      resources.push(list[nextIndex]);
+      list = list.slice(0, nextIndex).concat(list.slice(nextIndex + 1));
+    }
+    resources = resources.concat(list);
+  } else {
+    resources = config.resources.slice(startIndex).concat(config.resources.slice(0, startIndex));
+  }
+  const startTime = Date.now();
+  let status = "pending";
+  let queriesSent = 0;
+  let lastError;
+  let timer = null;
+  let queue = [];
+  let doneCallbacks = [];
+  if (typeof done === "function") {
+    doneCallbacks.push(done);
+  }
+  function resetTimer() {
+    if (timer) {
+      clearTimeout(timer);
+      timer = null;
+    }
+  }
+  function abort() {
+    if (status === "pending") {
+      status = "aborted";
+    }
+    resetTimer();
+    queue.forEach((item) => {
+      if (item.status === "pending") {
+        item.status = "aborted";
+      }
+    });
+    queue = [];
+  }
+  function subscribe(callback, overwrite) {
+    if (overwrite) {
+      doneCallbacks = [];
+    }
+    if (typeof callback === "function") {
+      doneCallbacks.push(callback);
+    }
+  }
+  function getQueryStatus() {
+    return {
+      startTime,
+      payload,
+      status,
+      queriesSent,
+      queriesPending: queue.length,
+      subscribe,
+      abort
+    };
+  }
+  function failQuery() {
+    status = "failed";
+    doneCallbacks.forEach((callback) => {
+      callback(void 0, lastError);
+    });
+  }
+  function clearQueue() {
+    queue.forEach((item) => {
+      if (item.status === "pending") {
+        item.status = "aborted";
+      }
+    });
+    queue = [];
+  }
+  function moduleResponse(item, response, data) {
+    const isError = response !== "success";
+    queue = queue.filter((queued) => queued !== item);
+    switch (status) {
+      case "pending":
+        break;
+      case "failed":
+        if (isError || !config.dataAfterTimeout) {
+          return;
+        }
+        break;
+      default:
+        return;
+    }
+    if (response === "abort") {
+      lastError = data;
+      failQuery();
+      return;
+    }
+    if (isError) {
+      lastError = data;
+      if (!queue.length) {
+        if (!resources.length) {
+          failQuery();
+        } else {
+          execNext();
+        }
+      }
+      return;
+    }
+    resetTimer();
+    clearQueue();
+    if (!config.random) {
+      const index = config.resources.indexOf(item.resource);
+      if (index !== -1 && index !== config.index) {
+        config.index = index;
+      }
+    }
+    status = "completed";
+    doneCallbacks.forEach((callback) => {
+      callback(data);
+    });
+  }
+  function execNext() {
+    if (status !== "pending") {
+      return;
+    }
+    resetTimer();
+    const resource = resources.shift();
+    if (resource === void 0) {
+      if (queue.length) {
+        timer = setTimeout(() => {
+          resetTimer();
+          if (status === "pending") {
+            clearQueue();
+            failQuery();
+          }
+        }, config.timeout);
+        return;
+      }
+      failQuery();
+      return;
+    }
+    const item = {
+      status: "pending",
+      resource,
+      callback: (status2, data) => {
+        moduleResponse(item, status2, data);
+      }
+    };
+    queue.push(item);
+    queriesSent++;
+    timer = setTimeout(execNext, config.rotate);
+    query(resource, payload, item.callback);
+  }
+  setTimeout(execNext);
+  return getQueryStatus;
+}
+
+// src/index.ts
+function initRedundancy(cfg) {
+  const config = {
+    ...defaultConfig,
+    ...cfg
+  };
+  let queries = [];
+  function cleanup() {
+    queries = queries.filter((item) => item().status === "pending");
+  }
+  function query(payload, queryCallback, doneCallback) {
+    const query2 = sendQuery(
+      config,
+      payload,
+      queryCallback,
+      (data, error) => {
+        cleanup();
+        if (doneCallback) {
+          doneCallback(data, error);
+        }
+      }
+    );
+    queries.push(query2);
+    return query2;
+  }
+  function find(callback) {
+    return queries.find((value) => {
+      return callback(value);
+    }) || null;
+  }
+  const instance = {
+    query,
+    find,
+    setIndex: (index) => {
+      config.index = index;
+    },
+    getIndex: () => config.index,
+    cleanup
+  };
+  return instance;
+}
+
+function emptyCallback$1() {
+}
+const redundancyCache = /* @__PURE__ */ Object.create(null);
+function getRedundancyCache(provider) {
+  if (!redundancyCache[provider]) {
+    const config = getAPIConfig(provider);
+    if (!config) {
+      return;
+    }
+    const redundancy = initRedundancy(config);
+    const cachedReundancy = {
+      config,
+      redundancy
+    };
+    redundancyCache[provider] = cachedReundancy;
+  }
+  return redundancyCache[provider];
+}
+function sendAPIQuery(target, query, callback) {
+  let redundancy;
+  let send;
+  if (typeof target === "string") {
+    const api = getAPIModule(target);
+    if (!api) {
+      callback(void 0, 424);
+      return emptyCallback$1;
+    }
+    send = api.send;
+    const cached = getRedundancyCache(target);
+    if (cached) {
+      redundancy = cached.redundancy;
+    }
+  } else {
+    const config = createAPIConfig(target);
+    if (config) {
+      redundancy = initRedundancy(config);
+      const moduleKey = target.resources ? target.resources[0] : "";
+      const api = getAPIModule(moduleKey);
+      if (api) {
+        send = api.send;
+      }
+    }
+  }
+  if (!redundancy || !send) {
+    callback(void 0, 424);
+    return emptyCallback$1;
+  }
+  return redundancy.query(query, send, callback)().abort;
+}
+
+const browserCacheVersion = "iconify2";
+const browserCachePrefix = "iconify";
+const browserCacheCountKey = browserCachePrefix + "-count";
+const browserCacheVersionKey = browserCachePrefix + "-version";
+const browserStorageHour = 36e5;
+const browserStorageCacheExpiration = 168;
+
+function getStoredItem(func, key) {
+  try {
+    return func.getItem(key);
+  } catch (err) {
+  }
+}
+function setStoredItem(func, key, value) {
+  try {
+    func.setItem(key, value);
+    return true;
+  } catch (err) {
+  }
+}
+function removeStoredItem(func, key) {
+  try {
+    func.removeItem(key);
+  } catch (err) {
+  }
+}
+
+function setBrowserStorageItemsCount(storage, value) {
+  return setStoredItem(storage, browserCacheCountKey, value.toString());
+}
+function getBrowserStorageItemsCount(storage) {
+  return parseInt(getStoredItem(storage, browserCacheCountKey)) || 0;
+}
+
+const browserStorageConfig = {
+  local: true,
+  session: true
+};
+const browserStorageEmptyItems = {
+  local: /* @__PURE__ */ new Set(),
+  session: /* @__PURE__ */ new Set()
+};
+let browserStorageStatus = false;
+function setBrowserStorageStatus(status) {
+  browserStorageStatus = status;
+}
+
+let _window = typeof window === "undefined" ? {} : window;
+function getBrowserStorage(key) {
+  const attr = key + "Storage";
+  try {
+    if (_window && _window[attr] && typeof _window[attr].length === "number") {
+      return _window[attr];
+    }
+  } catch (err) {
+  }
+  browserStorageConfig[key] = false;
+}
+
+function iterateBrowserStorage(key, callback) {
+  const func = getBrowserStorage(key);
+  if (!func) {
+    return;
+  }
+  const version = getStoredItem(func, browserCacheVersionKey);
+  if (version !== browserCacheVersion) {
+    if (version) {
+      const total2 = getBrowserStorageItemsCount(func);
+      for (let i = 0; i < total2; i++) {
+        removeStoredItem(func, browserCachePrefix + i.toString());
+      }
+    }
+    setStoredItem(func, browserCacheVersionKey, browserCacheVersion);
+    setBrowserStorageItemsCount(func, 0);
+    return;
+  }
+  const minTime = Math.floor(Date.now() / browserStorageHour) - browserStorageCacheExpiration;
+  const parseItem = (index) => {
+    const name = browserCachePrefix + index.toString();
+    const item = getStoredItem(func, name);
+    if (typeof item !== "string") {
+      return;
+    }
+    try {
+      const data = JSON.parse(item);
+      if (typeof data === "object" && typeof data.cached === "number" && data.cached > minTime && typeof data.provider === "string" && typeof data.data === "object" && typeof data.data.prefix === "string" && // Valid item: run callback
+      callback(data, index)) {
+        return true;
+      }
+    } catch (err) {
+    }
+    removeStoredItem(func, name);
+  };
+  let total = getBrowserStorageItemsCount(func);
+  for (let i = total - 1; i >= 0; i--) {
+    if (!parseItem(i)) {
+      if (i === total - 1) {
+        total--;
+        setBrowserStorageItemsCount(func, total);
+      } else {
+        browserStorageEmptyItems[key].add(i);
+      }
+    }
+  }
+}
+
+function initBrowserStorage() {
+  if (browserStorageStatus) {
+    return;
+  }
+  setBrowserStorageStatus(true);
+  for (const key in browserStorageConfig) {
+    iterateBrowserStorage(key, (item) => {
+      const iconSet = item.data;
+      const provider = item.provider;
+      const prefix = iconSet.prefix;
+      const storage = getStorage(
+        provider,
+        prefix
+      );
+      if (!addIconSet(storage, iconSet).length) {
+        return false;
+      }
+      const lastModified = iconSet.lastModified || -1;
+      storage.lastModifiedCached = storage.lastModifiedCached ? Math.min(storage.lastModifiedCached, lastModified) : lastModified;
+      return true;
+    });
+  }
+}
+
+function updateLastModified(storage, lastModified) {
+  const lastValue = storage.lastModifiedCached;
+  if (
+    // Matches or newer
+    lastValue && lastValue >= lastModified
+  ) {
+    return lastValue === lastModified;
+  }
+  storage.lastModifiedCached = lastModified;
+  if (lastValue) {
+    for (const key in browserStorageConfig) {
+      iterateBrowserStorage(key, (item) => {
+        const iconSet = item.data;
+        return item.provider !== storage.provider || iconSet.prefix !== storage.prefix || iconSet.lastModified === lastModified;
+      });
+    }
+  }
+  return true;
+}
+function storeInBrowserStorage(storage, data) {
+  if (!browserStorageStatus) {
+    initBrowserStorage();
+  }
+  function store(key) {
+    let func;
+    if (!browserStorageConfig[key] || !(func = getBrowserStorage(key))) {
+      return;
+    }
+    const set = browserStorageEmptyItems[key];
+    let index;
+    if (set.size) {
+      set.delete(index = Array.from(set).shift());
+    } else {
+      index = getBrowserStorageItemsCount(func);
+      if (!setBrowserStorageItemsCount(func, index + 1)) {
+        return;
+      }
+    }
+    const item = {
+      cached: Math.floor(Date.now() / browserStorageHour),
+      provider: storage.provider,
+      data
+    };
+    return setStoredItem(
+      func,
+      browserCachePrefix + index.toString(),
+      JSON.stringify(item)
+    );
+  }
+  if (data.lastModified && !updateLastModified(storage, data.lastModified)) {
+    return;
+  }
+  if (!Object.keys(data.icons).length) {
+    return;
+  }
+  if (data.not_found) {
+    data = Object.assign({}, data);
+    delete data.not_found;
+  }
+  if (!store("local")) {
+    store("session");
+  }
+}
+
+function emptyCallback() {
+}
+function loadedNewIcons(storage) {
+  if (!storage.iconsLoaderFlag) {
+    storage.iconsLoaderFlag = true;
+    setTimeout(() => {
+      storage.iconsLoaderFlag = false;
+      updateCallbacks(storage);
+    });
+  }
+}
+function loadNewIcons(storage, icons) {
+  if (!storage.iconsToLoad) {
+    storage.iconsToLoad = icons;
+  } else {
+    storage.iconsToLoad = storage.iconsToLoad.concat(icons).sort();
+  }
+  if (!storage.iconsQueueFlag) {
+    storage.iconsQueueFlag = true;
+    setTimeout(() => {
+      storage.iconsQueueFlag = false;
+      const { provider, prefix } = storage;
+      const icons2 = storage.iconsToLoad;
+      delete storage.iconsToLoad;
+      let api;
+      if (!icons2 || !(api = getAPIModule(provider))) {
+        return;
+      }
+      const params = api.prepare(provider, prefix, icons2);
+      params.forEach((item) => {
+        sendAPIQuery(provider, item, (data) => {
+          if (typeof data !== "object") {
+            item.icons.forEach((name) => {
+              storage.missing.add(name);
+            });
+          } else {
+            try {
+              const parsed = addIconSet(
+                storage,
+                data
+              );
+              if (!parsed.length) {
+                return;
+              }
+              const pending = storage.pendingIcons;
+              if (pending) {
+                parsed.forEach((name) => {
+                  pending.delete(name);
+                });
+              }
+              storeInBrowserStorage(storage, data);
+            } catch (err) {
+              console.error(err);
+            }
+          }
+          loadedNewIcons(storage);
+        });
+      });
+    });
+  }
+}
+const loadIcons = (icons, callback) => {
+  const cleanedIcons = listToIcons(icons, true, allowSimpleNames());
+  const sortedIcons = sortIcons(cleanedIcons);
+  if (!sortedIcons.pending.length) {
+    let callCallback = true;
+    if (callback) {
+      setTimeout(() => {
+        if (callCallback) {
+          callback(
+            sortedIcons.loaded,
+            sortedIcons.missing,
+            sortedIcons.pending,
+            emptyCallback
+          );
+        }
+      });
+    }
+    return () => {
+      callCallback = false;
+    };
+  }
+  const newIcons = /* @__PURE__ */ Object.create(null);
+  const sources = [];
+  let lastProvider, lastPrefix;
+  sortedIcons.pending.forEach((icon) => {
+    const { provider, prefix } = icon;
+    if (prefix === lastPrefix && provider === lastProvider) {
+      return;
+    }
+    lastProvider = provider;
+    lastPrefix = prefix;
+    sources.push(getStorage(provider, prefix));
+    const providerNewIcons = newIcons[provider] || (newIcons[provider] = /* @__PURE__ */ Object.create(null));
+    if (!providerNewIcons[prefix]) {
+      providerNewIcons[prefix] = [];
+    }
+  });
+  sortedIcons.pending.forEach((icon) => {
+    const { provider, prefix, name } = icon;
+    const storage = getStorage(provider, prefix);
+    const pendingQueue = storage.pendingIcons || (storage.pendingIcons = /* @__PURE__ */ new Set());
+    if (!pendingQueue.has(name)) {
+      pendingQueue.add(name);
+      newIcons[provider][prefix].push(name);
+    }
+  });
+  sources.forEach((storage) => {
+    const { provider, prefix } = storage;
+    if (newIcons[provider][prefix].length) {
+      loadNewIcons(storage, newIcons[provider][prefix]);
+    }
+  });
+  return callback ? storeCallback(callback, sortedIcons, sources) : emptyCallback;
+};
+const loadIcon = (icon) => {
+  return new Promise((fulfill, reject) => {
+    const iconObj = typeof icon === "string" ? stringToIcon(icon, true) : icon;
+    if (!iconObj) {
+      reject(icon);
+      return;
+    }
+    loadIcons([iconObj || icon], (loaded) => {
+      if (loaded.length && iconObj) {
+        const data = getIconData(iconObj);
+        if (data) {
+          fulfill({
+            ...defaultIconProps,
+            ...data
+          });
+          return;
+        }
+      }
+      reject(icon);
+    });
+  });
+};
+
+function toggleBrowserCache(storage, value) {
+  switch (storage) {
+    case "local":
+    case "session":
+      browserStorageConfig[storage] = value;
+      break;
+    case "all":
+      for (const key in browserStorageConfig) {
+        browserStorageConfig[key] = value;
+      }
+      break;
+  }
+}
+
+function mergeCustomisations(defaults, item) {
+  const result = {
+    ...defaults
+  };
+  for (const key in item) {
+    const value = item[key];
+    const valueType = typeof value;
+    if (key in defaultIconSizeCustomisations) {
+      if (value === null || value && (valueType === "string" || valueType === "number")) {
+        result[key] = value;
+      }
+    } else if (valueType === typeof result[key]) {
+      result[key] = key === "rotate" ? value % 4 : value;
+    }
+  }
+  return result;
+}
+
+const separator = /[\s,]+/;
+function flipFromString(custom, flip) {
+  flip.split(separator).forEach((str) => {
+    const value = str.trim();
+    switch (value) {
+      case "horizontal":
+        custom.hFlip = true;
+        break;
+      case "vertical":
+        custom.vFlip = true;
+        break;
+    }
+  });
+}
+
+function rotateFromString(value, defaultValue = 0) {
+  const units = value.replace(/^-?[0-9.]*/, "");
+  function cleanup(value2) {
+    while (value2 < 0) {
+      value2 += 4;
+    }
+    return value2 % 4;
+  }
+  if (units === "") {
+    const num = parseInt(value);
+    return isNaN(num) ? 0 : cleanup(num);
+  } else if (units !== value) {
+    let split = 0;
+    switch (units) {
+      case "%":
+        split = 25;
+        break;
+      case "deg":
+        split = 90;
+    }
+    if (split) {
+      let num = parseFloat(value.slice(0, value.length - units.length));
+      if (isNaN(num)) {
+        return 0;
+      }
+      num = num / split;
+      return num % 1 === 0 ? cleanup(num) : 0;
+    }
+  }
+  return defaultValue;
+}
+
+function iconToHTML(body, attributes) {
+  let renderAttribsHTML = body.indexOf("xlink:") === -1 ? "" : ' xmlns:xlink="http://www.w3.org/1999/xlink"';
+  for (const attr in attributes) {
+    renderAttribsHTML += " " + attr + '="' + attributes[attr] + '"';
+  }
+  return '<svg xmlns="http://www.w3.org/2000/svg"' + renderAttribsHTML + ">" + body + "</svg>";
+}
+
+function encodeSVGforURL(svg) {
+  return svg.replace(/"/g, "'").replace(/%/g, "%25").replace(/#/g, "%23").replace(/</g, "%3C").replace(/>/g, "%3E").replace(/\s+/g, " ");
+}
+function svgToData(svg) {
+  return "data:image/svg+xml," + encodeSVGforURL(svg);
+}
+function svgToURL(svg) {
+  return 'url("' + svgToData(svg) + '")';
+}
+
+let policy;
+function createPolicy() {
+  try {
+    policy = window.trustedTypes.createPolicy("iconify", {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+      createHTML: (s) => s
+    });
+  } catch (err) {
+    policy = null;
+  }
+}
+function cleanUpInnerHTML(html) {
+  if (policy === void 0) {
+    createPolicy();
+  }
+  return policy ? policy.createHTML(html) : html;
+}
+
+const defaultExtendedIconCustomisations = {
+    ...defaultIconCustomisations,
+    inline: false,
+};
+
+/**
+ * Default SVG attributes
+ */
+const svgDefaults = {
+    'xmlns': 'http://www.w3.org/2000/svg',
+    'xmlnsXlink': 'http://www.w3.org/1999/xlink',
+    'aria-hidden': true,
+    'role': 'img',
+};
+/**
+ * Style modes
+ */
+const commonProps = {
+    display: 'inline-block',
+};
+const monotoneProps = {
+    backgroundColor: 'currentColor',
+};
+const coloredProps = {
+    backgroundColor: 'transparent',
+};
+// Dynamically add common props to variables above
+const propsToAdd = {
+    Image: 'var(--svg)',
+    Repeat: 'no-repeat',
+    Size: '100% 100%',
+};
+const propsToAddTo = {
+    WebkitMask: monotoneProps,
+    mask: monotoneProps,
+    background: coloredProps,
+};
+for (const prefix in propsToAddTo) {
+    const list = propsToAddTo[prefix];
+    for (const prop in propsToAdd) {
+        list[prefix + prop] = propsToAdd[prop];
+    }
+}
+/**
+ * Default values for customisations for inline icon
+ */
+const inlineDefaults = {
+    ...defaultExtendedIconCustomisations,
+    inline: true,
+};
+/**
+ * Fix size: add 'px' to numbers
+ */
+function fixSize(value) {
+    return value + (value.match(/^[-0-9.]+$/) ? 'px' : '');
+}
+/**
+ * Render icon
+ */
+const render = (
+// Icon must be validated before calling this function
+icon, 
+// Partial properties
+props, 
+// True if icon should have vertical-align added
+inline, 
+// Optional reference for SVG/SPAN, extracted by React.forwardRef()
+ref) => {
+    // Get default properties
+    const defaultProps = inline
+        ? inlineDefaults
+        : defaultExtendedIconCustomisations;
+    // Get all customisations
+    const customisations = mergeCustomisations(defaultProps, props);
+    // Check mode
+    const mode = props.mode || 'svg';
+    // Create style
+    const style = {};
+    const customStyle = props.style || {};
+    // Create SVG component properties
+    const componentProps = {
+        ...(mode === 'svg' ? svgDefaults : {}),
+        ref,
+    };
+    // Get element properties
+    for (let key in props) {
+        const value = props[key];
+        if (value === void 0) {
+            continue;
+        }
+        switch (key) {
+            // Properties to ignore
+            case 'icon':
+            case 'style':
+            case 'children':
+            case 'onLoad':
+            case 'mode':
+            case '_ref':
+            case '_inline':
+                break;
+            // Boolean attributes
+            case 'inline':
+            case 'hFlip':
+            case 'vFlip':
+                customisations[key] =
+                    value === true || value === 'true' || value === 1;
+                break;
+            // Flip as string: 'horizontal,vertical'
+            case 'flip':
+                if (typeof value === 'string') {
+                    flipFromString(customisations, value);
+                }
+                break;
+            // Color: copy to style
+            case 'color':
+                style.color = value;
+                break;
+            // Rotation as string
+            case 'rotate':
+                if (typeof value === 'string') {
+                    customisations[key] = rotateFromString(value);
+                }
+                else if (typeof value === 'number') {
+                    customisations[key] = value;
+                }
+                break;
+            // Remove aria-hidden
+            case 'ariaHidden':
+            case 'aria-hidden':
+                if (value !== true && value !== 'true') {
+                    delete componentProps['aria-hidden'];
+                }
+                break;
+            // Copy missing property if it does not exist in customisations
+            default:
+                if (defaultProps[key] === void 0) {
+                    componentProps[key] = value;
+                }
+        }
+    }
+    // Generate icon
+    const item = iconToSVG(icon, customisations);
+    const renderAttribs = item.attributes;
+    // Inline display
+    if (customisations.inline) {
+        style.verticalAlign = '-0.125em';
+    }
+    if (mode === 'svg') {
+        // Add style
+        componentProps.style = {
+            ...style,
+            ...customStyle,
+        };
+        // Add icon stuff
+        Object.assign(componentProps, renderAttribs);
+        // Counter for ids based on "id" property to render icons consistently on server and client
+        let localCounter = 0;
+        let id = props.id;
+        if (typeof id === 'string') {
+            // Convert '-' to '_' to avoid errors in animations
+            id = id.replace(/-/g, '_');
+        }
+        // Add icon stuff
+        componentProps.dangerouslySetInnerHTML = {
+            __html: cleanUpInnerHTML(replaceIDs(item.body, id ? () => id + 'ID' + localCounter++ : 'iconifyReact')),
+        };
+        return react__WEBPACK_IMPORTED_MODULE_0__.createElement('svg', componentProps);
+    }
+    // Render <span> with style
+    const { body, width, height } = icon;
+    const useMask = mode === 'mask' ||
+        (mode === 'bg' ? false : body.indexOf('currentColor') !== -1);
+    // Generate SVG
+    const html = iconToHTML(body, {
+        ...renderAttribs,
+        width: width + '',
+        height: height + '',
+    });
+    // Generate style
+    componentProps.style = {
+        ...style,
+        '--svg': svgToURL(html),
+        'width': fixSize(renderAttribs.width),
+        'height': fixSize(renderAttribs.height),
+        ...commonProps,
+        ...(useMask ? monotoneProps : coloredProps),
+        ...customStyle,
+    };
+    return react__WEBPACK_IMPORTED_MODULE_0__.createElement('span', componentProps);
+};
+
+/**
+ * Enable cache
+ */
+function enableCache(storage) {
+    toggleBrowserCache(storage, true);
+}
+/**
+ * Disable cache
+ */
+function disableCache(storage) {
+    toggleBrowserCache(storage, false);
+}
+/**
+ * Initialise stuff
+ */
+// Enable short names
+allowSimpleNames(true);
+// Set API module
+setAPIModule('', fetchAPIModule);
+/**
+ * Browser stuff
+ */
+if (typeof document !== 'undefined' && typeof window !== 'undefined') {
+    // Set cache and load existing cache
+    initBrowserStorage();
+    const _window = window;
+    // Load icons from global "IconifyPreload"
+    if (_window.IconifyPreload !== void 0) {
+        const preload = _window.IconifyPreload;
+        const err = 'Invalid IconifyPreload syntax.';
+        if (typeof preload === 'object' && preload !== null) {
+            (preload instanceof Array ? preload : [preload]).forEach((item) => {
+                try {
+                    if (
+                    // Check if item is an object and not null/array
+                    typeof item !== 'object' ||
+                        item === null ||
+                        item instanceof Array ||
+                        // Check for 'icons' and 'prefix'
+                        typeof item.icons !== 'object' ||
+                        typeof item.prefix !== 'string' ||
+                        // Add icon set
+                        !addCollection(item)) {
+                        console.error(err);
+                    }
+                }
+                catch (e) {
+                    console.error(err);
+                }
+            });
+        }
+    }
+    // Set API from global "IconifyProviders"
+    if (_window.IconifyProviders !== void 0) {
+        const providers = _window.IconifyProviders;
+        if (typeof providers === 'object' && providers !== null) {
+            for (let key in providers) {
+                const err = 'IconifyProviders[' + key + '] is invalid.';
+                try {
+                    const value = providers[key];
+                    if (typeof value !== 'object' ||
+                        !value ||
+                        value.resources === void 0) {
+                        continue;
+                    }
+                    if (!addAPIProvider(key, value)) {
+                        console.error(err);
+                    }
+                }
+                catch (e) {
+                    console.error(err);
+                }
+            }
+        }
+    }
+}
+class IconComponent extends react__WEBPACK_IMPORTED_MODULE_0__.Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+            // Render placeholder before component is mounted
+            icon: null,
+        };
+    }
+    /**
+     * Abort loading icon
+     */
+    _abortLoading() {
+        if (this._loading) {
+            this._loading.abort();
+            this._loading = null;
+        }
+    }
+    /**
+     * Update state
+     */
+    _setData(icon) {
+        if (this.state.icon !== icon) {
+            this.setState({
+                icon,
+            });
+        }
+    }
+    /**
+     * Check if icon should be loaded
+     */
+    _checkIcon(changed) {
+        const state = this.state;
+        const icon = this.props.icon;
+        // Icon is an object
+        if (typeof icon === 'object' &&
+            icon !== null &&
+            typeof icon.body === 'string') {
+            // Stop loading
+            this._icon = '';
+            this._abortLoading();
+            if (changed || state.icon === null) {
+                // Set data if it was changed
+                this._setData({
+                    data: icon,
+                });
+            }
+            return;
+        }
+        // Invalid icon?
+        let iconName;
+        if (typeof icon !== 'string' ||
+            (iconName = stringToIcon(icon, false, true)) === null) {
+            this._abortLoading();
+            this._setData(null);
+            return;
+        }
+        // Load icon
+        const data = getIconData(iconName);
+        if (!data) {
+            // Icon data is not available
+            if (!this._loading || this._loading.name !== icon) {
+                // New icon to load
+                this._abortLoading();
+                this._icon = '';
+                this._setData(null);
+                if (data !== null) {
+                    // Icon was not loaded
+                    this._loading = {
+                        name: icon,
+                        abort: loadIcons([iconName], this._checkIcon.bind(this, false)),
+                    };
+                }
+            }
+            return;
+        }
+        // Icon data is available
+        if (this._icon !== icon || state.icon === null) {
+            // New icon or icon has been loaded
+            this._abortLoading();
+            this._icon = icon;
+            // Add classes
+            const classes = ['iconify'];
+            if (iconName.prefix !== '') {
+                classes.push('iconify--' + iconName.prefix);
+            }
+            if (iconName.provider !== '') {
+                classes.push('iconify--' + iconName.provider);
+            }
+            // Set data
+            this._setData({
+                data,
+                classes,
+            });
+            if (this.props.onLoad) {
+                this.props.onLoad(icon);
+            }
+        }
+    }
+    /**
+     * Component mounted
+     */
+    componentDidMount() {
+        this._checkIcon(false);
+    }
+    /**
+     * Component updated
+     */
+    componentDidUpdate(oldProps) {
+        if (oldProps.icon !== this.props.icon) {
+            this._checkIcon(true);
+        }
+    }
+    /**
+     * Abort loading
+     */
+    componentWillUnmount() {
+        this._abortLoading();
+    }
+    /**
+     * Render
+     */
+    render() {
+        const props = this.props;
+        const icon = this.state.icon;
+        if (icon === null) {
+            // Render placeholder
+            return props.children
+                ? props.children
+                : react__WEBPACK_IMPORTED_MODULE_0__.createElement('span', {});
+        }
+        // Add classes
+        let newProps = props;
+        if (icon.classes) {
+            newProps = {
+                ...props,
+                className: (typeof props.className === 'string'
+                    ? props.className + ' '
+                    : '') + icon.classes.join(' '),
+            };
+        }
+        // Render icon
+        return render({
+            ...defaultIconProps,
+            ...icon.data,
+        }, newProps, props._inline, props._ref);
+    }
+}
+/**
+ * Block icon
+ *
+ * @param props - Component properties
+ */
+const Icon = react__WEBPACK_IMPORTED_MODULE_0__.forwardRef(function Icon(props, ref) {
+    const newProps = {
+        ...props,
+        _ref: ref,
+        _inline: false,
+    };
+    return react__WEBPACK_IMPORTED_MODULE_0__.createElement(IconComponent, newProps);
+});
+/**
+ * Inline icon (has negative verticalAlign that makes it behave like icon font)
+ *
+ * @param props - Component properties
+ */
+const InlineIcon = react__WEBPACK_IMPORTED_MODULE_0__.forwardRef(function InlineIcon(props, ref) {
+    const newProps = {
+        ...props,
+        _ref: ref,
+        _inline: true,
+    };
+    return react__WEBPACK_IMPORTED_MODULE_0__.createElement(IconComponent, newProps);
+});
+/**
+ * Internal API
+ */
+const _api = {
+    getAPIConfig,
+    setAPIModule,
+    sendAPIQuery,
+    setFetch,
+    getFetch,
+    listAPIProviders,
+};
+
+
 
 
 /***/ })
@@ -35048,16 +37299,22 @@ var __webpack_exports__ = {};
   \***********************/
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   initClusterViewer: () => (/* binding */ initClusterViewer)
+/* harmony export */   initClusterViewer: () => (/* binding */ initClusterViewer),
+/* harmony export */   initProgressTracker: () => (/* binding */ initProgressTracker)
 /* harmony export */ });
 /* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react/jsx-runtime */ "./node_modules/react/jsx-runtime.js");
 /* harmony import */ var react_dom_client__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react-dom/client */ "./node_modules/react-dom/client.js");
-/* harmony import */ var _ClusterApp__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./ClusterApp */ "./src/ClusterApp.tsx");
+/* harmony import */ var _ClusterApp_components_ClusterApp__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./ClusterApp/components/ClusterApp */ "./src/ClusterApp/components/ClusterApp.tsx");
+/* harmony import */ var _ProgressTracker__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./ProgressTracker */ "./src/ProgressTracker/index.tsx");
+
 
 
 
 function initClusterViewer(target_root, clustering_data, base_media_url, editable, editing, formfield) {
-    (0,react_dom_client__WEBPACK_IMPORTED_MODULE_1__.createRoot)(target_root).render((0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)(_ClusterApp__WEBPACK_IMPORTED_MODULE_2__["default"], { clustering_data: clustering_data, base_url: base_media_url, editable: editable, editing: editing, formfield: formfield }));
+    (0,react_dom_client__WEBPACK_IMPORTED_MODULE_1__.createRoot)(target_root).render((0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)(_ClusterApp_components_ClusterApp__WEBPACK_IMPORTED_MODULE_2__.ClusterApp, { clustering_data: clustering_data, base_url: base_media_url, editable: editable, editing: editing, formfield: formfield }));
+}
+function initProgressTracker(target_root, tracking_url) {
+    (0,react_dom_client__WEBPACK_IMPORTED_MODULE_1__.createRoot)(target_root).render((0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)(_ProgressTracker__WEBPACK_IMPORTED_MODULE_3__.TaskProgressTracker, { tracking_url: tracking_url }));
 }
 
 

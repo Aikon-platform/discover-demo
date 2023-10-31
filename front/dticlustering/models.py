@@ -233,7 +233,7 @@ class DTIClustering(models.Model):
             if c.suffix in [".jpg", ".png"]
         }
 
-        clusters = []
+        clusters = {}
         result_dict["clusters"] = clusters
 
         # List backgrounds
@@ -268,7 +268,7 @@ class DTIClustering(models.Model):
                 "name": f"Cluster {p}", 
                 "images": []
             }
-            clusters.append(cluster)
+            clusters[p] = cluster
 
             # add mask
             cluster["mask_url"] = try_and_get_url(
@@ -298,9 +298,6 @@ class DTIClustering(models.Model):
                     img_data["distance"] = img_ext_data["distance"]
                 
                 cluster["images"].append(img_data)
-
-        # sort clusters by id
-        clusters.sort(key=lambda c: c["id"])
 
         return result_dict
 

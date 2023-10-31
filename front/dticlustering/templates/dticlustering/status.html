@@ -4,6 +4,8 @@
 {% block title %}DTI clustering task #{{ object.name }}-{{ object.id }}{% endblock %}
 
 {% block content %}
+<script type="text/javascript" src="{% static "dist/build.js" %}"></script>
+
 <div class="centerwrap">
     {% if request.user.is_authenticated %}<p class="breadcrumbs"><a href="{% url "dticlustering:list" %}">&lt; clustering list</a></p>{% endif %}
     <h1>DTI Clustering #{{ object.name }}-{{ object.id }}</h1>
@@ -40,7 +42,6 @@
 
 <div id="result" class="cluster-viewer"></div>
     {{ object.expanded_results|json_script:"result_data" }}
-    <script type="text/javascript" src="{% static "dist/build.js" %}"></script>
     <script type="text/javascript">
         let result_data = JSON.parse(document.getElementById("result_data").textContent);
         DemoTools.initClusterViewer(document.getElementById("result"), result_data, "{{ object.result_media_url|escapejs }}/");
@@ -49,54 +50,12 @@
 
     {% else %}
 
-        <p>Status: <span id="status-value">{{ object.status }}</span></p>
-        <div id="progress-wrapper"></div>
-        <pre id="status"></pre>
+        <div id="tracking">
+            <p>Status: {{ object.status }}</p>
+        </div>
+        
         <script type="text/javascript">
-            let $status = document.getElementById("status");
-            let $status_string = document.getElementById("status-value");
-            let $progress_wrapper = document.getElementById("progress-wrapper");
-            const PROGRESS_URL = "{% url "dticlustering:progress" object.id %}";
-            // refresh regularly with fetch
-            function refresh() {
-                fetch(PROGRESS_URL)
-                    .then(response => {setTimeout(refresh, 2000); return response.json()})
-                    .then(data => {
-                        try {
-                            $status_string.innerText = data.status;
-                            if (data.status == "PENDING") {
-                                $status.innerHTML = "\nWaiting for a worker...";
-                                return;
-                            }
-                            $status.innerHTML = data.log.infos.join("\n");
-                            $progress_wrapper.innerHTML = "";
-
-                            if (data.log.progress)
-                                for (let progress of data.log.progress) {
-                                    let $bar_wrapper = document.createElement("div");
-                                    
-                                    let $label = document.createElement("span");
-                                    $label.classList.add("label");
-                                    $label.innerHTML = progress.context + " " + progress.current + "/" + progress.total;
-                                    $bar_wrapper.appendChild($label);
-
-                                    let $bar = document.createElement("progress");
-                                    $bar.classList.add("bar");
-                                    $bar.value = progress.current;
-                                    $bar.max = progress.total;
-                                    $bar_wrapper.appendChild($bar);
-                                    
-                                    $progress_wrapper.appendChild($bar_wrapper);
-                                }
-                        } catch (e){
-                            $status.innerHTML = JSON.stringify(data);
-                        }
-                        if (data.is_finished) {
-                            window.location.reload();
-                        }
-                    });
-            }
-            refresh();
+            DemoTools.initProgressTracker(document.getElementById("tracking"), "{% url "dticlustering:progress" object.id %}");
         </script>
 
     {% endif %}
