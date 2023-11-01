@@ -11,12 +11,11 @@
     <form action="" method="POST">
         {% csrf_token %}
         {{ form.as_p }}
-        <input type="submit" value="Save" />
     </form>
 </div>
 
 <div id="result" class="cluster-viewer"></div>
-    <script type="text/javascript" src="{% static "dist/build.js" %}"></script>
+    <script type="text/javascript" src="{% static "js/build.js" %}"></script>
     <script type="text/javascript">
         console.log(document.getElementById("id_clustering_data"))
         const FORM_FIELD = document.getElementById("id_clustering_data");

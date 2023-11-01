@@ -1,6 +1,7 @@
 import { createRoot } from 'react-dom/client';
 import { ClusterApp } from "./ClusterApp/components/ClusterApp";
 import { TaskProgressTracker } from './ProgressTracker';
+import "./sass/style.scss";
 
 function initClusterViewer(
   target_root: HTMLElement, 

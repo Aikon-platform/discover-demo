@@ -108,7 +108,7 @@ export function ClusterElement(props: ClusterProps) {
       </div>
       <div className="cl-samples">
           {props.editing ?
-          <SelectableImageList images={cluster.images} transformed={transformed} expander={expanderBtn}/> :
+          <SelectableImageList images={cluster.images} transformed={transformed} /> :
           <BasicImageList images={cluster.images} transformed={transformed} limit={expanded ? undefined : N_SHOWN} expander={expanderBtn}/>
           }
       </div>

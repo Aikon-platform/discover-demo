@@ -4,9 +4,9 @@ var webpack = require('webpack')
 module.exports = {
   entry: './src/index.tsx',
   output: {
-    path: path.resolve(__dirname, '../shared/static/dist/'),
-    publicPath: '/static/dist/',
-    filename: 'build.js',
+    path: path.resolve(__dirname, '../shared/static/'),
+    publicPath: '/static/',
+    filename: 'js/build.js',
     library: 'DemoTools',
   },
   plugins: [
@@ -19,16 +19,13 @@ module.exports = {
         exclude: /node_modules/,
       },
       {
-        test: /\.css$/i,
-        use: ['style-loader', 'css-loader'],
-      },
-      {
-        test: /\.(png|svg|jpg|jpeg|gif|ico)$/i,
-        type: 'asset/resource',
-      },
-      {
-        test: /\.(woff|woff2|eot|ttf|otf)$/i,
-        type: 'asset/resource',
+        test: /\.s[ac]ss$/i,
+        exclude: /node_modules/,
+        type: "asset/resource",
+        generator: {
+          filename: "css/style.css",
+        },
+        use: ["sass-loader"],
       },
     ],
   },

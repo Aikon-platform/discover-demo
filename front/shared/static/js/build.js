@@ -35010,7 +35010,7 @@ function ClusterElement(props) {
                                     (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxs)((react__WEBPACK_IMPORTED_MODULE_1___default().Fragment), { children: [(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)(_utils_IconBtn__WEBPACK_IMPORTED_MODULE_5__.IconBtn, { icon: "mdi:merge", label: "Merge with...", onClick: askForMerge }), (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)(_utils_IconBtn__WEBPACK_IMPORTED_MODULE_5__.IconBtn, { icon: "mdi:check-bold", label: "End edition", onClick: () => toggleEdition(false) })] }) :
                                     (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)(_utils_IconBtn__WEBPACK_IMPORTED_MODULE_5__.IconBtn, { icon: "mdi:edit", label: "Edit cluster", onClick: () => toggleEdition(true) }) }), cluster.proto_url &&
                             (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxs)((react__WEBPACK_IMPORTED_MODULE_1___default().Fragment), { children: [(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("p", { children: (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("a", { href: "javascript:void(0);", onClick: () => { setTransformed(!transformed); }, children: transformed ? "Show original images" : "Show transformed prototypes" }) }), (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxs)("div", { className: "cl-proto", children: [(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("img", { src: (editorContext === null || editorContext === void 0 ? void 0 : editorContext.state.base_url) + cluster.proto_url, alt: "cl-proto", className: "prototype" }), cluster.mask_url && false && 0] })] })] }) }), (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("div", { className: "cl-samples", children: props.editing ?
-                    (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)(_ImageLists__WEBPACK_IMPORTED_MODULE_4__.SelectableImageList, { images: cluster.images, transformed: transformed, expander: expanderBtn }) :
+                    (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)(_ImageLists__WEBPACK_IMPORTED_MODULE_4__.SelectableImageList, { images: cluster.images, transformed: transformed }) :
                     (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)(_ImageLists__WEBPACK_IMPORTED_MODULE_4__.BasicImageList, { images: cluster.images, transformed: transformed, limit: expanded ? undefined : N_SHOWN, expander: expanderBtn }) }), editable && !props.editing &&
                 (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxs)("a", { className: "cl-overlay cl-hoveroptions", href: "javascript:void(0)", onClick: () => toggleEdition(true), children: [(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)(_utils_IconBtn__WEBPACK_IMPORTED_MODULE_5__.IconBtn, { icon: "mdi:edit", label: "Edit cluster" }), (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)(_utils_IconBtn__WEBPACK_IMPORTED_MODULE_5__.IconBtn, { icon: "mdi:merge", label: "Merge with...", onClick: (e) => { e.stopPropagation(); askForMerge(); } })] })] }));
 }
@@ -35157,6 +35157,16 @@ function IconBtn(props) {
     return ((0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxs)("a", { className: props.className + (props.disabled ? " disabled" : "") + " btn", href: "javascript:void(0)", onClick: props.onClick, children: [(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)(_iconify_react__WEBPACK_IMPORTED_MODULE_1__.Icon, { icon: props.icon }), props.label && (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("span", { children: props.label })] }));
 }
 
+
+/***/ }),
+
+/***/ "./src/sass/style.scss":
+/*!*****************************!*\
+  !*** ./src/sass/style.scss ***!
+  \*****************************/
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+module.exports = __webpack_require__.p + "css/style.css";
 
 /***/ }),
 
@@ -37291,6 +37301,11 @@ const _api = {
 /******/ 		};
 /******/ 	})();
 /******/ 	
+/******/ 	/* webpack/runtime/publicPath */
+/******/ 	(() => {
+/******/ 		__webpack_require__.p = "/static/";
+/******/ 	})();
+/******/ 	
 /************************************************************************/
 var __webpack_exports__ = {};
 // This entry need to be wrapped in an IIFE because it need to be isolated against other modules in the chunk.
@@ -37307,6 +37322,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var react_dom_client__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react-dom/client */ "./node_modules/react-dom/client.js");
 /* harmony import */ var _ClusterApp_components_ClusterApp__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./ClusterApp/components/ClusterApp */ "./src/ClusterApp/components/ClusterApp.tsx");
 /* harmony import */ var _ProgressTracker__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./ProgressTracker */ "./src/ProgressTracker/index.tsx");
+/* harmony import */ var _sass_style_scss__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./sass/style.scss */ "./src/sass/style.scss");
+
 
 
 
