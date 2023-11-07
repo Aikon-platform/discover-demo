@@ -1,11 +1,11 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { ClusterEditorContext } from "../actions";
 import { Icon } from "@iconify/react";
 import { ClusterInfo, ClusterProps } from "../types";
 import { BasicImageList, SelectableImageList } from "./ImageLists";
 import { IconBtn } from "../../utils/IconBtn";
 
-const N_SHOWN = 10;
+const N_SHOWN = {"grid": 8, "rows": 18};
 
 // Lightweight cluster element for the cluster list
 export function MiniClusterElement(props: { info: ClusterInfo; selected: boolean; onClick?: () => void; }) {
@@ -39,6 +39,10 @@ export function ClusterElement(props: ClusterProps) {
   const cluster = props.info;
   const editable = editorContext?.state.editing;
 
+  const scrollIntoView = () => {
+    setTimeout(() => elRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }), 100);
+  }
+
   const onRenameSubmit = (e: React.SyntheticEvent) => {
     e.preventDefault();
     const val = nameInput.current!.value;
@@ -49,8 +53,8 @@ export function ClusterElement(props: ClusterProps) {
   };
 
   const toggleEdition = (val?: boolean) => {
-    editorContext?.dispatch({ type: "edit_cluster", cluster_id: val ? cluster.id : null});
-    setTimeout(() => elRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }), 100);
+    editorContext?.dispatch({ type: "viewer_focus", cluster_id: val ? cluster.id : null});
+    if (!val) scrollIntoView();
     setRenaming(false);
   };
 
@@ -58,58 +62,75 @@ export function ClusterElement(props: ClusterProps) {
     editorContext?.dispatch({ type: "cluster_ask", cluster_id: cluster.id, for_action: "cluster_merge"})
   };
 
-  const expanderBtn = (cluster.images.length > N_SHOWN && 
-    <a className="cl-more" href="javascript:void(0)" onClick={() => {setExpanded(!expanded)}}>
-      {expanded ? "–" : "+"}{cluster.images.length - N_SHOWN}
+  const n_shown = N_SHOWN[editorContext!.state.viewer_display];
+
+  // if juste expanded or editing, scroll to the element
+  useEffect(() => {
+    if (expanded || props.editing) scrollIntoView();
+  }, [expanded, props.editing]);
+
+  const btnMore = (cluster.images.length > n_shown && 
+    <a className="cl-more" href="javascript:void(0)" onClick={() => {setExpanded(!expanded); scrollIntoView();}}>
+      {expanded ? "–" : "+"}{cluster.images.length - n_shown}
     </a>
   );
 
+  const btnExpand = (cluster.images.length > n_shown && 
+    (expanded ?
+      <p><IconBtn icon="mdi:chevron-up" label="Collapse" onClick={() => {setExpanded(false); scrollIntoView();}} /></p> :
+      <p><IconBtn icon="mdi:chevron-down" label="Expand" onClick={() => {setExpanded(true)}} /></p>)
+  );
+
   return (
-    <div ref={elRef} className={"cl-cluster" + (expanded ? " cl-expanded" : "")}>
+    <div className={"cl-cluster" + (expanded || props.editing ? " cl-expanded" : "")}>
+      <div className="cl-anchor" ref={elRef}></div>
       <div className="cl-props">
         <div className="cl-propcontent">
-          <p className="cl-cluster-title">
-          {(renaming && props.editing) ? 
-              (<form onSubmit={onRenameSubmit}>
-                <input type="text" ref={nameInput} defaultValue={cluster.name} autoFocus></input> 
-                <a href="javascript:void(0)" onClick={onRenameSubmit} className="btn"><Icon icon="mdi:check-bold" /></a>
-               </form>) :
-              (<React.Fragment>
-                <span>{cluster.name}</span> 
-                {props.editing && <a href="javascript:void(0)" className="btn is-edit" onClick={() => {toggleEdition(true); setRenaming(true)}} title="Rename"><Icon icon="mdi:edit" /></a>}
-              </React.Fragment>)
-          }
-          </p>
-          
-          <p>{cluster.id >= 0 && <React.Fragment>Cluster #{cluster.id}, {cluster.images.length} images</React.Fragment>}</p>
-
-          {editable && 
-          <p>
-            {props.editing ?
-            <React.Fragment>
-              <IconBtn icon="mdi:merge" label="Merge with..." onClick={askForMerge}/>
-              <IconBtn icon="mdi:check-bold" label="End edition" onClick={() => toggleEdition(false)} /> 
-            </React.Fragment>:
-              <IconBtn icon="mdi:edit" label="Edit cluster" onClick={() => toggleEdition(true)} />}
-          </p>}
-          
-          {cluster.proto_url && 
-          <React.Fragment>
-            <p><a href="javascript:void(0);" onClick={() => {setTransformed(!transformed)}}>
-              {transformed ? "Show original images" : "Show transformed prototypes" }</a>
+          <div className="cl-propinfo">
+            <p className="cl-cluster-title">
+            {(renaming && props.editing) ? 
+                (<form onSubmit={onRenameSubmit}>
+                  <input type="text" ref={nameInput} defaultValue={cluster.name} autoFocus></input> 
+                  <a href="javascript:void(0)" onClick={onRenameSubmit} className="btn"><Icon icon="mdi:check-bold" /></a>
+                </form>) :
+                (<React.Fragment>
+                  <span>{cluster.name}</span> 
+                  {props.editing && <a href="javascript:void(0)" className="btn is-edit" onClick={() => {toggleEdition(true); setRenaming(true)}} title="Rename"><Icon icon="mdi:edit" /></a>}
+                </React.Fragment>)
+            }
             </p>
+            
+            <p>{cluster.id >= 0 && <React.Fragment>Cluster #{cluster.id}, {cluster.images.length} images</React.Fragment>}</p>
+
+
+            {editable ? 
+            <p>
+              {props.editing ?
+              <React.Fragment>
+                <IconBtn icon="mdi:merge" label="Merge with..." onClick={askForMerge}/>
+                <IconBtn icon="mdi:check-bold" label="End edition" onClick={() => toggleEdition(false)} /> 
+              </React.Fragment>:
+                <IconBtn icon="mdi:edit" label="Edit cluster" onClick={() => toggleEdition(true)} />}
+            </p> : btnExpand}
+          </div>
+          {cluster.proto_url && 
+          <div className="cl-protoinfo">
+          <p>{transformed ?
+              <IconBtn icon="mdi:image" label="Show images" onClick={() => {setTransformed(false)}} /> :
+              <IconBtn icon="mdi:panorama-variant" label="Show protos" onClick={() => {setTransformed(true)}} />}
+          </p>
             <div className="cl-proto">
               <img src={editorContext?.state.base_url + cluster.proto_url} alt="cl-proto" className="prototype" />
               {cluster.mask_url && false && <img src={editorContext!.state.base_url + cluster.mask_url} alt="mask" className="mask" />}
             </div>
-          </React.Fragment>}
+          </div>}
 
         </div>
       </div>
       <div className="cl-samples">
           {props.editing ?
           <SelectableImageList images={cluster.images} transformed={transformed} /> :
-          <BasicImageList images={cluster.images} transformed={transformed} limit={expanded ? undefined : N_SHOWN} expander={expanderBtn}/>
+          <BasicImageList images={cluster.images} transformed={transformed} limit={expanded ? undefined : n_shown} expander={btnMore}/>
           }
       </div>
       {editable && !props.editing && 

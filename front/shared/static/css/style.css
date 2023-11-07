@@ -1,4 +1,3 @@
-@charset "UTF-8";
 *, *::before, *::after {
   box-sizing: border-box;
 }
@@ -243,42 +242,26 @@ input[type=submit].big, input[type=file].big, button.big, .btn.big {
   background-color: #ccdad1;
   align-self: stretch;
 }
+.cluster-viewer .cl-anchor {
+  position: relative;
+  top: calc(-1em - 60px);
+  width: 0 !important;
+  height: 0 !important;
+  padding: 0 !important;
+}
 .cluster-viewer .cl-cluster-list {
-  margin: 1em;
+  padding: 1em;
   width: 100%;
-  display: table;
-  border-collapse: separate;
-  border-spacing: 0.5em 1em;
 }
 .cluster-viewer .cl-cluster-list .cl-cluster {
-  display: table-row;
   position: relative;
-  overflow: hidden;
 }
 .cluster-viewer .cl-cluster-list .cl-cluster > * {
-  background-color: #e9f0ec;
   vertical-align: middle;
-  border-radius: 5px;
-  display: table-cell;
   padding: 0.5em;
-}
-.cluster-viewer .cl-cluster-list .cl-cluster > *:not(:last-child) {
-  border-right: none;
-  border-top-right-radius: 0;
-  border-bottom-right-radius: 0;
-}
-.cluster-viewer .cl-cluster-list .cl-cluster > *:not(:first-child) {
-  border-left: none;
-  border-top-left-radius: 0;
-  border-bottom-left-radius: 0;
 }
 .cluster-viewer .cl-cluster-list .cl-cluster > .cl-props {
   vertical-align: top;
-}
-.cluster-viewer .cl-cluster-list .cl-cluster > .cl-props .cl-propcontent {
-  position: sticky;
-  top: calc(60px + 1em);
-  width: 300px;
 }
 .cluster-viewer .cl-cluster-list .cl-cluster > .cl-props .cl-propcontent .cl-cluster-title {
   display: flex;
@@ -291,10 +274,6 @@ input[type=submit].big, input[type=file].big, button.big, .btn.big {
 .cluster-viewer .cl-cluster-list .cl-cluster > .cl-props .cl-propcontent .cl-cluster-title form {
   display: contents;
 }
-.cluster-viewer .cl-cluster-list .cl-cluster > .cl-props .cl-propcontent .cl-proto img {
-  width: 128px;
-  height: 128px;
-}
 .cluster-viewer .cl-cluster-list .cl-cluster > .cl-samples {
   width: auto;
 }
@@ -302,16 +281,12 @@ input[type=submit].big, input[type=file].big, button.big, .btn.big {
   overflow-y: auto;
 }
 .cluster-viewer .cl-cluster-list .cl-cluster > .cl-samples .cl-images > * {
-  width: 128px;
-  height: 128px;
-  border-radius: 5px;
   margin: 0.5em;
   background-color: rgba(160, 211, 180, 0.5);
   display: inline-block;
   text-align: center;
   vertical-align: middle;
   color: #35a561;
-  line-height: 128px;
   text-decoration: none;
   position: relative;
 }
@@ -324,21 +299,120 @@ input[type=submit].big, input[type=file].big, button.big, .btn.big {
 .cluster-viewer .cl-cluster-list .cl-cluster > .cl-samples .cl-selectable.cl-images > * .cl-selecter {
   display: block;
   position: absolute;
-  top: -5px;
-  left: -5px;
+  top: -7px;
+  left: -7px;
   width: 20px;
   height: 20px;
   background-color: #fff;
   border-radius: 5px;
-  border: 4px solid #35a561;
+  border: 3px solid #35a561;
+  outline: 2px solid #35a561;
   text-decoration: none;
   line-height: 1;
 }
-.cluster-viewer .cl-cluster-list .cl-cluster > .cl-samples .cl-selectable.cl-images > *.cl-selected .cl-selecter::before {
-  content: "×";
+.cluster-viewer .cl-cluster-list .cl-cluster > .cl-samples .cl-selectable.cl-images > *.cl-selected .cl-selecter {
+  background-color: #35a561;
+  border-color: #fff;
+  outline: 2px solid #35a561;
 }
 .cluster-viewer .cl-cluster-list .cl-cluster > .cl-samples .cl-selectable.cl-images > *.cl-selected img {
   outline: 4px solid #35a561;
+  border: 4px solid #35a561;
+}
+.cluster-viewer .cl-cluster-list.cl-display-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1em;
+  align-items: stretch;
+}
+.cluster-viewer .cl-cluster-list.cl-display-grid .cl-cluster {
+  background-color: #e9f0ec;
+  flex: 1;
+  min-width: 300px;
+  max-width: 450px;
+  border-radius: 5px;
+}
+.cluster-viewer .cl-cluster-list.cl-display-grid .cl-cluster > .cl-props {
+  background-color: #e9f0ec;
+}
+.cluster-viewer .cl-cluster-list.cl-display-grid .cl-cluster > .cl-props .cl-propcontent {
+  display: flex;
+  gap: 1em;
+  width: 100%;
+  justify-content: space-between;
+}
+.cluster-viewer .cl-cluster-list.cl-display-grid .cl-cluster > .cl-props .cl-propcontent .cl-protoinfo {
+  text-align: right;
+}
+.cluster-viewer .cl-cluster-list.cl-display-grid .cl-cluster > .cl-props .cl-propcontent .cl-proto img {
+  width: 80px;
+  height: 80px;
+}
+.cluster-viewer .cl-cluster-list.cl-display-grid .cl-cluster > .cl-samples .cl-images > * {
+  width: 80px;
+  height: 80px;
+  line-height: 80px;
+}
+.cluster-viewer .cl-cluster-list.cl-display-grid .cl-cluster.cl-expanded {
+  min-width: 100%;
+  max-width: unset;
+  flex-shrink: 0;
+}
+.cluster-viewer .cl-cluster-list.cl-display-grid .cl-cluster.cl-expanded > .cl-props {
+  position: sticky;
+  z-index: 4;
+  top: 60px;
+  padding-top: 0.5em;
+}
+.cluster-viewer .cl-cluster-list.cl-display-rows {
+  display: table;
+  border-collapse: separate;
+  border-spacing: 0.5em 1em;
+}
+.cluster-viewer .cl-cluster-list.cl-display-rows .cl-cluster {
+  display: table-row;
+  overflow: hidden;
+}
+.cluster-viewer .cl-cluster-list.cl-display-rows .cl-cluster > * {
+  border-radius: 5px;
+  background-color: #e9f0ec;
+  display: table-cell;
+  padding: 0.5em;
+}
+.cluster-viewer .cl-cluster-list.cl-display-rows .cl-cluster > *:not(:last-child) {
+  border-right: none;
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+}
+.cluster-viewer .cl-cluster-list.cl-display-rows .cl-cluster > *:not(:first-child) {
+  border-left: none;
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+}
+.cluster-viewer .cl-cluster-list.cl-display-rows .cl-cluster > .cl-props {
+  vertical-align: top;
+}
+.cluster-viewer .cl-cluster-list.cl-display-rows .cl-cluster > .cl-props .cl-propcontent {
+  position: sticky;
+  z-index: 4;
+  top: calc(60px + 1em);
+  width: 300px;
+}
+.cluster-viewer .cl-cluster-list.cl-display-rows .cl-cluster > .cl-props .cl-propcontent .cl-proto img {
+  width: 128px;
+  height: 128px;
+}
+.cluster-viewer .cl-cluster-list.cl-display-rows .cl-cluster > .cl-samples {
+  width: auto;
+}
+.cluster-viewer .cl-cluster-list.cl-display-rows .cl-cluster > .cl-samples .cl-images {
+  overflow-y: auto;
+}
+.cluster-viewer .cl-cluster-list.cl-display-rows .cl-cluster > .cl-samples .cl-images > * {
+  width: 128px;
+  height: 128px;
+  margin: 0.5em;
+  line-height: 128px;
 }
 .cluster-viewer .cl-overlay {
   position: absolute;
@@ -378,12 +452,20 @@ input[type=submit].big, input[type=file].big, button.big, .btn.big {
   align-items: center;
   z-index: 10;
   height: 60px;
+  gap: 1em;
 }
 .cluster-viewer .cl-editor-toolbar .cl-editor-tools {
   display: flex;
   justify-content: space-between;
   align-items: center;
   gap: 1em;
+}
+.cluster-viewer .cl-editor-toolbar .cl-options {
+  display: flex;
+  justify-content: start;
+  align-items: center;
+  gap: 1em;
+  flex: 1;
 }
 .cluster-viewer .cl-modale {
   position: fixed;
@@ -450,4 +532,7 @@ input[type=submit].big, input[type=file].big, button.big, .btn.big {
   max-width: 100%;
   max-height: 100%;
   vertical-align: middle;
+}
+.cluster-viewer .cl-filler {
+  visibility: hidden;
 }

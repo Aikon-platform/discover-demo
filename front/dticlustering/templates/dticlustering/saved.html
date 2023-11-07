@@ -7,7 +7,14 @@
 <div class="centerwrap">
     {% if request.user.is_authenticated %}<p class="breadcrumbs"><a href="{% url "dticlustering:list" %}">&lt; clustering list</a></p>{% endif %}
     <h1>Clustering result {{ object.id }}</h1>
-    <p>Based on DTI task <a href="{{ from_dti.get_absolute_url }}">#{{ from_dti.name }}-{{ from_dti.id }}</a></h1>
+    <p>Based on DTI task <a href="{{ from_dti.get_absolute_url }}">#{{ from_dti.name }}-{{ from_dti.id }}</a></p>
+    {% if object.id %}
+    <p>
+    <a href="{% url "dticlustering:saved_delete" object.from_dti_id object.pk %}" class="btn"><iconify-icon icon="mdi:delete"></iconify-icon> <span>Delete</span></a>
+    <a class="btn" href="{% url "dticlustering:saved_export" object.from_dti_id object.pk %}"><iconify-icon icon="mdi:folder-download"></iconify-icon> <span>Export as CSV</span></a>
+    </p>
+    {% endif %}
+
     <form action="" method="POST">
         {% csrf_token %}
         {{ form.as_p }}

@@ -4,7 +4,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMix
 from django.shortcuts import redirect
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
-from django.http import JsonResponse, Http404
+from django.http import JsonResponse, Http404, HttpResponse
 import json
 from typing import Any
 
@@ -165,3 +165,37 @@ class SavedClusteringEdit(UpdateView):
         context["from_dti"] = self.object.from_dti
         return context
     
+class SavedClusteringDelete(DeleteView):
+    """
+    Delete a saved clustering
+    """
+    model = SavedClustering
+    template_name = "dticlustering/delete.html"
+
+    def get_queryset(self):
+        return super().get_queryset().filter(from_dti=self.kwargs["from_pk"])
+
+    def get_success_url(self):
+        return self.object.from_dti.get_absolute_url()
+
+class SavedClusteringCSVExport(SingleObjectMixin, View):
+    """
+    Export a clustering as CSV
+    """
+    model = SavedClustering
+    template_name = "dticlustering/export.html"
+    context_object_name = "clustering"
+
+    def get_queryset(self):
+        return super().get_queryset().filter(from_dti=self.kwargs["from_pk"])
+    
+    def get(self, *args, **kwargs):
+        if not hasattr(self, "object"):
+            self.object = self.get_object()
+        
+        # create CSV response
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = 'attachment; filename="clustering.csv"'
+        data = self.object.format_as_csv()
+        response.write(data)
+        return response

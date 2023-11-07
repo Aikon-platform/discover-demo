@@ -10,9 +10,9 @@
     {% if request.user.is_authenticated %}<p class="breadcrumbs"><a href="{% url "dticlustering:list" %}">&lt; clustering list</a></p>{% endif %}
     <h1>DTI Clustering #{{ object.name }}-{{ object.id }}</h1>
     <p>
-        {% if not object.is_finished %}<a href="{% url "dticlustering:cancel" object.id %}">Cancel</a> - {% endif %}
+        {% if not object.is_finished %}<a href="{% url "dticlustering:cancel" object.id %}" class="btn"><iconify-icon icon="mdi:close-circle"></iconify-icon> <span>Cancel</span></a> {% endif %}
         <a class="btn" href="{{ object.dataset.zip_file.url }}"><iconify-icon icon="mdi:folder-download"></iconify-icon> <span>Download dataset</span></a>
-        {% if object.is_finished %}- <a href="{% url "dticlustering:restart" object.id %}">Start new clustering with same dataset</a>{% endif %}
+        {% if object.is_finished %}<a href="{% url "dticlustering:restart" object.id %}" class="btn"><iconify-icon icon="mdi:clock-start"></iconify-icon> <span>Start new clustering with same dataset</span></a>{% endif %}
     </p>
     <pre>Parameters : {{ object.parameters }}</pre>
 

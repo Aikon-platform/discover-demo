@@ -5,6 +5,8 @@ from django.urls import reverse
 import requests
 import uuid
 import json
+import csv
+import io
 from django.utils.functional import cached_property
 
 from datasets.models import ZippedDataset
@@ -316,5 +318,17 @@ class SavedClustering(models.Model):
         ordering = ['-date']
         verbose_name = "Manual clustering"
 
-    def get_absolute_url(self):
+    def get_absolute_url(self) -> str:
         return reverse("dticlustering:saved", kwargs={"pk": self.pk, "from_pk": self.from_dti_id})
+    
+    def format_as_csv(self) -> str:
+        """
+        Returns a CSV string with the clustering data
+        """
+        output = io.StringIO()
+        writer = csv.writer(output)
+        writer.writerow(["image_id", "image_path", "cluster_id", "cluster_name"])
+        for cluster_id, cluster in self.clustering_data["clusters"].items():
+            for img in cluster["images"]:
+                writer.writerow([img["id"], img["path"], cluster_id, cluster["name"]])
+        return output.getvalue()

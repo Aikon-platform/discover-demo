@@ -41,6 +41,8 @@ export interface EditorState {
     content: ClusteringFile;
     base_url: string;
     image_selection: Set<ImageInfo>;
+    viewer_sort: "size" | "id" | "name";
+    viewer_display: "grid" | "rows";
 }
 
 export type EditorAction =
@@ -48,8 +50,10 @@ export type EditorAction =
     { type: "cluster_merge", cluster_id: number, other: number } |
     { type: "cluster_delete", cluster_id: number } |
     { type: "cluster_ask", cluster_id: number | null, for_action?: ActionRequiringAsk } |
-    { type: "edit" } |
-    { type: "edit_cluster", cluster_id: number | null } |
+    { type: "viewer_edit" } |
+    { type: "viewer_focus", cluster_id: number | null } |
+    { type: "viewer_sort", sort: string } |
+    { type: "viewer_display", display: string } |
     { type: "selection_change", images: ImageInfo[], selected: boolean } |
     { type: "selection_invert" } |
     { type: "selection_clear" } |

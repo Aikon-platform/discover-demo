@@ -9,41 +9,29 @@ $toolbar-height: 60px;
     background-color: darken($bg-color, 10%);
     align-self: stretch;
 
+    .cl-anchor {
+        // Useful for scrollIntoView
+        position: relative;
+        top: calc(-1em - $toolbar-height);
+        width: 0 !important;
+        height: 0 !important;
+        padding: 0 !important;
+    }
+
     .cl-cluster-list {
-        margin: 1em;
+        padding: 1em;
         width: 100%;
-        display: table;
-        border-collapse: separate;
-        border-spacing: 0.5em 1em;
 
         .cl-cluster {
-            display: table-row;
             position: relative;
-            overflow: hidden;
             & > * {
-                background-color: $bg-color;
                 vertical-align: middle;
-                border-radius: 5px;
                 //border: 1px solid $head-color;
-                display: table-cell;
                 padding: 0.5em;
-                &:not(:last-child) {
-                    border-right: none;
-                    border-top-right-radius: 0;
-                    border-bottom-right-radius: 0;
-                }
-                &:not(:first-child) {
-                    border-left: none;
-                    border-top-left-radius: 0;
-                    border-bottom-left-radius: 0;
-                }
             }
             & > .cl-props {
                 vertical-align: top;
                 .cl-propcontent {
-                    position: sticky;
-                    top: calc($toolbar-height + 1em);
-                    width: 300px;
                     .cl-cluster-title {
                         display: flex;
                         font-weight: bold;
@@ -56,10 +44,6 @@ $toolbar-height: 60px;
                             display: contents;
                         }
                     }
-                    .cl-proto img {
-                        width: 128px;
-                        height: 128px;
-                    }
                 }
             }
             & > .cl-samples {
@@ -69,16 +53,12 @@ $toolbar-height: 60px;
                     // max-height: calc(100vh - 100px);
 
                     & > * {
-                        width: 128px;
-                        height: 128px;
-                        border-radius: 5px;
                         margin: 0.5em;
                         background-color: rgba($main-color, 0.5);
                         display: inline-block;
                         text-align: center;
                         vertical-align: middle;
                         color: $head-color;
-                        line-height: 128px;
                         text-decoration: none;
                         position: relative;
 
@@ -95,23 +75,136 @@ $toolbar-height: 60px;
                         .cl-selecter {
                             display: block;
                             position: absolute;
-                            top: -5px;
-                            left: -5px;
+                            top: -7px;
+                            left: -7px;
                             width: 20px;
                             height: 20px;
                             background-color: #fff;
                             border-radius: 5px;
-                            border: 4px solid $head-color;
+                            border: 3px solid $head-color;
+                            outline: 2px solid $head-color;
                             text-decoration: none;
                             line-height: 1;
                         }
                         &.cl-selected {
-                            .cl-selecter::before {
-                                content: "×";
+                            .cl-selecter {
+                                background-color: $head-color;
+                                border-color: #fff;
+                                outline: 2px solid $head-color;
                             }
                             img {
                                 outline: 4px solid $head-color;
+                                border: 4px solid $head-color;
                             }
+                        }
+                    }
+                }
+            }
+        }
+
+        &.cl-display-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1em;
+            align-items: stretch;
+
+            .cl-cluster {
+                background-color: $bg-color;
+                flex: 1;
+                min-width: 300px;
+                max-width: 450px;
+                border-radius: 5px;
+
+                & > .cl-props {
+                    background-color: $bg-color;
+                    .cl-propcontent {
+                        display: flex;
+                        gap: 1em;
+                        width: 100%;
+                        justify-content: space-between;
+                        .cl-protoinfo {
+                            text-align: right;
+                        }
+                        .cl-proto img {
+                            width: 80px;
+                            height: 80px;
+                        }
+                    }
+                }
+
+                & > .cl-samples {
+                    .cl-images {
+                        & > * {
+                            width: 80px;
+                            height: 80px;
+                            line-height: 80px;
+                        }
+                    }
+                }
+
+                &.cl-expanded {
+                    min-width: 100%;
+                    max-width: unset;
+                    flex-shrink: 0;
+
+                    & > .cl-props {
+                        position: sticky;
+                        z-index: 4;
+                        top: calc($toolbar-height);
+                        padding-top: 0.5em;
+                    }
+                }
+            }
+        }
+
+        &.cl-display-rows {
+            display: table;
+            border-collapse: separate;
+            border-spacing: 0.5em 1em;
+
+            .cl-cluster {
+                display: table-row;
+                overflow: hidden;
+                & > * {
+                    border-radius: 5px;
+                    background-color: $bg-color;
+                    display: table-cell;
+                    padding: 0.5em;
+                    &:not(:last-child) {
+                        border-right: none;
+                        border-top-right-radius: 0;
+                        border-bottom-right-radius: 0;
+                    }
+                    &:not(:first-child) {
+                        border-left: none;
+                        border-top-left-radius: 0;
+                        border-bottom-left-radius: 0;
+                    }
+                }
+                & > .cl-props {
+                    vertical-align: top;
+                    .cl-propcontent {
+                        position: sticky;
+                        z-index: 4;
+                        top: calc($toolbar-height + 1em);
+                        width: 300px;
+                        .cl-proto img {
+                            width: 128px;
+                            height: 128px;
+                        }
+                    }
+                }
+                & > .cl-samples {
+                    width: auto;
+                    .cl-images {
+                        overflow-y: auto;
+                        // max-height: calc(100vh - 100px);
+
+                        & > * {
+                            width: 128px;
+                            height: 128px;
+                            margin: 0.5em;
+                            line-height: 128px;
                         }
                     }
                 }
@@ -160,11 +253,19 @@ $toolbar-height: 60px;
         align-items: center;
         z-index: 10;
         height: $toolbar-height;
+        gap: 1em;
         .cl-editor-tools {
             display: flex;
             justify-content: space-between;
             align-items: center;
             gap: 1em;
+        }
+        .cl-options {
+            display: flex;
+            justify-content: start;
+            align-items: center;
+            gap: 1em;
+            flex: 1;
         }
     }
     .cl-modale {
@@ -242,5 +343,8 @@ $toolbar-height: 60px;
                 }
             }
         }
+    }
+    .cl-filler {
+        visibility: hidden;
     }
 }

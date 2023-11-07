@@ -44,9 +44,12 @@ export function TaskProgressTracker (props: {tracking_url: string}) {
         return <div className="tck-progress">Done!</div>;
     }
 
+    if (status === null)
+        return <div className="tck-progress">Loading...</div>;
+
     return (<div className="tck-progress">
-        <p>Status: {status?.status}</p>
-        {status?.log?.progress && 
+        <p>Status: {status.status}</p>
+        {status.log?.progress && 
         <div className="tck-bar-list">
             {status.log.progress.map((progress, i) => 
             <div key={i}>
@@ -54,6 +57,6 @@ export function TaskProgressTracker (props: {tracking_url: string}) {
                 <progress className="bar" value={progress.current} max={progress.total} /> 
             </div>)}
         </div>}
-        <pre>{status?.log.infos?.join("\n")}</pre>
+        <pre>{status.status == "PENDING" ? "Waiting for worker..." : status.log?.infos?.join("\n")}</pre>
     </div>);
 }
