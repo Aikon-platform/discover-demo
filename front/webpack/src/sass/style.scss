@@ -161,6 +161,13 @@ input[type='email'], input[type='number'], textarea, select {
     }
 }
 
+.iconify {
+    width: 1em;
+    min-width: 1em;
+    height: 1em;
+    min-height: 1em;
+}
+
 input[type="submit"], input[type="file"], button, .btn {
     white-space: normal;
     text-align: center;
