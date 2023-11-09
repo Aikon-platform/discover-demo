@@ -1,14 +1,20 @@
 # DTI-demo
 A web interface as demo for DTI clustering
 
-## Development
+Please refer to [api/README](api/README.md) and [front/README](front/README.md) for installing and running each individual part.
 
-See [api/README.md] and [front/README.md] for individual part installations.
+## General requirements
 
-### Running everything
+> - **Sudo** privileges
+> - **Python** >= 3.10
+> - **Git**:
+>     - `sudo apt install git`
+>     - Having configured [SSH access to GitHub](https://docs.github.com/en/authentication/connecting-to-github-with-ssh)
 
-To start everything in one killable process, run
+## Development : Running everything at once
 
-    (trap 'kill 0' SIGINT; (cd api/ && venv/bin/flask --app app.main run --debug) & (cd api/ && venv/bin/dramatiq app.main -p 1 -t 1) & (cd front/ && venv/bin/python manage.py runserver) & (cd front/ && venv/bin/python manage.py rundramatiq -p 1 -t 1); );
+To start everything in one killable process, run (after installing each part like advised in the subfolders):
 
-You can add `--watch` to dramatiq part (if you have run `pip install dramatiq[watch]` first).
+    ```bash
+    bash run.sh
+    ```
