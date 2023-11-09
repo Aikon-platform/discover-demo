@@ -1,0 +1,58 @@
+# Final image
+FROM ubuntu:22.04
+
+ENV USER demowebsite
+# Modify to match your user id
+ENV USERID 1001
+
+RUN useradd -u ${USERID} -m -d /home/${USER} ${USER}
+
+## Silence error messages
+ENV TERM linux
+
+## Bash instead of shell
+SHELL ["/bin/bash", "-c"]
+
+## Install utils
+ENV TZ=Europe/Paris
+RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
+
+RUN apt-get update && apt-get install -y \
+    unzip \
+    wget \
+    zip \
+    supervisor \
+    ffmpeg \
+    libsm6 \
+    libxext6 \
+    build-essential \
+    python3-dev \
+    python3-venv \
+    redis-server \ 
+    nginx
+
+USER ${USER}
+WORKDIR /home/${USER}
+
+## Set nvidia
+ENV NVIDIA_DRIVER_CAPABILITIES compute,utility
+
+## Copy requirements and install them
+# (Before copying the rest so that this part is not rerun unless requirements change)
+COPY --chown=${USER} ./requirements.txt ./requirements.txt
+COPY --chown=${USER} ./requirements-prod.txt ./requirements-prod.txt
+RUN python3 -m venv venv
+RUN source venv/bin/activate && pip install --upgrade pip && pip install -r requirements-prod.txt
+
+# Install components
+COPY --chown=${USER} ./ ./api/
+COPY /confs/nginx.conf /etc/nginx/nginx.conf
+
+EXPOSE 8001
+
+RUN mkdir -p var/dramatiq/
+
+## Run command at each container launch
+CMD export LC_ALL=C.UTF-8 && export LANG=C.UTF-8 && \
+    source venv/bin/activate && \
+    supervisord -c api/confs/supervisord.conf
