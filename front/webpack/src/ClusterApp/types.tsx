@@ -1,3 +1,8 @@
+/*
+ Types for the cluster app
+ It also includes a util function to serialize/deserialize the clustering file.
+*/
+
 export interface ImageInfo {
     path: string;
     raw_url: string;

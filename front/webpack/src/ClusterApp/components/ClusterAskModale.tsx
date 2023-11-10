@@ -2,8 +2,12 @@ import React, { useState } from "react";
 import { MiniClusterElement } from "./ClusterElement";
 import { ClusterInfo } from "../types";
 import { ClusterEditorContext } from "../actions";
-import { Icon } from "@iconify/react";
 import { IconBtn } from "../../utils/IconBtn";
+
+/*
+  This file contains the React component that displays a modale to ask the user
+  to choose a target cluster for some action.
+*/
 
 export function ClusterAskModale(props: { for_action: "cluster_merge" | "selection_move"; not_cluster_id: number; }) {
     const editorContext = React.useContext(ClusterEditorContext);
@@ -23,12 +27,17 @@ export function ClusterAskModale(props: { for_action: "cluster_merge" | "selecti
         "selection_move": ["mdi:folder-move", "Move images to this cluster"]
     }[props.for_action];
 
-    // sort clusters by size
+    // sort clusters and add one last new cluster
     const additional_cluster = { id: -1, name: "New cluster", images: [] };
+    const cluster_sorting = {
+        "size": (a: ClusterInfo, b: ClusterInfo) => b.images.length - a.images.length,
+        "id": (a: ClusterInfo, b: ClusterInfo) => a.id - b.id,
+        "name": (a: ClusterInfo, b: ClusterInfo) => a.name.localeCompare(b.name)
+    }[editorContext!.state.viewer_sort];
     const clusters = [
-        ...editorContext!.state.content.clusters.values(),
+        ...Array.from(editorContext!.state.content.clusters.values()).sort(cluster_sorting),
         ...(props.for_action == "selection_move" ? [additional_cluster] : [])
-    ].sort((a, b) => b.images.length - a.images.length);
+    ];
 
     return (
         <div className="cl-modale">
@@ -45,7 +54,7 @@ export function ClusterAskModale(props: { for_action: "cluster_merge" | "selecti
                         </div>
                     </div>
                     <div className="cl-modale-actions">
-                        <IconBtn onClick={() => { editorContext!.dispatch({ type: "cluster_ask", cluster_id: null }); }} icon="mdi:close" label="Cancel" />
+                        <IconBtn onClick={() => { editorContext!.dispatch({ type: "cluster_ask", cluster_id: null }); }} icon="mdi:close" label="Cancel" className="is-outline" />
                         <IconBtn onClick={doAction} icon={action_icon} label={action_label}  disabled={selected === null} />
                     </div>
                 </div>

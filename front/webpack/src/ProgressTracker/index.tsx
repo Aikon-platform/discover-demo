@@ -20,8 +20,9 @@ export function TaskProgressTracker (props: {tracking_url: string}) {
             .then(response => response.json())
             .then(data => {
                 setStatus(data);
-                if (data.status === "finished") {
+                if (data.is_finished) {
                     setFinished(true);
+                    window.location.reload();
                 } else {
                     setTimeout(poll, 1000);
                 }
@@ -36,6 +37,7 @@ export function TaskProgressTracker (props: {tracking_url: string}) {
         poll();
     }, [poll]);
 
+
     if (error)
         return <div className="tck-progress"><div className="tck-error">{error}</div></div>;
 
@@ -46,6 +48,7 @@ export function TaskProgressTracker (props: {tracking_url: string}) {
 
     if (status === null)
         return <div className="tck-progress">Loading...</div>;
+
 
     return (<div className="tck-progress">
         <p>Status: {status.status}</p>

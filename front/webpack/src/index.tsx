@@ -10,16 +10,34 @@ function initClusterViewer(
   editable?: boolean, 
   editing?: boolean,
   formfield?: HTMLInputElement) {
-    createRoot(target_root).render(
-      <ClusterApp clustering_data={clustering_data} base_url={base_media_url} 
-                  editable={editable} editing={editing} formfield={formfield} />
-    );
-  }
+  /*
+  Main entry point for the clustering viewer app.
+
+  target_root: the root element to render the app in
+  clustering_data: the clustering data to render
+  base_media_url: the base url for media files
+  editable: whether the app should be editable
+  editing: whether the app should be in editing mode
+  formfield: the form field to update with the current clustering data
+  */
+
+  createRoot(target_root).render(
+    <ClusterApp clustering_data={clustering_data} base_url={base_media_url} 
+                editable={editable} editing={editing} formfield={formfield} />
+  );
+}
 
 function initProgressTracker(target_root: HTMLElement, tracking_url: string) {
-    createRoot(target_root).render(
-      <TaskProgressTracker tracking_url={tracking_url} />
-    );
+  /*
+  Main entry point for the progress tracker app.
+
+  target_root: the root element to render the app in
+  tracking_url: the url to track
+  */
+
+  createRoot(target_root).render(
+    <TaskProgressTracker tracking_url={tracking_url} />
+  );
 }
 
 export {

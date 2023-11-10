@@ -1,4 +1,4 @@
-$main-color: #a0d3b4;
+$main-color: #aaaeb3;
 $bg-color: lighten(desaturate($main-color, 20%), 20%);
 $head-color: saturate(darken($main-color, 30%), 15%);
 $dark-color: desaturate(darken($head-color, 30%), 5%);

@@ -230,6 +230,12 @@ input[type="submit"], input[type="file"], button, .btn {
     &.big {
         font-size: 1.3em;
     }
+
+    &.is-outline {
+        background-color: lighten($bg-color, 5%);
+        border: 2px solid $head-color;
+        color: $head-color;
+    }
 }
 
 // DTI: List of tasks

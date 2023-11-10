@@ -11,7 +11,7 @@
     <h1>DTI Clustering #{{ object.name }}-{{ object.id }}</h1>
     <p>
         {% if not object.is_finished %}<a href="{% url "dticlustering:cancel" object.id %}" class="btn"><span class="iconify" data-icon="mdi:close-circle"></span> <span>Cancel</span></a> {% endif %}
-        <a class="btn" href="{{ object.dataset.zip_file.url }}"><span class="iconify" data-icon="mdi:folder-download"></span> <span>Download dataset</span></a>
+        <a class="btn is-outline" href="{{ object.dataset.zip_file.url }}"><span class="iconify" data-icon="mdi:folder-download"></span> <span>Download dataset</span></a>
         {% if object.is_finished %}<a href="{% url "dticlustering:restart" object.id %}" class="btn"><span class="iconify" data-icon="mdi:clock-start"></span> <span>Start new clustering with same dataset</span></a>{% endif %}
     </p>
     <pre>Parameters : {{ object.parameters }}</pre>
@@ -24,19 +24,22 @@
     {% if object.expanded_results %}
     <h2>Results</h2>
     <p>
-    {% if object.result_zip_exists %}<a href="{{ object.result_zip_url }}">Download results</a>{% endif %}
-    {% if object.expanded_results.cluster_by_path %}
-        - <a href="{{ object.expanded_results.base_url}}{{ object.expanded_results.cluster_by_path }}">Export cluster assignation as csv</a>
+    {% if object.result_zip_exists %}<a href="{{ object.result_zip_url }}" class="btn is-outline"><span class="iconify" data-icon="mdi:folder-download"></span> <span>Download results</span></a>{% endif %}
+    {% if object.expanded_results.csv_export_file %}
+    <a href="{{ object.expanded_results.base_url}}{{ object.expanded_results.csv_export_file }}" class="btn is-outline"><span class="iconify" data-icon="mdi:folder-download"></span> <span>Export as csv</span></a>
     {% endif %}
     </p>
     <h3>Manually edited clusterings:</h3>
-    <ul>
+    <ul class="cl-saved-list">
         {% for clustering in object.saved_clustering.all %}
-        <li><a href="{% url "dticlustering:saved" object.pk clustering.pk %}">{{ clustering.pk }} (Edited on {{ clustering.date }})</a></li>
+        <li><a href="{% url "dticlustering:saved" object.pk clustering.pk %}">
+            <span class="cl-saved-name">{{ clustering.name }}</span>
+            <span class="cl-saved-id">{{ clustering.pk }}</span>
+            <span class="cl-saved-date">Edited on {{ clustering.date }}</span></a></li>
         {% empty %}
         <li>No saved clustering</li>
         {% endfor %}
-        <li><a href="{% url "dticlustering:saved_create" object.pk %}">-&gt; Edit the result in a new file</a></li>
+        <li><a href="{% url "dticlustering:saved_create" object.pk %}" class="btn"><span class="iconify" data-icon="mdi:edit"></span> <span>Edit the result in a new file</span></a></li>
     </ul>
 </div>
 

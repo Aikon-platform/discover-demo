@@ -1,6 +1,11 @@
 import { EditorContext, EditorState, EditorAction, ImageInfo, ClusterInfo } from "./types";
 import React from "react";
 
+/*
+  This file contains the reducer for the ClusterEditor app.
+  It is the main function that updates the state of the app.
+*/
+
 export const ClusterEditorContext = React.createContext<EditorContext | undefined>(undefined);
 
 function eraseImagesMetadata(images: ImageInfo[]): ImageInfo[] {
@@ -29,13 +34,19 @@ export const editorReducer = (state: EditorState, action: EditorAction) : Editor
 }
 
 function handleViewerAction(state: EditorState, action: EditorAction): EditorState {
+  /*
+  Handle actions that are not cluster-specific.
+  */
   switch (action.type) {
     case "viewer_sort":
       return { ...state, viewer_sort: action.sort as "size" | "id" | "name" };
+
     case "viewer_display":
       return { ...state, viewer_display: action.display as "grid" | "rows" };
+
     case "viewer_edit":
       return { ...state, editing: true, editingCluster: null, image_selection: new Set<ImageInfo>() };
+
     case "viewer_focus":
       return { ...state, editingCluster: action.cluster_id, image_selection: new Set<ImageInfo>() };
   }
@@ -43,34 +54,44 @@ function handleViewerAction(state: EditorState, action: EditorAction): EditorSta
 }
 
 function handleClusterAction(state: EditorState, action: EditorAction): EditorState {
-    const new_clusters = new Map(state.content.clusters);
-    switch (action.type) {
-      case "cluster_rename":
-        new_clusters.set(action.cluster_id, { ...new_clusters.get(action.cluster_id!)!, name: action.name! });
-        return { ...state, content: { ...state.content, clusters: new_clusters } };
-      case "cluster_merge":
-        // move images from cluster2 to cluster1
-        const cluster1 = state.content.clusters.get(action.cluster_id)!;
-        const cluster2 = state.content.clusters.get(action.other)!;
-        const new_cluster1 = { ...cluster1, images: [...cluster1.images, ...eraseImagesMetadata(cluster2.images)] };
-        new_clusters.delete(action.other);
-        new_clusters.set(action.cluster_id, new_cluster1);
-        return { ...state, content: { ...state.content, clusters: new_clusters }, editingCluster: cluster1.id, askingCluster: null };
-      case "cluster_ask":
-        return { 
-          ...state, 
-          askingCluster: (action.cluster_id === null ? null : 
-            { not_cluster_id: action.cluster_id, for_action: action.for_action! }) 
-          };
-    }
-    throw new Error("Invalid action type " + action.type);
+  /*
+  Handle actions that are cluster-specific.
+  */
+  const new_clusters = new Map(state.content.clusters);
+
+  switch (action.type) {
+    case "cluster_rename":
+      new_clusters.set(action.cluster_id, { ...new_clusters.get(action.cluster_id!)!, name: action.name! });
+      return { ...state, content: { ...state.content, clusters: new_clusters } };
+
+    case "cluster_merge":
+      // move images from cluster2 to cluster1
+      const cluster1 = state.content.clusters.get(action.cluster_id)!;
+      const cluster2 = state.content.clusters.get(action.other)!;
+      const new_cluster1 = { ...cluster1, images: [...cluster1.images, ...eraseImagesMetadata(cluster2.images)] };
+      new_clusters.delete(action.other);
+      new_clusters.set(action.cluster_id, new_cluster1);
+      return { ...state, content: { ...state.content, clusters: new_clusters }, editingCluster: cluster1.id, askingCluster: null };
+
+    case "cluster_ask":
+      return { 
+        ...state, 
+        askingCluster: (action.cluster_id === null ? null : 
+          { not_cluster_id: action.cluster_id, for_action: action.for_action! }) 
+        };
+  }
+  throw new Error("Invalid action type " + action.type);
 }
 
 function handleSelectionAction(state: EditorState, action: EditorAction): EditorState {
+  /*
+  Handle actions that are selection-specific.
+  */
   const selection = new Set<ImageInfo>(state.image_selection);
   if (state.editingCluster === null) {
     return state;
   }
+
   switch (action.type) {
     case "selection_change":
       for (const image of action.images) {
@@ -132,5 +153,3 @@ function handleSelectionAction(state: EditorState, action: EditorAction): Editor
   }
   throw new Error("Invalid action type "+action.type);
 }
-
-

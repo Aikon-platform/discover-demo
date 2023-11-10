@@ -7,10 +7,19 @@ import { IconBtn } from "../../utils/IconBtn";
 
 const N_SHOWN = {"grid": 8, "rows": 18};
 
-// Lightweight cluster element for the cluster list
+/*
+  This file contains the React components that displays a cluster.
+
+  Two versions are available:
+  - ClusterElement: the full cluster, with all images, and the possibility to edit it
+  - MiniClusterElement: a lightweight version of the cluster, with only a few images (for modale)
+*/
+
+// Lightweight cluster element for the cluster list in modale
 export function MiniClusterElement(props: { info: ClusterInfo; selected: boolean; onClick?: () => void; }) {
   const editorContext = React.useContext(ClusterEditorContext);
   const cluster = props.info;
+
   return (
     <div className={"cl-cluster" + (props.selected ? " cl-selected" : "")} onClick={props.onClick}>
       <div className="cl-props">
@@ -38,7 +47,9 @@ export function ClusterElement(props: ClusterProps) {
 
   const cluster = props.info;
   const editable = editorContext?.state.editing;
+  const n_shown = N_SHOWN[editorContext!.state.viewer_display];
 
+  // useful functions
   const scrollIntoView = () => {
     setTimeout(() => elRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }), 100);
   }
@@ -62,13 +73,12 @@ export function ClusterElement(props: ClusterProps) {
     editorContext?.dispatch({ type: "cluster_ask", cluster_id: cluster.id, for_action: "cluster_merge"})
   };
 
-  const n_shown = N_SHOWN[editorContext!.state.viewer_display];
-
-  // if juste expanded or editing, scroll to the element
+  // when expanded or edited, scroll to the element
   useEffect(() => {
     if (expanded || props.editing) scrollIntoView();
   }, [expanded, props.editing]);
 
+  // sub components
   const btnMore = (cluster.images.length > n_shown && 
     <a className="cl-more" href="javascript:void(0)" onClick={() => {setExpanded(!expanded); scrollIntoView();}}>
       {expanded ? "–" : "+"}{cluster.images.length - n_shown}
@@ -81,6 +91,7 @@ export function ClusterElement(props: ClusterProps) {
       <p><IconBtn icon="mdi:chevron-down" label="Expand" onClick={() => {setExpanded(true)}} /></p>)
   );
 
+  // render
   return (
     <div className={"cl-cluster" + (expanded || props.editing ? " cl-expanded" : "")}>
       <div className="cl-anchor" ref={elRef}></div>
@@ -116,8 +127,8 @@ export function ClusterElement(props: ClusterProps) {
           {cluster.proto_url && 
           <div className="cl-protoinfo">
           <p>{transformed ?
-              <IconBtn icon="mdi:image" label="Show images" onClick={() => {setTransformed(false)}} /> :
-              <IconBtn icon="mdi:panorama-variant" label="Show protos" onClick={() => {setTransformed(true)}} />}
+              <IconBtn icon="mdi:image" className="is-outline" label="Show images" onClick={() => {setTransformed(false)}} /> :
+              <IconBtn icon="mdi:panorama-variant" className="is-outline" label="Show protos" onClick={() => {setTransformed(true)}} />}
           </p>
             <div className="cl-proto">
               <img src={editorContext?.state.base_url + cluster.proto_url} alt="cl-proto" className="prototype" />
@@ -141,4 +152,3 @@ export function ClusterElement(props: ClusterProps) {
     </div>
   );
 }
-

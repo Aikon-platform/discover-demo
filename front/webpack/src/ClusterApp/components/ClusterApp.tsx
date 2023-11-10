@@ -1,4 +1,3 @@
-import { Icon } from "@iconify/react";
 import React, { useReducer } from "react";
 import { ClusterElement } from "./ClusterElement";
 import { unserializeClusterFile, ImageInfo, serializeClusterFile, AppProps, ClusterInfo } from "../types";
@@ -6,9 +5,11 @@ import { ClusterEditorContext, editorReducer } from "../actions";
 import { ClusterAskModale } from "./ClusterAskModale";
 import { IconBtn } from "../../utils/IconBtn";
 
+/*
+  This file contains the main React component for the ClusterEditor app.
+*/
 
 export function ClusterApp({ clustering_data, editing = false, editable = false, formfield, base_url }: AppProps) {
-  // transform clustering_data.clusters to Map<number, ClusterInfo>
   const [editorState, dispatchEditor] = useReducer(
     editorReducer, {
     editing: editable && editing,
@@ -34,13 +35,14 @@ export function ClusterApp({ clustering_data, editing = false, editable = false,
     }
   };
 
-  // sort clusters by size
+  // sort clusters
   const cluster_sorting = {
     "size": (a: ClusterInfo, b: ClusterInfo) => b.images.length - a.images.length,
     "id": (a: ClusterInfo, b: ClusterInfo) => a.id - b.id,
     "name": (a: ClusterInfo, b: ClusterInfo) => a.name.localeCompare(b.name)
   }[editorState.viewer_sort];
   const clusters = Array.from(editorState.content.clusters.values()).sort(cluster_sorting);
+
 
   return (
     <ClusterEditorContext.Provider value={{ state: editorState, dispatch: dispatchEditor }}>

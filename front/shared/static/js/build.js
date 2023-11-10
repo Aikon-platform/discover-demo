@@ -34728,6 +34728,10 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "./node_modules/react/index.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
 
+/*
+  This file contains the reducer for the ClusterEditor app.
+  It is the main function that updates the state of the app.
+*/
 const ClusterEditorContext = react__WEBPACK_IMPORTED_MODULE_0___default().createContext(undefined);
 function eraseImagesMetadata(images) {
     return images.map((image) => { return { path: image.path, raw_url: image.raw_url, id: image.id, distance: image.id + 10 }; });
@@ -34751,6 +34755,9 @@ const editorReducer = (state, action) => {
     throw new Error("Invalid action type " + action.type);
 };
 function handleViewerAction(state, action) {
+    /*
+    Handle actions that are not cluster-specific.
+    */
     switch (action.type) {
         case "viewer_sort":
             return Object.assign(Object.assign({}, state), { viewer_sort: action.sort });
@@ -34764,6 +34771,9 @@ function handleViewerAction(state, action) {
     throw new Error("Invalid action type " + action.type);
 }
 function handleClusterAction(state, action) {
+    /*
+    Handle actions that are cluster-specific.
+    */
     const new_clusters = new Map(state.content.clusters);
     switch (action.type) {
         case "cluster_rename":
@@ -34784,6 +34794,9 @@ function handleClusterAction(state, action) {
     throw new Error("Invalid action type " + action.type);
 }
 function handleSelectionAction(state, action) {
+    /*
+    Handle actions that are selection-specific.
+    */
     const selection = new Set(state.image_selection);
     if (state.editingCluster === null) {
         return state;
@@ -34867,8 +34880,10 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
+/*
+  This file contains the main React component for the ClusterEditor app.
+*/
 function ClusterApp({ clustering_data, editing = false, editable = false, formfield, base_url }) {
-    // transform clustering_data.clusters to Map<number, ClusterInfo>
     const [editorState, dispatchEditor] = (0,react__WEBPACK_IMPORTED_MODULE_1__.useReducer)(_actions__WEBPACK_IMPORTED_MODULE_4__.editorReducer, {
         editing: editable && editing,
         editingCluster: null,
@@ -34890,7 +34905,7 @@ function ClusterApp({ clustering_data, editing = false, editable = false, formfi
             formfield.form.submit();
         }
     };
-    // sort clusters by size
+    // sort clusters
     const cluster_sorting = {
         "size": (a, b) => b.images.length - a.images.length,
         "id": (a, b) => a.id - b.id,
@@ -34932,6 +34947,10 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
+/*
+  This file contains the React component that displays a modale to ask the user
+  to choose a target cluster for some action.
+*/
 function ClusterAskModale(props) {
     const editorContext = react__WEBPACK_IMPORTED_MODULE_1___default().useContext(_actions__WEBPACK_IMPORTED_MODULE_3__.ClusterEditorContext);
     const cluster = editorContext.state.content.clusters.get(props.not_cluster_id);
@@ -34948,14 +34967,19 @@ function ClusterAskModale(props) {
         "cluster_merge": ["mdi:merge", "Merge into this cluster"],
         "selection_move": ["mdi:folder-move", "Move images to this cluster"]
     }[props.for_action];
-    // sort clusters by size
+    // sort clusters and add one last new cluster
     const additional_cluster = { id: -1, name: "New cluster", images: [] };
+    const cluster_sorting = {
+        "size": (a, b) => b.images.length - a.images.length,
+        "id": (a, b) => a.id - b.id,
+        "name": (a, b) => a.name.localeCompare(b.name)
+    }[editorContext.state.viewer_sort];
     const clusters = [
-        ...editorContext.state.content.clusters.values(),
+        ...Array.from(editorContext.state.content.clusters.values()).sort(cluster_sorting),
         ...(props.for_action == "selection_move" ? [additional_cluster] : [])
-    ].sort((a, b) => b.images.length - a.images.length);
+    ];
     return ((0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("div", { className: "cl-modale", children: (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("div", { className: "cl-modale-wrapper", children: (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxs)("div", { className: "cl-modale-content", children: [(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("h2", { children: "Choose target cluster" }), (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("div", { className: "cl-ask-select", children: (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("div", { className: "cl-ask-list", children: clusters.map((cluster) => (cluster.id != props.not_cluster_id &&
-                                (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("div", { className: "cl-ask-cluster", children: (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)(_ClusterElement__WEBPACK_IMPORTED_MODULE_2__.MiniClusterElement, { info: cluster, selected: (selected === null || selected === void 0 ? void 0 : selected.id) == cluster.id, onClick: () => setSelected(cluster) }) }, cluster.id))) }) }), (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxs)("div", { className: "cl-modale-actions", children: [(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)(_utils_IconBtn__WEBPACK_IMPORTED_MODULE_4__.IconBtn, { onClick: () => { editorContext.dispatch({ type: "cluster_ask", cluster_id: null }); }, icon: "mdi:close", label: "Cancel" }), (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)(_utils_IconBtn__WEBPACK_IMPORTED_MODULE_4__.IconBtn, { onClick: doAction, icon: action_icon, label: action_label, disabled: selected === null })] })] }) }) }));
+                                (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("div", { className: "cl-ask-cluster", children: (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)(_ClusterElement__WEBPACK_IMPORTED_MODULE_2__.MiniClusterElement, { info: cluster, selected: (selected === null || selected === void 0 ? void 0 : selected.id) == cluster.id, onClick: () => setSelected(cluster) }) }, cluster.id))) }) }), (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxs)("div", { className: "cl-modale-actions", children: [(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)(_utils_IconBtn__WEBPACK_IMPORTED_MODULE_4__.IconBtn, { onClick: () => { editorContext.dispatch({ type: "cluster_ask", cluster_id: null }); }, icon: "mdi:close", label: "Cancel", className: "is-outline" }), (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)(_utils_IconBtn__WEBPACK_IMPORTED_MODULE_4__.IconBtn, { onClick: doAction, icon: action_icon, label: action_label, disabled: selected === null })] })] }) }) }));
 }
 
 
@@ -34986,7 +35010,14 @@ __webpack_require__.r(__webpack_exports__);
 
 
 const N_SHOWN = { "grid": 8, "rows": 18 };
-// Lightweight cluster element for the cluster list
+/*
+  This file contains the React components that displays a cluster.
+
+  Two versions are available:
+  - ClusterElement: the full cluster, with all images, and the possibility to edit it
+  - MiniClusterElement: a lightweight version of the cluster, with only a few images (for modale)
+*/
+// Lightweight cluster element for the cluster list in modale
 function MiniClusterElement(props) {
     const editorContext = react__WEBPACK_IMPORTED_MODULE_1___default().useContext(_actions__WEBPACK_IMPORTED_MODULE_2__.ClusterEditorContext);
     const cluster = props.info;
@@ -35001,6 +35032,8 @@ function ClusterElement(props) {
     const elRef = react__WEBPACK_IMPORTED_MODULE_1___default().useRef(null);
     const cluster = props.info;
     const editable = editorContext === null || editorContext === void 0 ? void 0 : editorContext.state.editing;
+    const n_shown = N_SHOWN[editorContext.state.viewer_display];
+    // useful functions
     const scrollIntoView = () => {
         setTimeout(() => { var _a; return (_a = elRef.current) === null || _a === void 0 ? void 0 : _a.scrollIntoView({ behavior: "smooth", block: "start" }); }, 100);
     };
@@ -35021,18 +35054,19 @@ function ClusterElement(props) {
     const askForMerge = () => {
         editorContext === null || editorContext === void 0 ? void 0 : editorContext.dispatch({ type: "cluster_ask", cluster_id: cluster.id, for_action: "cluster_merge" });
     };
-    const n_shown = N_SHOWN[editorContext.state.viewer_display];
-    // if juste expanded or editing, scroll to the element
+    // when expanded or edited, scroll to the element
     (0,react__WEBPACK_IMPORTED_MODULE_1__.useEffect)(() => {
         if (expanded || props.editing)
             scrollIntoView();
     }, [expanded, props.editing]);
+    // sub components
     const btnMore = (cluster.images.length > n_shown &&
         (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxs)("a", { className: "cl-more", href: "javascript:void(0)", onClick: () => { setExpanded(!expanded); scrollIntoView(); }, children: [expanded ? "–" : "+", cluster.images.length - n_shown] }));
     const btnExpand = (cluster.images.length > n_shown &&
         (expanded ?
             (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("p", { children: (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)(_utils_IconBtn__WEBPACK_IMPORTED_MODULE_5__.IconBtn, { icon: "mdi:chevron-up", label: "Collapse", onClick: () => { setExpanded(false); scrollIntoView(); } }) }) :
             (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("p", { children: (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)(_utils_IconBtn__WEBPACK_IMPORTED_MODULE_5__.IconBtn, { icon: "mdi:chevron-down", label: "Expand", onClick: () => { setExpanded(true); } }) })));
+    // render
     return ((0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxs)("div", { className: "cl-cluster" + (expanded || props.editing ? " cl-expanded" : ""), children: [(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("div", { className: "cl-anchor", ref: elRef }), (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("div", { className: "cl-props", children: (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxs)("div", { className: "cl-propcontent", children: [(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxs)("div", { className: "cl-propinfo", children: [(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("p", { className: "cl-cluster-title", children: (renaming && props.editing) ?
                                         ((0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxs)("form", { onSubmit: onRenameSubmit, children: [(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("input", { type: "text", ref: nameInput, defaultValue: cluster.name, autoFocus: true }), (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("a", { href: "javascript:void(0)", onClick: onRenameSubmit, className: "btn", children: (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)(_iconify_react__WEBPACK_IMPORTED_MODULE_3__.Icon, { icon: "mdi:check-bold" }) })] })) :
                                         ((0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxs)((react__WEBPACK_IMPORTED_MODULE_1___default().Fragment), { children: [(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("span", { children: cluster.name }), props.editing && (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("a", { href: "javascript:void(0)", className: "btn is-edit", onClick: () => { toggleEdition(true); setRenaming(true); }, title: "Rename", children: (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)(_iconify_react__WEBPACK_IMPORTED_MODULE_3__.Icon, { icon: "mdi:edit" }) })] })) }), (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("p", { children: cluster.id >= 0 && (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxs)((react__WEBPACK_IMPORTED_MODULE_1___default().Fragment), { children: ["Cluster #", cluster.id, ", ", cluster.images.length, " images"] }) }), editable ?
@@ -35040,8 +35074,8 @@ function ClusterElement(props) {
                                             (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxs)((react__WEBPACK_IMPORTED_MODULE_1___default().Fragment), { children: [(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)(_utils_IconBtn__WEBPACK_IMPORTED_MODULE_5__.IconBtn, { icon: "mdi:merge", label: "Merge with...", onClick: askForMerge }), (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)(_utils_IconBtn__WEBPACK_IMPORTED_MODULE_5__.IconBtn, { icon: "mdi:check-bold", label: "End edition", onClick: () => toggleEdition(false) })] }) :
                                             (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)(_utils_IconBtn__WEBPACK_IMPORTED_MODULE_5__.IconBtn, { icon: "mdi:edit", label: "Edit cluster", onClick: () => toggleEdition(true) }) }) : btnExpand] }), cluster.proto_url &&
                             (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxs)("div", { className: "cl-protoinfo", children: [(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("p", { children: transformed ?
-                                            (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)(_utils_IconBtn__WEBPACK_IMPORTED_MODULE_5__.IconBtn, { icon: "mdi:image", label: "Show images", onClick: () => { setTransformed(false); } }) :
-                                            (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)(_utils_IconBtn__WEBPACK_IMPORTED_MODULE_5__.IconBtn, { icon: "mdi:panorama-variant", label: "Show protos", onClick: () => { setTransformed(true); } }) }), (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxs)("div", { className: "cl-proto", children: [(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("img", { src: (editorContext === null || editorContext === void 0 ? void 0 : editorContext.state.base_url) + cluster.proto_url, alt: "cl-proto", className: "prototype" }), cluster.mask_url && false && 0] })] })] }) }), (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("div", { className: "cl-samples", children: props.editing ?
+                                            (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)(_utils_IconBtn__WEBPACK_IMPORTED_MODULE_5__.IconBtn, { icon: "mdi:image", className: "is-outline", label: "Show images", onClick: () => { setTransformed(false); } }) :
+                                            (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)(_utils_IconBtn__WEBPACK_IMPORTED_MODULE_5__.IconBtn, { icon: "mdi:panorama-variant", className: "is-outline", label: "Show protos", onClick: () => { setTransformed(true); } }) }), (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxs)("div", { className: "cl-proto", children: [(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("img", { src: (editorContext === null || editorContext === void 0 ? void 0 : editorContext.state.base_url) + cluster.proto_url, alt: "cl-proto", className: "prototype" }), cluster.mask_url && false && 0] })] })] }) }), (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("div", { className: "cl-samples", children: props.editing ?
                     (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)(_ImageLists__WEBPACK_IMPORTED_MODULE_4__.SelectableImageList, { images: cluster.images, transformed: transformed }) :
                     (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)(_ImageLists__WEBPACK_IMPORTED_MODULE_4__.BasicImageList, { images: cluster.images, transformed: transformed, limit: expanded ? undefined : n_shown, expander: btnMore }) }), editable && !props.editing &&
                 (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxs)("a", { className: "cl-overlay cl-hoveroptions", href: "javascript:void(0)", onClick: () => toggleEdition(true), children: [(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)(_utils_IconBtn__WEBPACK_IMPORTED_MODULE_5__.IconBtn, { icon: "mdi:edit", label: "Edit cluster" }), (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)(_utils_IconBtn__WEBPACK_IMPORTED_MODULE_5__.IconBtn, { icon: "mdi:merge", label: "Merge with...", onClick: (e) => { e.stopPropagation(); askForMerge(); } })] })] }));
@@ -35069,6 +35103,13 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
+/*
+  This file contains the React components that display the list of images in a cluster.
+
+  Two versions are available:
+  - BasicImageList: the full list of images, with no selection
+  - SelectableImageList: the list of images with checkboxes for selection
+*/
 function SelectableImageList(props) {
     const editorContext = react__WEBPACK_IMPORTED_MODULE_1___default().useContext(_actions__WEBPACK_IMPORTED_MODULE_2__.ClusterEditorContext);
     const selection = editorContext.state.image_selection;
@@ -35078,7 +35119,6 @@ function SelectableImageList(props) {
     return ((0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxs)("div", { className: "cl-images cl-selectable", children: [props.images.slice(0, props.limit).map((image) => ((0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)(ClusterImage, { image: image, transformed: props.transformed, selectable: true, selected: selection.has(image), onClick: () => toggleSelection(image) }, image.path))), props.images.length === 0 && (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("p", { children: "\u2205" }), props.expander] }));
 }
 function BasicImageList(props) {
-    const editorContext = react__WEBPACK_IMPORTED_MODULE_1___default().useContext(_actions__WEBPACK_IMPORTED_MODULE_2__.ClusterEditorContext);
     return ((0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxs)("div", { className: "cl-images", children: [props.images.slice(0, props.limit).map((image) => ((0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)(ClusterImage, { image: image, transformed: props.transformed, selectable: false }, image.path))), props.images.length === 0 && (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("p", { children: "\u2205" }), props.expander] }));
 }
 function ClusterImage(props) {
@@ -35101,6 +35141,10 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   serializeClusterFile: () => (/* binding */ serializeClusterFile),
 /* harmony export */   unserializeClusterFile: () => (/* binding */ unserializeClusterFile)
 /* harmony export */ });
+/*
+ Types for the cluster app
+ It also includes a util function to serialize/deserialize the clustering file.
+*/
 function unserializeClusterFile(file) {
     return {
         clusters: new Map(Object.entries(file.clusters).map(([key, value]) => [parseInt(key), value])),
@@ -35143,8 +35187,9 @@ function TaskProgressTracker(props) {
             .then(response => response.json())
             .then(data => {
             setStatus(data);
-            if (data.status === "finished") {
+            if (data.is_finished) {
                 setFinished(true);
+                window.location.reload();
             }
             else {
                 setTimeout(poll, 1000);
@@ -35187,6 +35232,9 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _iconify_react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @iconify/react */ "./node_modules/@iconify/react/dist/iconify.mjs");
 
 
+/*
+  A simple useful button with an icon
+*/
 function IconBtn(props) {
     return ((0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxs)("a", { className: props.className + (props.disabled ? " disabled" : "") + " btn", href: "javascript:void(0)", onClick: props.onClick, children: [(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)(_iconify_react__WEBPACK_IMPORTED_MODULE_1__.Icon, { icon: props.icon }), props.label && (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("span", { children: props.label })] }));
 }
@@ -37363,9 +37411,25 @@ __webpack_require__.r(__webpack_exports__);
 
 
 function initClusterViewer(target_root, clustering_data, base_media_url, editable, editing, formfield) {
+    /*
+    Main entry point for the clustering viewer app.
+  
+    target_root: the root element to render the app in
+    clustering_data: the clustering data to render
+    base_media_url: the base url for media files
+    editable: whether the app should be editable
+    editing: whether the app should be in editing mode
+    formfield: the form field to update with the current clustering data
+    */
     (0,react_dom_client__WEBPACK_IMPORTED_MODULE_1__.createRoot)(target_root).render((0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)(_ClusterApp_components_ClusterApp__WEBPACK_IMPORTED_MODULE_2__.ClusterApp, { clustering_data: clustering_data, base_url: base_media_url, editable: editable, editing: editing, formfield: formfield }));
 }
 function initProgressTracker(target_root, tracking_url) {
+    /*
+    Main entry point for the progress tracker app.
+  
+    target_root: the root element to render the app in
+    tracking_url: the url to track
+    */
     (0,react_dom_client__WEBPACK_IMPORTED_MODULE_1__.createRoot)(target_root).render((0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)(_ProgressTracker__WEBPACK_IMPORTED_MODULE_3__.TaskProgressTracker, { tracking_url: tracking_url }));
 }
 
