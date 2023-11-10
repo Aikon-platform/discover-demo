@@ -21,6 +21,8 @@ class LoggingTrainerMixin:
     """
     A mixin with hooks to track training progress inside dti Trainers
     """
+    output_proto_dir: str = "prototypes"
+
     def __init__(self, logger: TLogger, *args, **kwargs):
         self.jlogger = logger
         super().__init__(*args, **kwargs)
@@ -97,9 +99,13 @@ class LoggingTrainerMixin:
         cluster_by_path.to_json(self.run_dir / "cluster_by_path.json", orient="index")
 
         # Render jinja template
-        env = Environment(loader=FileSystemLoader('templates'))
+        env = Environment(loader=FileSystemLoader('app/templates'))
         template = env.get_template('result-template.html')
-        output_from_parsed_template = template.render(clusters=cluster_by_path.to_dict(orient="index"))
+        output_from_parsed_template = template.render(
+            clusters=range(self.n_prototypes),
+            images=cluster_by_path.to_dict(orient="index"), 
+            proto_dir=self.output_proto_dir)
+
         with open(self.run_dir / "clusters.html", "w") as fh:
             fh.write(output_from_parsed_template)
 
@@ -109,14 +115,27 @@ class LoggingTrainerMixin:
     def _get_cluster_argmin_idx(self, images):
         raise NotImplementedError()
 
+
 class LoggedKMeansTrainer(LoggingTrainerMixin, KMeansTrainer):
+    """
+    A KMeansTrainer with hooks to track training progress
+    """
+    
+    output_proto_dir = "prototypes"
+
     @torch.no_grad()
     def _get_cluster_argmin_idx(self, images):
         out = self.model(images)[1:]
         dist_min_by_sample, argmin_idx = map(lambda t: t.cpu().numpy(), out)
         return dist_min_by_sample, argmin_idx
 
+
 class LoggedSpritesTrainer(LoggingTrainerMixin, SpritesTrainer):
+    """
+    A SpritesTrainer with hooks to track training progress
+    """
+    output_proto_dir = "masked_prototypes"
+
     @torch.no_grad()
     def _get_cluster_argmin_idx(self, images):
         dist = self.model(images)[1]
@@ -127,33 +146,70 @@ class LoggedSpritesTrainer(LoggingTrainerMixin, SpritesTrainer):
         dist_min_by_sample, argmin_idx = map(lambda t: t.cpu().numpy(), dist.min(1))
         return dist_min_by_sample, argmin_idx
 
-def run_kmeans_training(clustering_id: str, dataset_id: str, parameters: dict, logger: TLogger=LoggerHelper) -> Path:
+
+def run_kmeans_training(
+        clustering_id: str, 
+        dataset_id: str, 
+        parameters: dict, 
+        logger: TLogger=LoggerHelper) -> Path:
+    """
+    Main function to run DTI clustering training
+
+    Parameters:
+    - clustering_id: the ID of the clustering task
+    - dataset_id: the ID of the dataset
+    - parameters: an object containing the training parameters (for now: n_prototypes, transformation_sequence)
+    - logger: a logger object
+    """
+    # Load config template
     train_config = load(open(Path(__file__).parent / "templates" / "kmeans-conf.yml"), Loader=Loader)
 
+    # Set dataset tag and run dir
     train_config["dataset"]["tag"] = dataset_id
     run_dir = RUNS_PATH / clustering_id
 
+    # Set training parameters from parameters
     if "n_prototypes" in parameters:
         train_config["model"]["n_prototypes"] = parameters["n_prototypes"]
 
     if "transformation_sequence" in parameters:
         train_config["model"]["transformation_sequence"] = parameters["transformation_sequence"]
 
+    # Save config to file
     config_file = CONFIGS_PATH / f"{clustering_id}.yml"
     CONFIGS_PATH.mkdir(parents=True, exist_ok=True)
     dump(train_config, open(config_file, "w"), Dumper=Dumper)
 
+    # Run training
     trainer = LoggedKMeansTrainer(logger, config_file, run_dir, seed=train_config["training"]["seed"])
     trainer.run(seed=train_config["training"]["seed"])
 
+    # Return output directory
     return run_dir
 
-def run_sprites_training(clustering_id: str, dataset_id: str, parameters: dict, logger: TLogger=LoggerHelper) -> Path:
+
+def run_sprites_training(
+        clustering_id: str, 
+        dataset_id: str, 
+        parameters: dict, 
+        logger: TLogger=LoggerHelper) -> Path:
+    """
+    Main function to run DTI sprites training
+
+    Parameters:
+    - clustering_id: the ID of the clustering task
+    - dataset_id: the ID of the dataset
+    - parameters: an object containing the training parameters (for now: n_prototypes, transformation_sequence)
+    - logger: a logger object
+    """
+    # Load config template
     train_config = load(open(Path(__file__).parent / "templates" / "sprites-conf.yml"), Loader=Loader)
 
+    # Set dataset tag and run dir
     train_config["dataset"]["tag"] = dataset_id
     run_dir = RUNS_PATH / clustering_id
 
+    # Set training parameters from parameters
     if "n_prototypes" in parameters:
         train_config["model"]["n_sprites"] = parameters["n_prototypes"]
 
@@ -161,11 +217,14 @@ def run_sprites_training(clustering_id: str, dataset_id: str, parameters: dict, 
         train_config["model"]["transformation_sequence"] = parameters["transformation_sequence"]
         train_config["model"]["transformation_sequence_bkg"] = parameters["transformation_sequence"]
 
+    # Save config to file
     config_file = CONFIGS_PATH / f"{clustering_id}.yml"
     CONFIGS_PATH.mkdir(parents=True, exist_ok=True)
     dump(train_config, open(config_file, "w"), Dumper=Dumper)
 
+    # Run training
     trainer = LoggedSpritesTrainer(logger, config_file, run_dir, seed=train_config["training"]["seed"])
     trainer.run(seed=train_config["training"]["seed"])
 
+    # Return output directory
     return run_dir

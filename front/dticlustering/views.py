@@ -20,7 +20,9 @@ class DTIClusteringStart(CreateView):
     form_class = DTIClusteringForm
     
     def get_success_url(self):
+        # Start clustering
         self.object.start_clustering()
+
         return self.object.get_absolute_url()
 
 
@@ -30,14 +32,19 @@ class DTIClusteringStartFrom(DTIClusteringStart):
     """
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
+
         self.from_dti = DTIClustering.objects.get(id=self.kwargs["pk"])
+
         kwargs["dataset"] = self.from_dti.dataset
         kwargs["initial"] = {"name": self.from_dti.name}
+
         return kwargs
     
     def get_context_data(self, **kwargs) -> dict[str, Any]:
         context = super().get_context_data(**kwargs)
+
         context["from_dti"] = self.from_dti
+
         return context
     
 
@@ -60,6 +67,7 @@ class DTIClusteringProgress(SingleObjectMixin, View):
     def get(self, *args, **kwargs):
         if not hasattr(self, "object"):
             self.object = self.get_object()
+
         return JsonResponse({
             "is_finished": self.object.is_finished,
             **self.object.get_progress(),
@@ -77,7 +85,9 @@ class DTIClusteringCancel(DetailView):
     def post(self, *args, **kwargs):
         if not hasattr(self, "object"):
             self.object = self.get_object()
+        
         self.object.cancel_clustering()
+
         return redirect(self.object.get_absolute_url())
 
 
@@ -133,19 +143,24 @@ class SavedClusteringFromDTI(CreateView):
     
     def get_form_kwargs(self) -> dict[str, Any]:
         kwargs = super().get_form_kwargs()
+
         try:
             self.from_dti = DTIClustering.objects.get(id=self.kwargs["from_pk"])
         except DTIClustering.DoesNotExist:
             raise Http404()
+
         initial = kwargs.get("initial", {})
         initial["clustering_data"] = self.from_dti.expanded_results
         kwargs["from_dti"] = self.from_dti
+
         return kwargs
     
     def get_context_data(self, **kwargs) -> dict[str, Any]:
         context = super().get_context_data(**kwargs)
+
         context["from_dti"] = self.from_dti
         context["editing"] = True
+
         return context
 
 
@@ -162,7 +177,9 @@ class SavedClusteringEdit(UpdateView):
 
     def get_context_data(self, **kwargs) -> dict[str, Any]:
         context = super().get_context_data(**kwargs)
+
         context["from_dti"] = self.object.from_dti
+
         return context
     
 class SavedClusteringDelete(DeleteView):
@@ -198,4 +215,5 @@ class SavedClusteringCSVExport(SingleObjectMixin, View):
         response['Content-Disposition'] = 'attachment; filename="clustering.csv"'
         data = self.object.format_as_csv()
         response.write(data)
+
         return response

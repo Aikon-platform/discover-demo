@@ -45,7 +45,7 @@ RUN source venv/bin/activate && pip install --upgrade pip && pip install -r requ
 
 # Install components
 COPY --chown=${USER} ./ ./api/
-COPY /confs/nginx.conf /etc/nginx/conf.d/demowebsite.conf
+COPY /docker-confs/nginx.conf /etc/nginx/conf.d/demowebsite.conf
 
 EXPOSE 8001
 
@@ -54,4 +54,4 @@ RUN mkdir -p var/dramatiq/
 ## Run command at each container launch
 CMD export LC_ALL=C.UTF-8 && export LANG=C.UTF-8 && \
     source venv/bin/activate && \
-    supervisord -c api/confs/supervisord.conf
+    supervisord -c api/docker-confs/supervisord.conf

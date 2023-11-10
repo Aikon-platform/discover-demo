@@ -1,3 +1,6 @@
 from django.contrib import admin
 
-# Register your models here.
+from .models import DTIClustering, SavedClustering
+
+admin.site.register(DTIClustering)
+admin.site.register(SavedClustering)

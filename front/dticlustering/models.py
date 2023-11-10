@@ -108,7 +108,7 @@ class DTIClustering(models.Model):
         """
         Returns a unique token to secure in the notification callback URL
         """
-        return uuid.uuid5(uuid.NAMESPACE_URL, settings.SECRET_KEY + str(self.id)).hex
+        return uuid.uuid5(uuid.NAMESPACE_URL, settings.SECRET_KEY[:10] + str(self.id)).hex
 
     def start_clustering(self):
         """
@@ -204,7 +204,6 @@ class DTIClustering(models.Model):
         """
 
         path = self.result_full_path
-        media_url = self.result_media_url
         result_dict = {}
 
         clusters_path = path / "clusters"
@@ -226,7 +225,7 @@ class DTIClustering(models.Model):
         # no proto
         if not prototypes_path.exists():
             result_dict["clusters"] = []
-            return
+            return result_dict
 
         # List prototypes
         prototypes = {
@@ -303,12 +302,15 @@ class DTIClustering(models.Model):
 
         return result_dict
 
+
 class SavedClustering(models.Model):
     """
     Model for saving clustering modifications made by user
     """
     from_dti = models.ForeignKey(DTIClustering, on_delete=models.CASCADE, related_name="saved_clustering")
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    name = models.CharField(max_length=64, default="dti", blank=True, 
+                            verbose_name="Clustering name", help_text="An optional name to identify this clustering")
 
     date = models.DateTimeField(auto_now=True, editable=False)
 
@@ -327,8 +329,11 @@ class SavedClustering(models.Model):
         """
         output = io.StringIO()
         writer = csv.writer(output)
+
         writer.writerow(["image_id", "image_path", "cluster_id", "cluster_name"])
+
         for cluster_id, cluster in self.clustering_data["clusters"].items():
             for img in cluster["images"]:
                 writer.writerow([img["id"], img["path"], cluster_id, cluster["name"]])
+
         return output.getvalue()

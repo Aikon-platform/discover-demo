@@ -1,5 +1,7 @@
 from .base import ENV
 
+# Load the appropriate settings file based on the TARGET environment variable
+
 if ENV("TARGET", default="").strip() == "dev":
     from .dev import *
 elif ENV("TARGET", default="").strip() == "prod":

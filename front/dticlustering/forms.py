@@ -13,7 +13,9 @@ DTI_TRANSFORM_OPTIONS = [
 ]
 
 class DTIClusteringForm(forms.ModelForm):
-    dataset_zip = forms.FileField(label='Dataset', help_text='A .zip file containing the dataset to be clustered')
+    dataset_zip = forms.FileField(
+        label='Dataset', help_text='A .zip file containing the dataset to be clustered')
+
     p_n_clusters = forms.IntegerField(
         label='Number of clusters', 
         help_text='The number of clusters to be generated',
@@ -39,7 +41,9 @@ class DTIClusteringForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         self.__dataset = kwargs.pop('dataset', None)
+
         super().__init__(*args, **kwargs)
+
         if self.__dataset:
             self.fields.pop('dataset_zip')
 
@@ -67,22 +71,30 @@ class DTIClusteringForm(forms.ModelForm):
 
         return instance
     
+
 class SavedClusteringForm(forms.ModelForm):
     class Meta:
         model = SavedClustering
-        fields = ('clustering_data',)
+        fields = ('name', 'clustering_data',)
         widgets = {
             'clustering_data': forms.HiddenInput()
         }
     
     def __init__(self, *args, **kwargs):
         self.__from_dti = kwargs.pop('from_dti', None)
+
         super().__init__(*args, **kwargs)
+
+        if self.__from_dti:
+            self.fields["name"].initial = self.__from_dti.name
     
     def save(self, commit=True):
         instance = super().save(commit=False)
+
         if self.__from_dti:
             instance.from_dti = self.__from_dti
+
         if commit:
             instance.save()
+
         return instance

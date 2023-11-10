@@ -4,6 +4,8 @@ This folder contains the resources for the front-end server.
 
 ## Development
 
+### Python setup
+
 Copy the file `.env.template` to a file `.env`. Change its content to match your setup (especially regarding the paths).
 
 You need to install redis and python:
@@ -42,6 +44,34 @@ And the server:
     ```
 
 You can now connect to [localhost:8000](http://localhost:8000/) and see the website.
+
+### Webpack setup
+
+This project uses webpack to bundle the javascript and sass components (commited in `shared/static/`).
+
+If you want to develop those components, you need first to [install npm](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm), for example by installing nvm, and then initializing npm:
+
+    ```bash
+    # Install nvm
+    curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.5/install.sh | bash
+    # Install node
+    nvm install node
+    ```
+
+You then need to initialize npm in the webpack folder, and install all required packages:
+
+    ```bash
+    cd webpack
+    npm init
+    ```
+
+You can then start webpack compiler from the webpack folder:
+
+    ```bash
+    npx webpack --watch
+    ```
+
+**Note:** If you only need to update css, you can simply set up any sass compiler, to take as input `webpack/src/sass/style.scss` and output `shared/static/css/style.css`, it might be much quicker.
 
 ## Production
 

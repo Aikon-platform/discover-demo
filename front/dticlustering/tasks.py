@@ -5,16 +5,19 @@ import traceback
 
 from .models import DTIClustering
 
+"""
+All dramatiq tasks related to the DTI clustering
+"""
 
 @dramatiq.actor
 def collect_results(dticlustering_id:str, result_url:str):
-    
+    """
+    Download the results from the API and save them to the dticlustering.results_path
+    """
     try:
         dticlustering = DTIClustering.objects.get(id=dticlustering_id)
         
         # download the results from the API
-        # save them to the dticlustering.results_path
-        
         res = requests.get(result_url, stream=True)
         res.raise_for_status()
         dticlustering.result_full_path.mkdir(parents=True, exist_ok=True)

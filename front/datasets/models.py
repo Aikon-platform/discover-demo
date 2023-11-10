@@ -3,9 +3,13 @@ from django.utils.deconstruct import deconstructible
 import uuid
 import os
 
+# UTILS
 
 @deconstructible
 class PathAndRename(object):
+    """
+    This class is used to rename the uploaded files
+    """
     def __init__(self, sub_path):
         self.path = sub_path
 
@@ -16,9 +20,12 @@ class PathAndRename(object):
 
 path_datasets = PathAndRename("datasets/")
 
+# MODELS
 
-# A simple model for a dataset made of a single .zip file
 class ZippedDataset(models.Model):
+    """
+    This class is used to store simple datasets made of a single uploaded .zip file
+    """
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     
     zip_file = models.FileField(upload_to=path_datasets, max_length=500)
