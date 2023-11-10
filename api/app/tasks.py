@@ -3,12 +3,10 @@ from dramatiq.middleware import CurrentMessage
 from typing import Optional
 import requests
 from zipfile import ZipFile
-import traceback
-from PIL import Image
 
 from . import config
 from .training import DATASETS_PATH, run_kmeans_training, run_sprites_training
-from .utils.logging import JobLogger, notifying, TLogger, LoggerHelper
+from .utils.logging import notifying, TLogger, LoggerHelper
 
 @dramatiq.actor(time_limit=1000*60*60, max_retries=0, store_results=True)
 @notifying
@@ -18,6 +16,16 @@ def train_dti(
     dataset_url: str, 
     parameters: Optional[dict]=None, 
     logger: TLogger=LoggerHelper):
+    """
+    Train a DTI model
+
+    Parameters:
+    - clustering_id: the ID of the clustering task
+    - dataset_id: the ID of the dataset
+    - dataset_url: the URL of the zipped dataset to be downloaded
+    - parameters: a JSON object containing the training parameters
+    - logger: a logger object
+    """
 
     current_task = CurrentMessage.get_current_message()
     current_task_id = current_task.message_id
@@ -60,16 +68,6 @@ def train_dti(
     # zip results to config.DTI_RESULTS_PATH
     with ZipFile(result_file, "w") as zipObj:
         for file in output_path.glob("**/*"):
-            # convert png to jpg
-            """
-            if file.suffix == ".png":
-                im = Image.open(file)
-                rgb_im = im.convert("RGB")
-                rgb_im.save(file.with_suffix(".jpg"), quality=90)
-                file.unlink()
-                file = file.with_suffix(".jpg")
-            """
-
             if file.suffix == ".pkl": # Don't include the model
                 continue
 

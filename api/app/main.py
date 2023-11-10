@@ -8,9 +8,11 @@ from dramatiq.middleware import CurrentMessage
 from dramatiq.results.backends import RedisBackend
 from .utils.logging import LoggedResults
 
+# Flask setup
 app = Flask(__name__)
 app.config.from_object(config.FLASK_CONFIG)
 
+# Dramatiq setup
 broker = RedisBroker(url=config.BROKER_URL)
 
 event_backend = backends.RedisBackend(client=broker.client)
@@ -25,6 +27,6 @@ broker.add_middleware(results)
 
 dramatiq.set_broker(broker)
 
-
+# Import routes and tasks
 from .routes import *
 from .tasks import *

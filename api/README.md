@@ -12,6 +12,15 @@ You need to install redis and python:
     sudo apt-get install redis-server python3-venv python3-dev
     ```
 
+You need to init the dti submodule (and have the access to the [dti-sprites](https://github.com/sonatbaltaci/dti-sprites) project):
+
+    ```bash
+    cd app/dti
+    git submodule init
+    git submodule update
+    cd ../../
+    ```
+
 Create a python virtual environment and install the required packages:
 
     ```bash

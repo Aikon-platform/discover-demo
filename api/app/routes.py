@@ -1,11 +1,9 @@
 from flask import request, send_from_directory
 from slugify import slugify
 import uuid
-from dramatiq import get_broker
 from dramatiq_abort import abort
 from dramatiq.results import ResultMissing, ResultFailure
 import json
-import traceback
 
 from . import config
 
@@ -22,7 +20,7 @@ def start_clustering():
     - dataset_url [required]: the URL of the zipped dataset to be used
     - clustering_id [optional]: a unique identifier for this clustering task
     - dataset_id [optional]: a unique identifier for the dataset to be used
-    - callback_url [optional]: the URL to be called when the task is finished
+    - notify_url [optional]: the URL to be called when the task is finished
     - parameters [optional]: a JSON object containing the parameters to be used
 
     The callback_url will be called with a JSON object containing the following keys:
@@ -86,7 +84,6 @@ def result(tracking_id:str):
     """
     Get the result of a DTI clustering task
     """
-    # return the static file
     if not config.USE_NGINX_XACCEL:
         return send_from_directory(config.DTI_RESULTS_PATH, f"{slugify(tracking_id)}.zip")
     
