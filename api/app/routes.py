@@ -11,6 +11,7 @@ from . import config
 
 from .main import app
 from .tasks import train_dti
+from .utils.fileutils import xaccel_send_from_directory
 
 @app.route("/clustering/start", methods=["POST"])
 def start_clustering():
@@ -86,4 +87,7 @@ def result(tracking_id:str):
     Get the result of a DTI clustering task
     """
     # return the static file
-    return send_from_directory(config.DTI_RESULTS_PATH, f"{slugify(tracking_id)}.zip")
+    if not config.USE_NGINX_XACCEL:
+        return send_from_directory(config.DTI_RESULTS_PATH, f"{slugify(tracking_id)}.zip")
+    
+    return xaccel_send_from_directory(config.DTI_RESULTS_PATH, config.DTI_XACCEL_PREFIX, f"{slugify(tracking_id)}.zip")

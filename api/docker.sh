@@ -12,5 +12,5 @@ if [ "$1" = "pull" ]; then
 fi;
 
 docker run -d --rm --gpus all --name demowebsiteapi \
-   -v /home/demowebsiteapi/data/:/data/ \
-   -u 1001:1001 demowebsiteapi
+   -v /home/champenr/dti-demo/data/api/:/data/ -p 127.0.0.1:8001:8001 \
+   demowebsiteapi

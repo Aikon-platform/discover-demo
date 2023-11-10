@@ -31,7 +31,6 @@ RUN apt-get update && apt-get install -y \
     redis-server \ 
     nginx
 
-USER ${USER}
 WORKDIR /home/${USER}
 
 ## Set nvidia
@@ -46,7 +45,7 @@ RUN source venv/bin/activate && pip install --upgrade pip && pip install -r requ
 
 # Install components
 COPY --chown=${USER} ./ ./api/
-COPY /confs/nginx.conf /etc/nginx/nginx.conf
+COPY /confs/nginx.conf /etc/nginx/conf.d/demowebsite.conf
 
 EXPOSE 8001
 

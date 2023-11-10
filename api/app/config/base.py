@@ -12,3 +12,5 @@ class FLASK_CONFIG():
 BROKER_URL = "redis:///1"
 
 DTI_RESULTS_PATH = Path(ENV("DTI_DATA_FOLDER", default=f"{BASE_DIR}/data")) / "results"
+
+USE_NGINX_XACCEL = False
