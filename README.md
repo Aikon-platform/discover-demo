@@ -15,6 +15,6 @@ Please refer to [api/README](api/README.md) and [front/README](front/README.md) 
 
 To start everything in one killable process, run (after installing each part like advised in the subfolders):
 
-    ```bash
-    bash run.sh
-    ```
+```bash
+bash run.sh
+```

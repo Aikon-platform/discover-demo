@@ -8,38 +8,38 @@ Copy the file `.env.template` to a file `.env`. Change its content to match your
 
 You need to install redis and python:
 
-    ```bash
-    sudo apt-get install redis-server python3-venv python3-dev
-    ```
+```bash
+sudo apt-get install redis-server python3-venv python3-dev
+```
 
 You need to init the dti submodule (and have the access to the [dti-sprites](https://github.com/sonatbaltaci/dti-sprites) project):
 
-    ```bash
-    cd app/dti
-    git submodule init
-    git submodule update
-    cd ../../
-    ```
+```bash
+cd app/dti
+git submodule init
+git submodule update
+cd ../../
+```
 
 Create a python virtual environment and install the required packages:
 
-    ```bash
-    python3 -m venv venv
-    . venv/bin/activate
-    pip install -r requirements.txt
-    ```
+```bash
+python3 -m venv venv
+. venv/bin/activate
+pip install -r requirements.txt
+```
 
 You can now run the API worker:
 
-    ```bash
-    ./venv/bin/dramatiq app.main -p 1 -t 1
-    ```
+```bash
+./venv/bin/dramatiq app.main -p 1 -t 1
+```
 
 And the server:
 
-    ```bash
-    ./venv/bin/flask --app app.main run --debug
-    ```
+```bash
+./venv/bin/flask --app app.main run --debug
+```
 
 ## Production
 
@@ -53,9 +53,9 @@ Cherck the directory binding in `docker.sh` is correct (TODO: use env variable).
 
 Build the docker using the premade script:
 
-    ```bash
-    bash docker.sh rebuild
-    ```
+```bash
+bash docker.sh rebuild
+```
 
 It should have started the docker, check it is the case with `sudo docker logs demowebsiteapi -f`.
 
@@ -65,9 +65,9 @@ The API is now accessible locally at `http://localhost:8001`. Configure a connec
 
 Just run:
 
-    ```bash
-    bash docker.sh pull
-    ```
+```bash
+bash docker.sh pull
+```
 
 **Note:** as a redis server is encapsulated inside the docker, its data is **non-persistent**: any task scheduled before a `bash docker.sh <anything>` will be forgotten. Result files are kept, though, as they are in the persistent storage.
 
