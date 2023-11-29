@@ -124,7 +124,7 @@ python manage.py collectstatic
 python manage.py createsuperuser
 ```
 
-### Service and server
+### Services and server
 
 You have several options to create the service that starts the program and automatically restarts it if it crashes.
 
@@ -139,6 +139,43 @@ The discover-demo runs this way. To install it, follow the [official documentati
 
 You then need to configure the web server (nginx or apache2) to serve the static content (media and static). See [django doc example](https://docs.djangoproject.com/en/4.2/howto/deployment/wsgi/modwsgi/#serving-files)
 
+Due to a [bug with UUID](https://stackoverflow.com/questions/45990550/valid-uuid-is-not-a-valid-uuid), add `WSGIApplicationGroup %{GLOBAL}` to the apache2 conf.
+
+Lastly, you need to configure a service to run the dramatiq daemon. For instance write the following `/etc/systemd/system/dramatiq.service`
+
+```
+[Unit]
+Description=DramatiQ worker for Discover demo
+Wants=network-online.target
+After=network-online.target
+Requires=redis.service
+StartLimitIntervalSec=60
+
+[Service]
+WorkingDirectory=/home/discover/website/front/
+ExecStart=/home/discover/website/front/venv/bin/python manage.py rundramatiq -p 1 -t 1
+User=www-data
+Group=www-data
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
+```
+
+Then :
+
+```bash
+systemctl enable dramatiq.service
+service redis start
+service dramatiq start
+```
+
+### Link with API
+
+The front-end has to connect to the API server. You need to define `DTI_API_URL` to do so.
+
+A good thing is to tunnel securely the connection between both. For `discover-demo.enpc.fr`, it is done with `spiped`, based on [this tutorial](https://www.codeflow.site/fr/article/how-to-encrypt-traffic-to-redis-with-spiped-on-ubuntu-16-04) (with target ports 8001, in service `spiped-connect` on frontend server and `spiped-dti` on worker).
+
 ### Updating
 
 To update, please run all those commands :
@@ -150,4 +187,9 @@ python manage.py migrate
 yes | python manage.py collectstatic
 ```
 
-And then restart the service, for instance with `sudo service demowebsite restart`. Or for apache mod_wsgi, simply with `touch demowebsite/wsgi.py`
+And then restart the services, with 
+
+```bash
+sudo service apache2 restart
+sudo service dramatiq restart
+```
