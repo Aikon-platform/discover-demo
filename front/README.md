@@ -80,7 +80,7 @@ npx webpack --watch
 You need to install redis, python, and supervisor:
 
 ```bash
-sudo apt-get install redis-server python3-venv python3-dev supervisord
+sudo apt-get install redis-server python3-venv python3-dev
 ```
 
 Create a python virtual environment and install the required packages:
@@ -101,12 +101,12 @@ sudo apt update
 sudo apt install postgresql
 # Init database
 sudo -u postgres psql
-postgres=# CREATE DATABASE demowebsite;
-postgres=# CREATE USER demowebsite WITH PASSWORD '<password>';
-postgres=# ALTER ROLE demowebsite SET client_encoding TO 'utf8';
-postgres=# ALTER ROLE demowebsite SET default_transaction_isolation TO 'read committed';
-postgres=# ALTER ROLE demowebsite SET timezone TO 'UTC';
-postgres=# GRANT ALL PRIVILEGES ON DATABASE vhs TO demowebsite;
+postgres=# CREATE DATABASE discover;
+postgres=# CREATE USER discover WITH PASSWORD '<password>';
+postgres=# ALTER ROLE discover SET client_encoding TO 'utf8';
+postgres=# ALTER ROLE discover SET default_transaction_isolation TO 'read committed';
+postgres=# ALTER ROLE discover SET timezone TO 'UTC';
+postgres=# ALTER DATABASE discover OWNER TO discover;
 postgres=# \q
 ```
 
@@ -124,13 +124,20 @@ python manage.py collectstatic
 python manage.py createsuperuser
 ```
 
-You need to have a service that starts the server and automatically restarts it if it crashes, or stop, for any reason. You can set up a systemd service to do so:
+### Service and server
 
-```bash
-#TODO
-```
+You have several options to create the service that starts the program and automatically restarts it if it crashes.
 
-And a web server (preferably nginx) setup that serves the static content, and the django website. (TODO)
+If you're using nginx as a webserver, the best option is to use gunicorn, and start with either through supervisord, or as a systemd service.
+
+If you prefer apache2, you can also use gunicorn this way (and configure a proxy pass in apache), or directly use apache's mod_wsgi.
+
+The discover-demo runs this way. To install it, follow the [official documentation](https://modwsgi.readthedocs.io/en/develop/user-guides/quick-installation-guide.html). A few tips:
+
+  - when running `configure`, do `./configure --with-python=/usr/bin/python3`
+  - at the step "Loading Module Into Apache", the conf file should be `/etc/apache2/apache2.conf`
+
+You then need to configure the web server (nginx or apache2) to serve the static content (media and static). See [django doc example](https://docs.djangoproject.com/en/4.2/howto/deployment/wsgi/modwsgi/#serving-files)
 
 ### Updating
 
@@ -143,8 +150,4 @@ python manage.py migrate
 yes | python manage.py collectstatic
 ```
 
-And then restart the systemd service.
-
-```bash
-sudo service demowebsite restart
-```
+And then restart the service, for instance with `sudo service demowebsite restart`. Or for apache mod_wsgi, simply with `touch demowebsite/wsgi.py`

@@ -2,7 +2,9 @@ from .base import *
 
 DEBUG = False
 SECRET_KEY = ENV("SECRET_KEY")
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = ['discover.enpc.fr', 'discover-demo.enpc.fr']
+
+ADMINS = [(ENV("ADMIN_NAME"), ENV("ADMIN_EMAIL"))]
 
 DATABASES = {
     'default': {

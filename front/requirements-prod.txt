@@ -1,3 +1,2 @@
-gunicorn
 psycopg2-binary
 -r requirements.txt

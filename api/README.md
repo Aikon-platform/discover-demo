@@ -45,11 +45,11 @@ And the server:
 
 ### Deploy
 
-Copy the file `.env.template` to a file `.env`. Change it to `TARGET=prod`, and indicate the appropriate credentials.
+Copy the file `.env.template` to a file `.env.prod`. Change it to `TARGET=prod`, and indicate the appropriate credentials.
 
 Install docker and the [nvidia-container-toolkit](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html) following NVIDIA's instructions (this will be needed for the docker to use the GPU).
 
-Cherck the directory binding in `docker.sh` is correct (TODO: use env variable).
+Modify the directory and user binding in `docker.sh` to ensure it is correct.
 
 Build the docker using the premade script:
 

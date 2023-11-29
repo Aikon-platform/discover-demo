@@ -3,7 +3,7 @@ FROM ubuntu:22.04
 
 ENV USER demowebsite
 # Modify to match your user id
-ENV USERID 1001
+ARG USERID 1001
 
 RUN useradd -u ${USERID} -m -d /home/${USER} ${USER}
 
@@ -45,6 +45,7 @@ RUN source venv/bin/activate && pip install --upgrade pip && pip install -r requ
 
 # Install components
 COPY --chown=${USER} ./ ./api/
+COPY --chown=${USER} .env.prod ./api/.env
 COPY /docker-confs/nginx.conf /etc/nginx/conf.d/demowebsite.conf
 
 EXPOSE 8001
