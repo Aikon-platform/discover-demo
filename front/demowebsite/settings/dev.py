@@ -12,5 +12,3 @@ DATABASES = {
 
 DTI_API_URL = 'http://localhost:5000'
 BASE_URL = 'http://localhost:8000'
-
-MEDIA_ROOT = Path(ENV("MEDIA_ROOT", default=BASE_DIR / "media"))

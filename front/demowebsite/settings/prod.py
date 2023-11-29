@@ -2,7 +2,7 @@ from .base import *
 
 DEBUG = False
 SECRET_KEY = ENV("SECRET_KEY")
-ALLOWED_HOSTS = ['discover.enpc.fr', 'discover-demo.enpc.fr']
+ALLOWED_HOSTS = ['discover.enpc.fr', 'discover-demo.enpc.fr', 'localhost']
 
 ADMINS = [(ENV("ADMIN_NAME"), ENV("ADMIN_EMAIL"))]
 
@@ -16,3 +16,6 @@ DATABASES = {
         'PORT': ENV("DB_PORT"),
     }
 }
+
+DTI_API_URL = ENV("DTI_API_URL")
+BASE_URL = ENV("BASE_URL")
