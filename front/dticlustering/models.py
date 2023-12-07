@@ -114,16 +114,24 @@ class DTIClustering(models.Model):
         """
         Queries the API to start the task
         """
-        api_query = requests.post(
-            f"{DTI_API_URL}/clustering/start",
-            data={
-                "dataset_url": f"{settings.BASE_URL}{self.dataset.zip_file.url}",
-                "dataset_id": str(self.dataset.id),
-                "clustering_id": str(self.id),
-                "parameters": json.dumps(self.parameters),
-                "notify_url": f"{settings.BASE_URL}{reverse('dticlustering:notify', kwargs={'pk': self.pk})}?token={self.get_token()}"
-            }
-        )
+        try:
+            api_query = requests.post(
+                f"{DTI_API_URL}/clustering/start",
+                data={
+                    "dataset_url": f"{settings.BASE_URL}{self.dataset.zip_file.url}",
+                    "dataset_id": str(self.dataset.id),
+                    "clustering_id": str(self.id),
+                    "parameters": json.dumps(self.parameters),
+                    "notify_url": f"{settings.BASE_URL}{reverse('dticlustering:notify', kwargs={'pk': self.pk})}?token={self.get_token()}"
+                }
+            )
+        except ConnectionError:
+            self.write_log("Connection error when starting task")
+            self.status = "ERROR"
+            self.is_finished = True
+            self.save()
+            return
+
         try:
             api_result = api_query.json()
             self.api_tracking_id = api_result["tracking_id"]
@@ -138,9 +146,15 @@ class DTIClustering(models.Model):
         """
         Queries the API to cancel the task
         """
-        api_query = requests.post(
-            f"{DTI_API_URL}/clustering/{self.api_tracking_id}/cancel",
-        )
+        try:
+            api_query = requests.post(
+                f"{DTI_API_URL}/clustering/{self.api_tracking_id}/cancel",
+            )
+        except ConnectionError:
+            self.write_log("Connection error when cancelling task")
+            self.save()
+            return
+
         try:
             print(api_query.text)
             self.status = "CANCELLED"
@@ -183,16 +197,23 @@ class DTIClustering(models.Model):
         """
         Queries the API to get the task progress
         """
-        api_query = requests.get(
-            f"{DTI_API_URL}/clustering/{self.api_tracking_id}/status",
-        )
+        try:
+            api_query = requests.get(
+                f"{DTI_API_URL}/clustering/{self.api_tracking_id}/status",
+            )
+        except ConnectionError:
+            return {
+                "status": "UNKNOWN",
+                "error": "Connection error when getting task progress from the worker"
+            }
+
         try:
             return {
                 "status": self.status,
                 **api_query.json()
             }
         except:
-            self.write_log(f"Error getting clustering progress: {api_query.text}")
+            self.write_log(f"Error when reading clustering progress: {api_query.text}")
             return {
                 "status": "UNKNOWN",
             }
