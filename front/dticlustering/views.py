@@ -1,6 +1,7 @@
-from django.views.generic import DetailView, ListView, CreateView, UpdateView, DeleteView, View
+from django.views.generic import DetailView, ListView, CreateView, UpdateView, DeleteView, View, TemplateView
 from django.views.generic.detail import SingleObjectMixin
 from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
+from django.contrib import messages
 from django.shortcuts import redirect
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
@@ -123,16 +124,6 @@ class DTIClusteringWatcher(SingleObjectMixin, View):
             "success": True,
         })
 
-
-class DTIClusteringList(PermissionRequiredMixin, LoginRequiredMixin, ListView):
-    """
-    List of all clusterings [for admins]
-    """
-    model = DTIClustering
-    template_name = 'dticlustering/list.html'
-    permission_required = 'dticlustering.view_dticlustering'
-
-
 class SavedClusteringFromDTI(CreateView):
     """
     Create a saved clustering from a DTI
@@ -217,3 +208,79 @@ class SavedClusteringCSVExport(SingleObjectMixin, View):
         response.write(data)
 
         return response
+
+# SuperUser views
+
+class DTIClusteringList(PermissionRequiredMixin, LoginRequiredMixin, ListView):
+    """
+    List of all clusterings [for admins]
+    """
+    model = DTIClustering
+    template_name = 'dticlustering/list.html'
+    permission_required = 'dticlustering.view_dticlustering'
+    paginate_by = 40
+
+    def get_queryset(self):
+        return super().get_queryset().order_by("-requested_on").prefetch_related("dataset")
+
+class DTIClusteringByDatasetList(PermissionRequiredMixin, LoginRequiredMixin, ListView):
+    """
+    List of all clusterings for a given dataset [for admins]
+    """
+    model = DTIClustering
+    template_name = 'dticlustering/list.html'
+    permission_required = 'dticlustering.view_dticlustering'
+
+    def get_queryset(self):
+        return super().get_queryset().filter(dataset__id=self.kwargs["dataset_pk"]).prefetch_related("dataset")
+    
+    def get_context_data(self, **kwargs) -> dict[str, Any]:
+        context = super().get_context_data(**kwargs)
+
+        context["filter"] = f"DTI clustering of dataset {self.kwargs['dataset_pk']}"
+
+        return context
+
+class MonitoringView(PermissionRequiredMixin, LoginRequiredMixin, TemplateView):
+    """
+    Monitoring view
+    """
+    template_name = "dticlustering/monitoring.html"
+    permission_required = 'dticlustering.view_dticlustering'
+
+    def get_context_data(self, **kwargs) -> dict[str, Any]:
+        context = super().get_context_data(**kwargs)
+
+        context["api"] = DTIClustering.get_api_monitoring()
+        context["frontend"] = DTIClustering.get_frontend_monitoring()
+
+        return context
+    
+class ClearOldClusterings(PermissionRequiredMixin, LoginRequiredMixin, View):
+    """
+    Clear old clusterings
+    """
+    permission_required = 'dticlustering.view_dticlustering'
+
+    def post(self, *args, **kwargs):
+        output = DTIClustering.clear_old_clusterings()
+
+        messages.success(self.request, f"Deleted {output['n_clusterings']} clustering results and {output['n_datasets']} datasets")
+
+        return redirect("dticlustering:monitor")
+    
+class ClearAPIOldClusterings(PermissionRequiredMixin, LoginRequiredMixin, View):
+    """
+    Clear old clusterings from the API server
+    """
+    permission_required = 'dticlustering.view_dticlustering'
+
+    def post(self, *args, **kwargs):
+        output = DTIClustering.clear_api_old_clusterings()
+
+        if output is None or output["error"]:
+            messages.error(self.request, "Cannot connect to API")
+        else:
+            messages.success(self.request, f"Deleted {output['n_clusterings']} clustering results and {output['n_datasets']} datasets")
+
+        return redirect("dticlustering:monitor")

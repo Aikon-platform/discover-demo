@@ -4,6 +4,7 @@ import uuid
 from dramatiq_abort import abort
 from dramatiq.results import ResultMissing, ResultFailure
 import json
+import shutil
 
 from . import config
 
@@ -88,3 +89,39 @@ def result(tracking_id:str):
         return send_from_directory(config.DTI_RESULTS_PATH, f"{slugify(tracking_id)}.zip")
     
     return xaccel_send_from_directory(config.DTI_RESULTS_PATH, config.DTI_XACCEL_PREFIX, f"{slugify(tracking_id)}.zip")
+
+@app.route("/clustering/qsizes", methods=["GET"])
+def qsizes():
+    """
+    List the queues of the broker and the number of tasks in each queue
+    """
+    try:
+        return {
+            "queues": {
+                q: 
+                {
+                    "name": q,
+                    "size": train_dti.broker.do_qsize(q)
+                } 
+                for q in train_dti.broker.get_declared_queues()
+            }
+        }
+    except AttributeError:
+        return {
+            "error": "Cannot get queue sizes from broker"
+        }
+    
+@app.route("/clustering/monitor", methods=["GET"])
+def monitor():
+    """
+    Get the status of the clustering service
+    """
+    # Get total size of the results directory
+    total_size = 0
+    for path in config.DTI_RESULTS_PATH.glob("**/*"):
+        total_size += path.stat().st_size
+
+    return {
+        "total_size": total_size,
+        **qsizes()
+    }

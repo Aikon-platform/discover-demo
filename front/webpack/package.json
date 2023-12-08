@@ -4,7 +4,9 @@
   "description": "Utilities for demowebsite frontend",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "webpack --config webpack.dev.js",
+    "start": "webpack --config webpack.dev.js --watch",
+    "production": "webpack --config webpack.prod.js"
   },
   "author": "Robin Champenois",
   "license": "ISC",

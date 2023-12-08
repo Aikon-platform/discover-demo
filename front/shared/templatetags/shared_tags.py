@@ -12,3 +12,11 @@ def url_get_replace(request, field, value):
     dict_ = request.GET.copy()
     dict_[field] = value
     return mark_safe("?"+dict_.urlencode())
+
+@register.filter
+def uuid_prefix(uid: str):
+    return str(uid)[:8]
+
+@register.filter
+def uuid_suffix(uid):
+    return str(uid)[8:]

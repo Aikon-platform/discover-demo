@@ -1,0 +1,32 @@
+{% extends "demowebsite/base.html" %}
+
+{% block title %}Monitoring DTI{% endblock %}
+
+{% block content %}
+<div class="centerwrap">
+    <h1>Monitoring dashboard</h1>
+    
+    <h2>API status</h2>
+    {% if api.error %}
+        <p class="error">Error: {{ api.error }}</p>
+    {% else %}
+        <p class="success">Internal API is online</p>
+        {% if api.queues %}
+            {% for q in api.queues.values %}
+                <p>Queue <tt>{{ q.name }}</tt> has currently {{ q.size }} items</p>
+            {% endfor %}
+        {% else %}
+            <p>No queues found</p>
+        {% endif %}
+        {% if api.total_size %}
+            <p>Total disk usage for datasets and trained models: {{ api.total_size|filesizeformat }}</p>
+        {% endif %}
+    {% endif %}
+
+    <h2>Front-end status</h2>
+    <p>{{ frontend.n_clusterings }} DTI clustering tasks requested, using {{ frontend.n_datasets }} datasets.</p>
+    <p>Total disk usage for datasets and results: {{ frontend.total_size|filesizeformat }}</p>
+    <p><a href="{% url 'dticlustering:list' %}">View all DTI tasks</a></p>
+
+</div>
+{% endblock %}

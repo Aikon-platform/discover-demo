@@ -68,7 +68,13 @@ npm init
 You can then start webpack compiler from the webpack folder:
 
 ```bash
-npx webpack --watch
+npm run start
+```
+
+It's better to commit production static files. To generate them, run:
+
+```bash
+npm run production
 ```
 
 **Note:** If you only need to update css, you can simply set up any sass compiler, to take as input `webpack/src/sass/style.scss` and output `shared/static/css/style.css`, it might be much quicker.

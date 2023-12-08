@@ -19,4 +19,6 @@ urlpatterns = [
 
     # Admin views
     path('list', DTIClusteringList.as_view(), name='list'),
+    path('list/perdataset/<uuid:dataset_pk>', DTIClusteringByDatasetList.as_view(), name='list_perdataset'),
+    path('monitor', MonitoringView.as_view(), name='monitor'),
 ]

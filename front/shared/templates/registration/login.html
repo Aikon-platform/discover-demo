@@ -3,10 +3,12 @@
 {% block title %}Login{% endblock %}
 
 {% block content %}
+<div class="centerwrap">
     <h1>Sign in</h1>
     <form action="" method="post" enctype="multipart/form-data">
         {% csrf_token %}
         {% include "demowebsite/baseform.html" %}
         <p align="center"><input type="submit" value="Sign in"></p>
     </form>
+</div>
 {% endblock %}

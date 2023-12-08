@@ -1,6 +1,8 @@
 from django import forms
+from django.conf import settings
 
 from datasets.models import ZippedDataset, path_datasets
+from datasets.fields import ContentRestrictedFileField
 
 from .models import DTIClustering, SavedClustering
 
@@ -13,8 +15,11 @@ DTI_TRANSFORM_OPTIONS = [
 ]
 
 class DTIClusteringForm(forms.ModelForm):
-    dataset_zip = forms.FileField(
-        label='Dataset', help_text='A .zip file containing the dataset to be clustered')
+    dataset_zip = ContentRestrictedFileField(
+        label='Dataset', help_text='A .zip file containing the dataset to be clustered',
+        accepted_types=['application/zip'],
+        max_size=settings.MAX_UPLOAD_SIZE,
+    )
 
     p_n_clusters = forms.IntegerField(
         label='Number of clusters', 

@@ -8,6 +8,12 @@ import json
 import csv
 import io
 from django.utils.functional import cached_property
+from django.core.mail import send_mail
+from django.utils import timezone
+import traceback
+import shutil
+
+from typing import Dict
 
 from datasets.models import ZippedDataset
 
@@ -183,7 +189,7 @@ class DTIClustering(models.Model):
         elif event == "ERROR":
             self.finish_clustering("ERROR", data["error"])
 
-    def finish_clustering(self, status="SUCCESS", error=None):
+    def finish_clustering(self, status="SUCCESS", error=None, notify=True):
         """
         Called when the task is finished
         """
@@ -192,6 +198,19 @@ class DTIClustering(models.Model):
             self.write_log(error)
         self.is_finished = True
         self.save()
+
+        if notify:
+            try:
+                send_mail(
+                    f"[discover-demo] DTI Clustering {self.status}",
+                    f"Your DTI Clustering task {self.name} has finished with status {self.status}.\n\nYou can access the results at : {BASE_URL}{self.get_absolute_url()}",
+                    settings.DEFAULT_FROM_EMAIL,
+                    [self.notify_email],
+                    fail_silently=False,
+                )
+            except:
+                self.write_log(f"Error sending email: {traceback.format_exc()}")
+
 
     def get_progress(self):
         """
@@ -217,7 +236,98 @@ class DTIClustering(models.Model):
             return {
                 "status": "UNKNOWN",
             }
+        
+    @staticmethod
+    def get_api_monitoring():
+        """
+        Returns a dict with the monitoring data
+        """
+        try:
+            api_query = requests.get(
+                f"{DTI_API_URL}/clustering/monitor",
+            )
+        except ConnectionError:
+            return {
+                "error": "Connection error when getting monitoring data from the worker"
+            }
+
+        try:
+            return api_query.json()
+        except:
+            return {
+                "error": "Error when reading monitoring data"
+            }
+        
+    @staticmethod
+    def get_frontend_monitoring():
+        """
+        Returns a dict with the monitoring data
+        """
+        total_size = 0
+        for f in Path(settings.MEDIA_ROOT).glob("**/*"):
+            if f.is_file():
+                total_size += f.stat().st_size
+        n_datasets = ZippedDataset.objects.count()
+        n_clusterings = DTIClustering.objects.count()
+
+        return {
+            "total_size": total_size,
+            "n_datasets": n_datasets,
+            "n_clusterings": n_clusterings,
+        }
     
+    @staticmethod
+    def clear_old_clusterings(days_before:int=30) -> Dict[str, int]:
+        """
+        Clears all clusterings older than days_before days
+        """
+        old_clusterings = DTIClustering.objects.filter(requested_on__lte=timezone.now() - timezone.timedelta(days=days_before))
+
+        # remove results
+        for c in old_clusterings:
+            shutil.rmtree(c.result_full_path, ignore_errors=True)
+
+        # remove all datasets except those who have a clustering younger than days_before days
+        old_datasets = ZippedDataset.objects.exclude(dticlustering__requested_on__gt=timezone.now() - timezone.timedelta(days=days_before))
+        for d in old_datasets:
+            d.zip_file.delete()
+
+        cleared_data = {
+            "removed_clusterings": len(old_clusterings),
+            "old_datasets": len(old_datasets),
+        }
+
+        # remove records
+        old_clusterings.delete()
+        old_datasets.delete()
+
+        return cleared_data
+
+    @staticmethod
+    def clear_api_old_clusterings(days_before:int=30) -> Dict[str, Any]:
+        """
+        Clears all clusterings older than days_before days from the API server
+        """
+        try:
+            api_query = requests.post(
+                f"{DTI_API_URL}/clustering/clear",
+                data={
+                    "days_before": days_before,
+                }
+            )
+        except ConnectionError:
+            return {
+                "error": "Connection error when clearing old clusterings from the worker"
+            }
+        
+        try:
+            return api_query.json()
+        except:
+            return {
+                "error": "Error when output from API server",
+                "output": api_query.text
+            }
+
     @cached_property
     def expanded_results(self):
         """

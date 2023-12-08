@@ -10,7 +10,6 @@ if [ "$1" = "rebuild" ]; then
 fi;
 
 if [ "$1" = "pull" ]; then
-    cd explore/;
     git pull;
     docker build --rm -t demowebsiteapi . -f Dockerfile --build-arg USERID=$DEMO_UID;
     cd ../;
