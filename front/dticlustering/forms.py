@@ -20,6 +20,9 @@ class DTIClusteringForm(forms.ModelForm):
         accepted_types=['application/zip'],
         max_size=settings.MAX_UPLOAD_SIZE,
     )
+    dataset_name = forms.CharField(
+        label='Dataset name', help_text='An optional name to identify this dataset',
+        max_length=64, required=False, initial='dti-data')
 
     p_n_clusters = forms.IntegerField(
         label='Number of clusters', 
@@ -42,15 +45,17 @@ class DTIClusteringForm(forms.ModelForm):
 
     class Meta:
         model = DTIClustering
-        fields = ('name', 'dataset_zip', 'notify_email')
+        fields = ('name', 'dataset_zip', 'dataset_name', 'notify_email')
 
     def __init__(self, *args, **kwargs):
         self.__dataset = kwargs.pop('dataset', None)
+        self.__user = kwargs.pop('user', None)
 
         super().__init__(*args, **kwargs)
 
         if self.__dataset:
             self.fields.pop('dataset_zip')
+            self.fields.pop('dataset_name')
 
     def save(self, commit=True):
         instance = super().save(commit=False)
@@ -69,7 +74,11 @@ class DTIClusteringForm(forms.ModelForm):
         if self.__dataset:
             instance.dataset = self.__dataset
         else:
-            instance.dataset = ZippedDataset.objects.create(zip_file=self.cleaned_data['dataset_zip'])
+            instance.dataset = ZippedDataset.objects.create(
+                zip_file=self.cleaned_data['dataset_zip'], 
+                name=self.cleaned_data['dataset_name'])
+
+        instance.requested_by = self.__user
 
         if commit:
             instance.save()

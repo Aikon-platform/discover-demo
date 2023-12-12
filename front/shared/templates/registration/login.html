@@ -10,5 +10,7 @@
         {% include "demowebsite/baseform.html" %}
         <p align="center"><input type="submit" value="Sign in"></p>
     </form>
+    <p align="center">Don't have an account? <a href="{% url 'account_request' %}">Sign up</a></p>
+    <p align="center">Forgot password? <a href="{% url 'password_reset' %}">Reset password</a></p>
 </div>
 {% endblock %}

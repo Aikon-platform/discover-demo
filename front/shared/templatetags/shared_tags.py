@@ -20,3 +20,7 @@ def uuid_prefix(uid: str):
 @register.filter
 def uuid_suffix(uid):
     return str(uid)[8:]
+
+@register.simple_tag
+def can_admin_accounts(user):
+    return user.has_perm("auth.add_user")

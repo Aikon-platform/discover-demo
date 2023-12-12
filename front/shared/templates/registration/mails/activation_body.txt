@@ -1,0 +1,13 @@
+Dear {{ user.first_name }},
+
+Your account request on the Discover Demo platform was accepted.
+
+Please visit the following URL to set your password:
+{{ domain }}{% url 'password_reset_confirm' uidb64=uid token=token %}
+
+This link is valid for 24 hours. If you do not create your password in time, you can get a new link by following the "Password lost" procedure.
+
+Your username, in case you’ve forgotten: {{ user.get_username }}
+
+Best regards,
+The Discover team

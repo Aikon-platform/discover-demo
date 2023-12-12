@@ -1,0 +1,16 @@
+{% extends "demowebsite/base.html" %}
+
+{% block title %}Account created{% endblock %}
+
+{% block content %}
+<div class="centerwrap">
+<h1>Account created</h1>
+{% if account_need_activation %}
+    <p>Your account creation request was correctly submitted. You should have received an confirmation e-mail – if not, check your spam folder.</p>
+    <p>Your request will be examined shortly; if it is accepted, you will receive an e-mail with a link for defining your password.</p>
+{% else %}
+    <p>Your account was created. You should have received an activation link to verify your email.</p>
+    <p>Please click on the link to activate your account.</p>
+{% endif %}
+</div>
+{% endblock %}

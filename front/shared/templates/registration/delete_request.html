@@ -1,0 +1,19 @@
+{% extends "demowebsite/base.html" %}
+{% load i18n static %}
+
+{% block title %}Delete account request{% endblock %}
+
+{% block content %}
+<div class="centerwrap">
+<h1>Delete account request {{ user.username }}</h1>
+
+<form action="" method="POST">
+    {% csrf_token %}
+    <p>Are you sure you want to delete this account request? This action cannot be undone.</p>
+    <p>
+        <a href="{% url "accounts_admin" %}">Go back</a> 
+        <input type="submit" class="button is-primary" value="Delete account" />
+    </p>
+</form>
+</div>
+{% endblock %}

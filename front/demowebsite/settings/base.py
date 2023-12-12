@@ -1,5 +1,6 @@
 from pathlib import Path
 from environ import Env
+from django.urls import reverse_lazy
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
@@ -10,7 +11,6 @@ Env.read_env(env_file=f"{BASE_DIR}/.env")
 # Application definition
 
 INSTALLED_APPS = [
-    'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
@@ -22,6 +22,8 @@ INSTALLED_APPS = [
     'shared',
     'datasets',
     'dticlustering',
+
+    'django.contrib.admin',
 ]
 
 MIDDLEWARE = [
@@ -96,3 +98,5 @@ DRAMATIQ_BROKER = {
 
 
 MAX_UPLOAD_SIZE = ENV("MAX_UPLOAD_SIZE", default=100*1024*1024)
+
+LOGOUT_REDIRECT_URL = reverse_lazy('home')

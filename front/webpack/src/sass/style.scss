@@ -31,6 +31,8 @@ header {
     width: 100%;
     border-bottom: 2px solid $main-color;
     // repeated stripes 60deg background
+    display: flex;
+
     background-image: repeating-linear-gradient(
         60deg,
         $main-color,
@@ -38,6 +40,39 @@ header {
         transparent 1px,
         transparent 7px
     );
+
+    .centerwrap {
+        display: flex;
+        width: 100%;
+        justify-content: space-between;
+        .menu {
+            display: flex;
+
+        }
+        a {
+            display: block;
+            background-color: $bg-color;
+            border-left: 2px solid $main-color;
+            border-right: 2px solid $main-color;
+            margin-right: -2px;
+            border-collapse: collapse;
+            height: 100%;
+            padding: 0.5em 1em;
+            text-align: bottom;
+            text-decoration: none;
+            &:hover {
+                background-color: $main-color;
+                color: #fff;
+            }
+            .iconify {
+                font-size: 1.3em;
+                margin-top: -0.1em;
+                text-align: center;
+                vertical-align: middle;
+            }
+        }
+    }
+
 }
 
 .content {
@@ -166,6 +201,7 @@ input[type='email'], input[type='number'], textarea, select {
     min-width: 1em;
     height: 1em;
     min-height: 1em;
+    display: inline-block;
 }
 
 input[type="submit"], input[type="file"], button, .btn {
@@ -238,6 +274,30 @@ input[type="submit"], input[type="file"], button, .btn {
     }
 }
 
+
+ul.messages {
+    margin: 0.5em 0;
+
+    li {
+        background: #ccc;
+        color: #333;
+        padding: 0.6rem 1rem;
+        font-weight: bold;
+        list-style: none;
+        font-size: 0.9em;
+        border-radius: 0.5em;
+
+        &.success {
+            background-color: #095736;
+            color: #fff;
+        }
+        &.warning, &.error {
+            background-color: #7c0e06;
+            color: #fff;
+        }
+    }
+}
+
 // DTI: List of tasks
 
 .dti-list {
@@ -255,6 +315,8 @@ input[type="submit"], input[type="file"], button, .btn {
         display: flex;
         justify-content: space-between;
         align-items: center;
+        padding-top: 1.5em;
+
         h2, p {
             margin: 0;
         }
@@ -287,11 +349,21 @@ input[type="submit"], input[type="file"], button, .btn {
         p.date {
             position: absolute;
             top: -0.5em;
-            right: 0.5em;
+            right: 1em;
             font-size: 0.7em;
             font-weight: bold;
-            background-color: #fff;
-            padding: 0.3em;
+            background-color: inherit;
+            padding: 0.5em;
+            border-radius: 0.5em;
+        }
+        p.user {
+            position: absolute;
+            border-radius: 0.5em;
+            top: -0.5em;
+            left: 1em;
+            font-size: 0.9em;
+            background-color: inherit;
+            padding: 0.3em 0.5em;
         }
     }
 }
@@ -312,7 +384,7 @@ input[type="submit"], input[type="file"], button, .btn {
     width: 100%;
     align-items: center;
     opacity: 0.7;
-    padding: 0.5em;
+    padding: 0.1em;
     border-top: 1px solid $main-color;
     border-bottom: 1px solid $main-color;
 
@@ -337,6 +409,7 @@ input[type="submit"], input[type="file"], button, .btn {
         flex: 1;
         display: flex;
         justify-content: right;
+        margin: 0.3em 0;
     }
 
     li {

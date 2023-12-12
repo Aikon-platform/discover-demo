@@ -3,6 +3,7 @@ from dramatiq.middleware import CurrentMessage
 from typing import Optional
 import requests
 from zipfile import ZipFile
+from PIL import Image
 
 from . import config
 from .training import DATASETS_PATH, run_kmeans_training, run_sprites_training
@@ -57,6 +58,7 @@ def train_dti(
         dataset_ready_file.touch()
     else:
         print("Dataset already ready")
+        dataset_ready_file.touch()
 
     # Start training
     use_sprites = parameters.get("use_sprites", False)
@@ -70,6 +72,13 @@ def train_dti(
         for file in output_path.glob("**/*"):
             if file.suffix == ".pkl": # Don't include the model
                 continue
+
+            if file.suffix == ".png": # Convert to jpg if not transparent
+                img = Image.open(file)
+                if img.mode != "RGBA":
+                    nfile = file.with_suffix(".jpg")
+                    img.save(nfile)
+                    file.unlink()
 
             zipObj.write(file, file.relative_to(output_path))
 

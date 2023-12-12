@@ -1,21 +1,24 @@
 from django.conf import settings
+from django.contrib.auth import get_user_model
 from django.db import models
-from pathlib import Path
+from django.utils.functional import cached_property
+from django.core.mail import send_mail
+from django.utils import timezone
 from django.urls import reverse
+from pathlib import Path
 import requests
 import uuid
 import json
 import csv
 import io
-from django.utils.functional import cached_property
-from django.core.mail import send_mail
-from django.utils import timezone
 import traceback
 import shutil
 
-from typing import Dict
+from typing import Dict, Any
 
 from datasets.models import ZippedDataset
+
+User = get_user_model()
 
 DTI_API_URL = getattr(settings, 'DTI_API_URL', 'http://localhost:5000')
 BASE_URL = getattr(settings, 'BASE_URL', 'http://localhost:8000')
@@ -28,13 +31,14 @@ class DTIClustering(models.Model):
     name = models.CharField(max_length=64, default="dti", blank=True, 
                             verbose_name="Clustering name", help_text="An optional name to identify this clustering")
 
-    notify_email = models.EmailField(
-        verbose_name="Email address to notify",
-        help_text="Email address to notify you about the clustering progress")
+    notify_email = models.BooleanField(
+        default=False, verbose_name="Notify by email", blank=True,
+        help_text="Send an email when the clustering is finished")
 
     status = models.CharField(max_length=20, default='PENDING', editable=False)
     is_finished = models.BooleanField(default=False, editable=False)
     requested_on = models.DateTimeField(auto_now_add=True, editable=False)
+    requested_by = models.ForeignKey(User, null=True, on_delete=models.SET_NULL, editable=False)
 
     # The clustering tracking id
     api_tracking_id = models.UUIDField(null=True, editable=False)
@@ -45,6 +49,9 @@ class DTIClustering(models.Model):
 
     class Meta:
         ordering = ['-requested_on']
+        permissions = [
+            ("monitor_dticlustering", "Can monitor DTI Clustering"),
+        ]
 
     def get_absolute_url(self):
         return reverse("dticlustering:status", kwargs={"pk": self.pk})
@@ -199,13 +206,13 @@ class DTIClustering(models.Model):
         self.is_finished = True
         self.save()
 
-        if notify:
+        if notify and self.notify_email:
             try:
                 send_mail(
                     f"[discover-demo] DTI Clustering {self.status}",
                     f"Your DTI Clustering task {self.name} has finished with status {self.status}.\n\nYou can access the results at : {BASE_URL}{self.get_absolute_url()}",
                     settings.DEFAULT_FROM_EMAIL,
-                    [self.notify_email],
+                    [self.requested_by.email],
                     fail_silently=False,
                 )
             except:
@@ -293,8 +300,8 @@ class DTIClustering(models.Model):
             d.zip_file.delete()
 
         cleared_data = {
-            "removed_clusterings": len(old_clusterings),
-            "old_datasets": len(old_datasets),
+            "cleared_clusterings": len(old_clusterings),
+            "cleared_datasets": len(old_datasets),
         }
 
         # remove records
@@ -310,7 +317,7 @@ class DTIClustering(models.Model):
         """
         try:
             api_query = requests.post(
-                f"{DTI_API_URL}/clustering/clear",
+                f"{DTI_API_URL}/clustering/monitor/clear",
                 data={
                     "days_before": days_before,
                 }
@@ -335,6 +342,9 @@ class DTIClustering(models.Model):
         """
 
         path = self.result_full_path
+        if not path.exists():
+            return {}
+
         result_dict = {}
 
         clusters_path = path / "clusters"

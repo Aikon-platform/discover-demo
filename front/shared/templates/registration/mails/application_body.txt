@@ -1,0 +1,8 @@
+Dear {{ user.first_name }}
+
+Your request to have an account on the Discover Demo platform was correctly submitted.
+
+It will be examined shortly, you will receive a URL to set your password if it is accepted.
+
+Best regards,
+The Discover team

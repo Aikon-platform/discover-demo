@@ -5,6 +5,7 @@ from dramatiq_abort import abort
 from dramatiq.results import ResultMissing, ResultFailure
 import json
 import shutil
+from datetime import datetime
 
 from . import config
 
@@ -118,10 +119,45 @@ def monitor():
     """
     # Get total size of the results directory
     total_size = 0
-    for path in config.DTI_RESULTS_PATH.glob("**/*"):
+    for path in config.DTI_DATA_FOLDER.glob("**/*"):
         total_size += path.stat().st_size
 
     return {
         "total_size": total_size,
         **qsizes()
     }
+
+@app.route("/clustering/monitor/clear", methods=["POST"])
+def clear():
+    """
+    Clear the results directory
+    """
+    from .dti.src.utils.path import DATASETS_PATH, RUNS_PATH
+
+    output = {
+        "cleared_runs": 0,
+        "cleared_results": 0,
+        "cleared_datasets": 0,
+    }
+
+    for path in RUNS_PATH.glob("*"):
+        logfile = path / "trainer.log"
+        # if logfile is older than 30 days, delete the run
+        if not logfile.exists() or (datetime.now() - datetime.fromtimestamp(logfile.stat().st_mtime)).days > 30:
+            shutil.rmtree(path)
+            output["cleared_runs"] += 1
+
+    for path in DATASETS_PATH.glob("*"):
+        metafile = path / "ready.meta"
+        # if metafile is older than 30 days, delete the dataset
+        if not metafile.exists() or (datetime.now() - datetime.fromtimestamp(metafile.stat().st_mtime)).days > 30:
+            shutil.rmtree(path)
+            output["cleared_datasets"] += 1
+
+    for path in config.DTI_RESULTS_PATH.glob("*.zip"):
+        # if path is older than 30 days, delete the result
+        if (datetime.now() - datetime.fromtimestamp(path.stat().st_mtime)).days > 30:
+            path.unlink()
+            output["cleared_results"] += 1
+
+    return output

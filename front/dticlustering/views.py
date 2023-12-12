@@ -12,13 +12,20 @@ from typing import Any
 from .models import DTIClustering, SavedClustering
 from .forms import DTIClusteringForm, SavedClusteringForm
 
-class DTIClusteringStart(CreateView):
+class DTIClusteringStart(LoginRequiredMixin, CreateView):
     """
     Request a clustering
     """
     model = DTIClustering
     template_name = 'dticlustering/start.html'
     form_class = DTIClusteringForm
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+
+        kwargs["user"] = self.request.user
+
+        return kwargs
     
     def get_success_url(self):
         # Start clustering
@@ -49,7 +56,7 @@ class DTIClusteringStartFrom(DTIClusteringStart):
         return context
     
 
-class DTIClusteringStatus(DetailView):
+class DTIClusteringStatus(LoginRequiredMixin, DetailView):
     """
     Clustering status and results
     """
@@ -58,7 +65,7 @@ class DTIClusteringStatus(DetailView):
     context_object_name = 'clustering'
 
 
-class DTIClusteringProgress(SingleObjectMixin, View):
+class DTIClusteringProgress(LoginRequiredMixin, SingleObjectMixin, View):
     """
     Clustering progress (AJAX)
     """
@@ -75,7 +82,7 @@ class DTIClusteringProgress(SingleObjectMixin, View):
         })
 
 
-class DTIClusteringCancel(DetailView):
+class DTIClusteringCancel(LoginRequiredMixin, DetailView):
     """
     Cancel a clustering
     """
@@ -124,7 +131,7 @@ class DTIClusteringWatcher(SingleObjectMixin, View):
             "success": True,
         })
 
-class SavedClusteringFromDTI(CreateView):
+class SavedClusteringFromDTI(LoginRequiredMixin, CreateView):
     """
     Create a saved clustering from a DTI
     """
@@ -155,7 +162,7 @@ class SavedClusteringFromDTI(CreateView):
         return context
 
 
-class SavedClusteringEdit(UpdateView):
+class SavedClusteringEdit(LoginRequiredMixin, UpdateView):
     """
     Show/edit a clustering
     """
@@ -173,7 +180,7 @@ class SavedClusteringEdit(UpdateView):
 
         return context
     
-class SavedClusteringDelete(DeleteView):
+class SavedClusteringDelete(LoginRequiredMixin, DeleteView):
     """
     Delete a saved clustering
     """
@@ -186,7 +193,7 @@ class SavedClusteringDelete(DeleteView):
     def get_success_url(self):
         return self.object.from_dti.get_absolute_url()
 
-class SavedClusteringCSVExport(SingleObjectMixin, View):
+class SavedClusteringCSVExport(LoginRequiredMixin, SingleObjectMixin, View):
     """
     Export a clustering as CSV
     """
@@ -211,28 +218,27 @@ class SavedClusteringCSVExport(SingleObjectMixin, View):
 
 # SuperUser views
 
-class DTIClusteringList(PermissionRequiredMixin, LoginRequiredMixin, ListView):
+class DTIClusteringList(LoginRequiredMixin, ListView):
     """
     List of all clusterings [for admins]
     """
     model = DTIClustering
     template_name = 'dticlustering/list.html'
-    permission_required = 'dticlustering.view_dticlustering'
     paginate_by = 40
 
     def get_queryset(self):
-        return super().get_queryset().order_by("-requested_on").prefetch_related("dataset")
+        # if user doesn't have dticlustering.monitor right, only show their own clusterings
+        qset =  super().get_queryset().order_by("-requested_on").prefetch_related("dataset", "requested_by")
+        if not self.request.user.has_perm("dticlustering.monitor_dticlustering"):
+            qset = qset.filter(requested_by=self.request.user)
+        return qset
 
-class DTIClusteringByDatasetList(PermissionRequiredMixin, LoginRequiredMixin, ListView):
+class DTIClusteringByDatasetList(DTIClusteringList):
     """
     List of all clusterings for a given dataset [for admins]
     """
-    model = DTIClustering
-    template_name = 'dticlustering/list.html'
-    permission_required = 'dticlustering.view_dticlustering'
-
     def get_queryset(self):
-        return super().get_queryset().filter(dataset__id=self.kwargs["dataset_pk"]).prefetch_related("dataset")
+        return super().get_queryset().filter(dataset__id=self.kwargs["dataset_pk"])
     
     def get_context_data(self, **kwargs) -> dict[str, Any]:
         context = super().get_context_data(**kwargs)
@@ -246,7 +252,7 @@ class MonitoringView(PermissionRequiredMixin, LoginRequiredMixin, TemplateView):
     Monitoring view
     """
     template_name = "dticlustering/monitoring.html"
-    permission_required = 'dticlustering.view_dticlustering'
+    permission_required = 'dticlustering.monitor_dticlustering'
 
     def get_context_data(self, **kwargs) -> dict[str, Any]:
         context = super().get_context_data(**kwargs)
@@ -260,12 +266,15 @@ class ClearOldClusterings(PermissionRequiredMixin, LoginRequiredMixin, View):
     """
     Clear old clusterings
     """
-    permission_required = 'dticlustering.view_dticlustering'
+    permission_required = 'dticlustering.monitor_dticlustering'
 
     def post(self, *args, **kwargs):
         output = DTIClustering.clear_old_clusterings()
 
-        messages.success(self.request, f"Deleted {output['n_clusterings']} clustering results and {output['n_datasets']} datasets")
+        if output is None or output.get("error"):
+            messages.error(self.request, output["error"] if output else "Unknown error when clearing old clusterings")
+        else:
+            messages.success(self.request, f"Deleted {output.get('cleared_clusterings', 0)} clustering results and {output.get('cleared_datasets', 0)} datasets")
 
         return redirect("dticlustering:monitor")
     
@@ -273,14 +282,14 @@ class ClearAPIOldClusterings(PermissionRequiredMixin, LoginRequiredMixin, View):
     """
     Clear old clusterings from the API server
     """
-    permission_required = 'dticlustering.view_dticlustering'
+    permission_required = 'dticlustering.monitor_dticlustering'
 
     def post(self, *args, **kwargs):
         output = DTIClustering.clear_api_old_clusterings()
 
-        if output is None or output["error"]:
-            messages.error(self.request, "Cannot connect to API")
+        if output is None or output.get("error"):
+            messages.error(self.request, output["error"] if output else "Unknown error when clearing old clusterings")
         else:
-            messages.success(self.request, f"Deleted {output['n_clusterings']} clustering results and {output['n_datasets']} datasets")
+            messages.success(self.request, f"Deleted {output.get('cleared_runs', 0)} clustering runs, {output.get('cleared_results', 0)} results and {output.get('cleared_datasets', 0)} datasets")
 
         return redirect("dticlustering:monitor")
