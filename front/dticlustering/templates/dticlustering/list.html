@@ -33,7 +33,7 @@
                     <p class="status status-{{ clustering.status }}">{{ clustering.status }}</p>
                 </div>
                 <p class="user"><span class="iconify" data-icon="mdi:account"></span> {{ clustering.requested_by.username }}</p>
-                <p class="date">{{ clustering.requested_on|date:"Y-m-d h:i" }}</p>
+                <p class="date">{{ clustering.requested_on|date:"Y-m-d H:i" }}</p>
             </div>
         {% endfor %}
     </div>

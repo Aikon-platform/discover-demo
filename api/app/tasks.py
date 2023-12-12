@@ -79,6 +79,7 @@ def train_dti(
                     nfile = file.with_suffix(".jpg")
                     img.save(nfile)
                     file.unlink()
+                    file = nfile
 
             zipObj.write(file, file.relative_to(output_path))
 
