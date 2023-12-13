@@ -22,6 +22,10 @@ class Migration(migrations.Migration):
             name='requested_by',
             field=models.ForeignKey(editable=False, null=True, on_delete=django.db.models.deletion.SET_NULL, to=settings.AUTH_USER_MODEL),
         ),
+        migrations.RemoveField(
+            model_name="dticlustering",
+            name="notify_email",
+        ),
         migrations.AlterField(
             model_name='dticlustering',
             name='notify_email',
