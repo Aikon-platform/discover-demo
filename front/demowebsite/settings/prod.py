@@ -2,7 +2,7 @@ from .base import *
 
 DEBUG = False
 SECRET_KEY = ENV("SECRET_KEY")
-ALLOWED_HOSTS = ['discover.enpc.fr', 'discover-demo.enpc.fr', 'localhost']
+ALLOWED_HOSTS = [*ENV.list("ALLOWED_HOSTS", default=["discover-demo.enpc.fr"]), 'localhost']
 
 ADMINS = [(ENV("ADMIN_NAME"), ENV("ADMIN_EMAIL"))]
 
