@@ -22,7 +22,7 @@ class AccountRequestForm(forms.ModelForm):
        email = self.cleaned_data.get('email')
        if User.objects.filter(email=email).exists():
            raise forms.ValidationError("An account with this email already exists.")
-       return self.cleaned_data
+       return email
 
     def save(self, commit=True):
         instance = super().save(commit)
