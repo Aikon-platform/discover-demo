@@ -26,7 +26,7 @@ class Migration(migrations.Migration):
             model_name="dticlustering",
             name="notify_email",
         ),
-        migrations.AlterField(
+        migrations.AddField(
             model_name='dticlustering',
             name='notify_email',
             field=models.BooleanField(blank=True, default=False, help_text='Send an email when the clustering is finished', verbose_name='Notify by email'),
