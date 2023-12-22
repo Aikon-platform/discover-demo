@@ -13,6 +13,7 @@ class TestTraining(unittest.TestCase):
 
         path.RUNS_PATH = self.TMP_PATH / "runs"
         path.DATASETS_PATH = self.DATA_PATH / "datasets"
+        path.CONFIGS_PATH = self.TMP_PATH / "configs"
 
         from .. import training
         training.KMEANS_CONFIG_FILE = self.DATA_PATH / "kmeans-conf.yml"
