@@ -17,6 +17,9 @@ from .dti.src.utils.image import convert_to_img
 
 from .utils.logging import TLogger, LoggerHelper
 
+KMEANS_CONFIG_FILE = Path(__file__).parent / "templates" / "kmeans-conf.yml"
+SPRITES_CONFIG_FILE = Path(__file__).parent / "templates" / "sprites-conf.yml"
+
 class LoggingTrainerMixin:
     """
     A mixin with hooks to track training progress inside dti Trainers
@@ -58,6 +61,7 @@ class LoggingTrainerMixin:
         cluster_path = Path(self.run_dir / "clusters")
         cluster_path.mkdir(parents=True, exist_ok=True)
         dataset = self.train_loader.dataset
+        dataset.output_paths = True
         train_loader = DataLoader(
             dataset,
             batch_size=self.batch_size,
@@ -73,7 +77,7 @@ class LoggingTrainerMixin:
             path.mkdir(parents=True, exist_ok=True)
 
         # Iterate over dataset
-        for images, labels, path in train_loader:
+        for images, labels, masks, paths in train_loader:
             images = images.to(self.device)
             distances, argmin_idx = self._get_cluster_argmin_idx(images) # depends on the method
 
@@ -81,7 +85,7 @@ class LoggingTrainerMixin:
             argmin_idx = argmin_idx.astype(np.int32)
 
             # Save individual images to their cluster folder
-            for img, idx, d, p, tsf_imgs in zip(images, argmin_idx, distances, path, transformed_images):
+            for img, idx, d, p, tsf_imgs in zip(images, argmin_idx, distances, paths, transformed_images):
                 convert_to_img(img).save(
                     cluster_path / f"cluster{idx}" / f"{k_image}_raw.png"
                 )
@@ -90,6 +94,8 @@ class LoggingTrainerMixin:
                 )
                 cluster_by_path.append((k_image, os.path.relpath(p, dataset.data_path), idx, d))
                 k_image += 1
+
+        dataset.output_paths = False
 
         # Save cluster_by_path to csv (for export) and json (for dataviz)
         cluster_by_path = pd.DataFrame(
@@ -125,8 +131,8 @@ class LoggedKMeansTrainer(LoggingTrainerMixin, KMeansTrainer):
 
     @torch.no_grad()
     def _get_cluster_argmin_idx(self, images):
-        out = self.model(images)[1:]
-        dist_min_by_sample, argmin_idx = map(lambda t: t.cpu().numpy(), out)
+        distances = self.model(images)[1]
+        dist_min_by_sample, argmin_idx = map(lambda t: t.cpu().numpy(), distances.min(1))
         return dist_min_by_sample, argmin_idx
 
 
@@ -162,7 +168,7 @@ def run_kmeans_training(
     - logger: a logger object
     """
     # Load config template
-    train_config = load(open(Path(__file__).parent / "templates" / "kmeans-conf.yml"), Loader=Loader)
+    train_config = load(open(KMEANS_CONFIG_FILE), Loader=Loader)
 
     # Set dataset tag and run dir
     train_config["dataset"]["tag"] = dataset_id
@@ -203,7 +209,7 @@ def run_sprites_training(
     - logger: a logger object
     """
     # Load config template
-    train_config = load(open(Path(__file__).parent / "templates" / "sprites-conf.yml"), Loader=Loader)
+    train_config = load(open(SPRITES_CONFIG_FILE), Loader=Loader)
 
     # Set dataset tag and run dir
     train_config["dataset"]["tag"] = dataset_id
