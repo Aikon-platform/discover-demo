@@ -2,6 +2,6 @@
 	path = api/app/dti
 	url = git@github.com:sonatbaltaci/dti-sprites.git
 
-[submodule "api/similarity"]
+[submodule "similarity_source"]
 	path = api/app/similarity
 	url = git@github.com:Segolene-Albouy/SimilarityDetection.git
