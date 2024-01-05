@@ -1,7 +1,7 @@
 dataset:
   name: generic
   tag: santaphoto
-  img_size: 64
+  img_size: 128
 model:
   name: dti_sprites
   n_sprites: 40
@@ -15,7 +15,7 @@ model:
       freeze: [False, False, False]
       value: [0.1, 0.5, 0.]
       init: ["constant", "mean", "gaussian"]
-      gaussian_weights_std: 16
+      gaussian_weights_std: 25
   transformation_sequence: color_projective
   transformation_sequence_bkg: color_projective
   curriculum_learning: False

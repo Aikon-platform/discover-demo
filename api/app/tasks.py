@@ -70,16 +70,13 @@ def train_dti(
     # zip results to config.DTI_RESULTS_PATH
     with ZipFile(result_file, "w") as zipObj:
         for file in output_path.glob("**/*"):
-            if file.suffix == ".pkl": # Don't include the model
-                continue
+            # if file.suffix == ".pkl": # Don't include the model
+            #    continue
 
             if file.suffix == ".png": # Convert to jpg if not transparent
                 img = Image.open(file)
-                if img.mode != "RGBA":
-                    nfile = file.with_suffix(".jpg")
-                    img.save(nfile)
-                    file.unlink()
-                    file = nfile
+                if img.mode != "RGBA" and img.format != "JPEG":
+                    img.save(file, "JPEG", quality=85)
 
             zipObj.write(file, file.relative_to(output_path))
 

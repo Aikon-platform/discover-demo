@@ -17,7 +17,7 @@
 
     <form action="" method="POST" class="cl-hidden">
         {% csrf_token %}
-        {{ form.as_p }}
+        {% include "demowebsite/baseform.html" %}
     </form>
 </div>
 
