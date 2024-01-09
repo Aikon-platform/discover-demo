@@ -5,3 +5,7 @@
 [submodule "similarity_source"]
 	path = api/app/similarity
 	url = git@github.com:Segolene-Albouy/SimilarityDetection.git
+
+[submodule "api/similarity_source"]
+	path = api/app/segswap
+	url = git@github.com:faouinti/similarity.git

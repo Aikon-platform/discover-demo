@@ -75,3 +75,6 @@ node_modules/
 
 # .DS_Store files (macOS)
 .DS_Store
+
+input/
+output/

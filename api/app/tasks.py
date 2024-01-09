@@ -8,6 +8,7 @@ from PIL import Image
 from . import config
 from .training import DATASETS_PATH, run_kmeans_training, run_sprites_training
 from .utils.logging import notifying, TLogger, LoggerHelper
+from .utils.functions import save_dataset
 
 
 @dramatiq.actor(time_limit=1000 * 60 * 60, max_retries=0, store_results=True)
@@ -20,7 +21,7 @@ def similarity(
     logger: TLogger = LoggerHelper,
 ):
     """
-    Train a DTI model
+    Perform similarity detection
 
     Parameters:
     - similarity_id: the ID of the similarity task
@@ -36,31 +37,7 @@ def similarity(
     result_file = config.DTI_RESULTS_PATH / f"{current_task_id}.zip"
     result_file.parent.mkdir(parents=True, exist_ok=True)
 
-    # Download and extract dataset to local storage
-    dataset_path = DATASETS_PATH / "generic" / dataset_id
-    dataset_ready_file = dataset_path / "ready.meta"
-
-    if not dataset_ready_file.exists():
-        dataset_path.mkdir(parents=True, exist_ok=True)
-        dataset_zip_path = dataset_path / "dataset.zip"
-
-        with requests.get(dataset_url, stream=True) as r:
-            r.raise_for_status()
-            with open(dataset_zip_path, "wb") as f:
-                for chunk in r.iter_content(chunk_size=8192):
-                    f.write(chunk)
-
-        # Unzip dataset
-        with ZipFile(dataset_zip_path, "r") as zipObj:
-            zipObj.extractall(dataset_path / "train")
-
-        dataset_zip_path.unlink()
-
-        # Create ready file
-        dataset_ready_file.touch()
-    else:
-        print("Dataset already ready")
-        dataset_ready_file.touch()
+    save_dataset(dataset_url, dataset_id)
 
     # Start training
     use_sprites = parameters.get("use_sprites", False)
