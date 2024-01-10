@@ -6,22 +6,12 @@ This folder contains the resources for the front-end server.
 
 ### Python setup
 
-```bash
-cd front
-```
-
 Copy the file `.env.template` to a file `.env`. Change its content to match your setup (especially regarding the paths).
-
-```bash
-cp ./.env{.template,}
-```
 
 You need to install redis and python:
 
 ```bash
 sudo apt-get install redis-server python3-venv python3-dev
-# brew install redis
-# brew services start redis
 ```
 
 Create a python virtual environment and install the required packages:

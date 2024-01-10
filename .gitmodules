@@ -1,6 +1,3 @@
 [submodule "api/dti_source"]
 	path = api/app/dti
 	url = git@github.com:sonatbaltaci/dti-sprites.git
-[submodule "api/similarity_source"]
-	path = api/app/similarity
-	url = git@github.com:faouinti/similarity.git
