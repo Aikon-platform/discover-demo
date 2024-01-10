@@ -4,28 +4,18 @@ This folder contains the code for the worker API.
 
 ## Development
 
-```bash
-cd api
-```
-
 Copy the file `.env.template` to a file `.env`. Change its content to match your setup (especially regarding the paths).
-
-```bash
-cp ./.env{.template,}
-```
 
 You need to install redis and python:
 
 ```bash
 sudo apt-get install redis-server python3-venv python3-dev
-# brew install redis
-# brew services start redis
 ```
 
-You need to init the similarity submodule (and have the access to the [SimilarityDetection](https://github.com/Segolene-Albouy/SimilarityDetection) repository):
+You need to init the dti submodule (and have the access to the [dti-sprites](https://github.com/sonatbaltaci/dti-sprites) project):
 
 ```bash
-cd app/similarity
+cd app/dti
 git submodule init
 git submodule update
 cd ../../
@@ -34,9 +24,9 @@ cd ../../
 Create a python virtual environment and install the required packages:
 
 ```bash
-python3.9 -m venv venv
+python3 -m venv venv
 . venv/bin/activate
-pip install -r requirements.txt # remove +cu116 on osx
+pip install -r requirements.txt
 ```
 
 You can now run the API worker:
