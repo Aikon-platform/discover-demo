@@ -7,6 +7,9 @@
 {{ form.non_field_errors }}
 {% for field in form %}
     {{ field.errors }}
+    {% if field|field_type == "HiddenInput" %}
+            {{ field }}
+    {% else %}
     <div class="field">
         {% if field|field_type == "CheckboxInput" %}
             <div class="label">
@@ -49,4 +52,5 @@
             </div>
         {% endif %}
     </div>
+    {% endif %}
 {% endfor %}

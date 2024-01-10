@@ -326,26 +326,6 @@ ul.messages {
             text-overflow: ellipsis;
             white-space: nowrap;
         }
-        .status {
-            background-color: $main-color;
-            color: #fff;
-            padding: 0.3em 0.5em;
-            margin: 0;
-            border-radius: 0.5em;
-            font-weight: bold;
-            &.status-CANCELLED {
-                background-color: #808080;
-            }
-            &.status-PENDING {
-                background-color: #dbce10;
-            }
-            &.status-ERROR {
-                background-color: #c81307;
-            }
-            &.status-SUCCESS {
-                background-color: #13d886;
-            }
-        }
         p.date {
             position: absolute;
             top: -0.5em;
@@ -365,6 +345,27 @@ ul.messages {
             background-color: inherit;
             padding: 0.3em 0.5em;
         }
+    }
+}
+
+.status {
+    background-color: $main-color;
+    color: #fff;
+    padding: 0.3em 0.5em;
+    margin: 0;
+    border-radius: 0.5em;
+    font-weight: bold;
+    &.status-CANCELLED {
+        background-color: #808080;
+    }
+    &.status-PENDING {
+        background-color: #dbce10;
+    }
+    &.status-ERROR {
+        background-color: #c81307;
+    }
+    &.status-SUCCESS {
+        background-color: #13d886;
     }
 }
 
@@ -414,6 +415,46 @@ ul.messages {
 
     li {
         list-style-type: none;
+    }
+}
+
+// Nice tables
+
+.table {
+    border-collapse: collapse;
+    width: 100%;
+    margin: 0.5em 0;
+    border: 2px solid $main-color;
+    overflow: hidden;
+    background-color: lighten($bg-color, 5%);
+
+    th, td {
+        padding: 0.5em 1em;
+        border-bottom: 1px solid $main-color;
+        border-right: 1px solid $main-color;
+        text-align: left;
+        vertical-align: top;
+        &:last-child {
+            border-right: none;
+        }
+    }
+    th {
+        background-color: lighten($main-color, 10%);
+        font-weight: bold;
+    }
+    tr {
+        &:hover {
+            background-color: lighten($bg-color, 10%);
+        }
+    }
+    tr:nth-child(even) {
+        background-color: lighten($bg-color, 5%);
+    }
+    tr:nth-child(odd) {
+        background-color: $bg-color;
+    }
+    tr:last-child td {
+        border-bottom: none;
     }
 }
 

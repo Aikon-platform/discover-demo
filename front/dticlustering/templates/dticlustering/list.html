@@ -28,6 +28,9 @@
                 <div class="col">
                     <h2><a href="{{ clustering.get_absolute_url }}"><span class="id-main">{{ clustering.name }}-{{ clustering.id|uuid_prefix }}</span><span class="id-suffix">{{ clustering.id|uuid_suffix }}</span></a></h2>
                     {% if not filter %}<p>└ dataset <a href="{% url "dticlustering:list_perdataset" clustering.dataset.pk %}"><span class="id-main">{{ clustering.dataset.name }}-{{ clustering.dataset.id|uuid_prefix }}</span><span class="id-suffix">{{ clustering.dataset.id|uuid_suffix }}</span></a></p>{% endif %}
+                    {% for saved_clustering in clustering.saved_clustering.all %}
+                        <p>└ manual clustering <a href="{{ saved_clustering.get_absolute_url }}"><span class="id-main">{{ saved_clustering.name }}-{{ saved_clustering.id|uuid_prefix }}</span><span class="id-suffix">{{ saved_clustering.id|uuid_suffix }}</span></a></p>
+                    {% endfor %}
                 </div>
                 <div class="col">
                     <p class="status status-{{ clustering.status }}">{{ clustering.status }}</p>

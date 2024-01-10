@@ -1,7 +1,7 @@
 dataset:
   name: generic
   tag: santaphoto
-  img_size: 64
+  img_size: 128
 model:
   name: dtikmeans
   n_prototypes: 20
@@ -9,7 +9,7 @@ model:
     source: data
     data:
       init: gaussian
-      gaussian_weights_std: 16
+      gaussian_weights_std: 25
   encoder_name: resnet20
   transformation_sequence: identity_color #_projective
   curriculum_learning: False

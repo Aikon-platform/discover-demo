@@ -2,7 +2,7 @@ from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.db import models
 from django.utils.functional import cached_property
-from django.core.mail import send_mail
+from django.core.mail import send_mail, mail_admins
 from django.utils import timezone
 from django.urls import reverse
 from pathlib import Path
@@ -99,6 +99,13 @@ class DTIClustering(models.Model):
         """
         return (self.result_full_path / "results.zip").exists()
     
+    @property
+    def result_summary_url(self) -> str:
+        """
+        URL to the result summary file
+        """
+        return f"{self.result_media_url}/summary.zip"
+
     @cached_property
     def full_log(self):
         """
@@ -143,6 +150,12 @@ class DTIClustering(models.Model):
             self.status = "ERROR"
             self.is_finished = True
             self.save()
+            # Send error email to website admins
+            mail_admins(
+                f"[discover-demo] Offline API",
+                f"Error starting DTI Clustering task {self.name}. The API server is offline.",
+                fail_silently=True,
+            )
             return
 
         try:
