@@ -35,6 +35,10 @@ class DTIClusteringForm(forms.ModelForm):
         label='Use background', 
         help_text='Whether to separate background/foreground (using DTI sprites) or not (using DTI clustering)',
         required=False)
+    p_constant_bg = forms.BooleanField(
+        label='Use constant background',
+        help_text='Whether to use uniform background or learn background',
+        required=False)
     p_transforms = forms.MultipleChoiceField(
         label='Transforms', 
         help_text='The transforms to be used for clustering', 
@@ -68,6 +72,7 @@ class DTIClusteringForm(forms.ModelForm):
         instance.parameters = {
             'n_prototypes': self.cleaned_data['p_n_clusters'],
             'use_sprites': self.cleaned_data['p_use_background'],
+            'use_constant_bg': self.cleaned_data['p_constant_bg'],
             'transformation_sequence': p_transforms
         }
 

@@ -68,3 +68,5 @@ front/media/
 
 # Webpack builds
 node_modules/
+
+.idea/

@@ -194,6 +194,17 @@ def run_kmeans_training(
     return run_dir
 
 
+def freeze_bg(train_config: dict):
+    # Data parameters are respectively [foreground, background, masks]
+
+    train_config["data"]["freeze"] = [False, True, False]
+    # Initialisation method
+    train_config["data"]["init"] = ["constant", "constant", "sample"]
+    # For constant initialization, value of pixels to be set
+    train_config["data"]["value"] = [1., 0., 0.]
+
+    return train_config
+
 def run_sprites_training(
         clustering_id: str, 
         dataset_id: str, 
@@ -214,6 +225,9 @@ def run_sprites_training(
     # Set dataset tag and run dir
     train_config["dataset"]["tag"] = dataset_id
     run_dir = RUNS_PATH / clustering_id
+
+    if parameters.get("use_constant_bg", False):
+        train_config = freeze_bg(train_config)
 
     # Set training parameters from parameters
     if "n_prototypes" in parameters:

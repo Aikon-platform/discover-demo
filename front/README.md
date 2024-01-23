@@ -8,6 +8,10 @@ This folder contains the resources for the front-end server.
 
 Copy the file `.env.template` to a file `.env`. Change its content to match your setup (especially regarding the paths).
 
+```bash
+cp ./.env{.template,}
+```
+
 You need to install redis and python:
 
 ```bash
@@ -29,7 +33,6 @@ Initialize django:
 # Create a superuser
 ./venv/bin/python manage.py createsuperuser
 ```
-
 
 You can now run the frontend worker (meant for collecting API results, or doing cleanup tasks):
 
@@ -56,6 +59,8 @@ If you want to develop those components, you need first to [install npm](https:/
 curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.5/install.sh | bash
 # Install node
 nvm install node
+# Install webpack
+npm install -g webpack
 ```
 
 You then need to initialize npm in the webpack folder, and install all required packages:
@@ -78,6 +83,12 @@ npm run production
 ```
 
 **Note:** If you only need to update css, you can simply set up any sass compiler, to take as input `webpack/src/sass/style.scss` and output `shared/static/css/style.css`, it might be much quicker.
+
+```bash
+# For example
+npm install -g sass
+sass webpack/src/sass/style.scss shared/static/css/style.css
+```
 
 ## Production
 

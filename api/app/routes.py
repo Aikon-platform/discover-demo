@@ -75,7 +75,6 @@ def status(tracking_id:str):
     except ResultFailure as e:
         log = {"status": "ERROR", "infos": [f"Error: Actor raised {e.orig_exc_type} ({e.orig_exc_msg})"]}
 
-
     return {
         "tracking_id": tracking_id,
         "log": log,
