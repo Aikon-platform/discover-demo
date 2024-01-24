@@ -85,6 +85,8 @@ update_env "$API_ENV"
 colorEcho yellow "\n\nSetting Front .env file"
 update_env "$FRONT_ENV"
 
+pre-commit install
+
 # NOTE uncomment to use Redis password
 #REDIS_CONF=/etc/redis/redis.conf
 #if [ ! -f "$REDIS_CONF" ]; then
@@ -99,4 +101,3 @@ update_env "$FRONT_ENV"
 #
 # Reload Redis
 # brew services restart redis
-
