@@ -12,21 +12,30 @@ You need to install redis and python:
 sudo apt-get install redis-server python3-venv python3-dev
 ```
 
+Configure Redis
+```bash
+# Find config file
+sudo find / -name redis.
+vi <path/to/redis.conf>
+```
+
+Find (`/` command then type `requirepass`) and modify directive (uncomment and set password):
+```bash
+requirepass <redis_password>
+```
+
 You need to init the dti submodule (and have the access to the [dti-sprites](https://github.com/sonatbaltaci/dti-sprites) project):
 
 ```bash
-cd app/dti
 git submodule init
 git submodule update
-cd ../../
 ```
 
 Create a python virtual environment and install the required packages:
 
 ```bash
 python3 -m venv venv
-. venv/bin/activate
-pip install -r requirements.txt
+./venv/bin/pip install -r requirements.txt
 ```
 
 You can now run the API worker:

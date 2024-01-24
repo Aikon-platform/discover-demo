@@ -108,7 +108,7 @@ source venv/bin/activate
 pip install -r requirements-prod.txt
 ```
 
-Create a database using postgresl (or change the DATABASE [setting](demowebsite/settings/prod.py) to use another db backend):
+Create a database using postgresql (or change the DATABASE [setting](demowebsite/settings/prod.py) to use another db backend):
 
 ```bash
 # Install postgresql

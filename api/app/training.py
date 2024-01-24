@@ -8,7 +8,7 @@ from torch.utils.data import DataLoader
 import pandas as pd
 from jinja2 import Environment, FileSystemLoader
 
-from . import config # overrides dti_source config
+from . import config  # overrides dti_source config
 
 from .dti.src.kmeans_trainer import Trainer as KMeansTrainer
 from .dti.src.sprites_trainer import Trainer as SpritesTrainer
@@ -19,6 +19,7 @@ from .utils.logging import TLogger, LoggerHelper
 
 KMEANS_CONFIG_FILE = Path(__file__).parent / "templates" / "kmeans-conf.yml"
 SPRITES_CONFIG_FILE = Path(__file__).parent / "templates" / "sprites-conf.yml"
+
 
 class LoggingTrainerMixin:
     """
@@ -36,16 +37,16 @@ class LoggingTrainerMixin:
 
     def run(self, *args, **kwargs):
         # Log epoch progress start
-        self.jlogger.progress(self.start_epoch-1, self.n_epoches, title="Training epoch")
+        self.jlogger.progress(self.start_epoch - 1, self.n_epoches, title="Training epoch")
 
         return super().run(*args, **kwargs)
 
     def update_scheduler(self, epoch, batch):
         # Log epoch progress
-        self.jlogger.progress(epoch-1, self.n_epoches, title="Training epoch")
+        self.jlogger.progress(epoch - 1, self.n_epoches, title="Training epoch")
 
         return super().update_scheduler(epoch, batch)
-    
+
     def save_training_metrics(self):
         # Log epoch progress end
         self.jlogger.progress(self.n_epoches, self.n_epoches, title="Training epoch", end=True)
@@ -79,7 +80,7 @@ class LoggingTrainerMixin:
         # Iterate over dataset
         for images, labels, masks, paths in train_loader:
             images = images.to(self.device)
-            distances, argmin_idx = self._get_cluster_argmin_idx(images) # depends on the method
+            distances, argmin_idx = self._get_cluster_argmin_idx(images)  # depends on the method
 
             transformed_images = self.model.transform(images)
             argmin_idx = argmin_idx.astype(np.int32)
@@ -109,7 +110,7 @@ class LoggingTrainerMixin:
         template = env.get_template('result-template.html')
         output_from_parsed_template = template.render(
             clusters=range(self.n_prototypes),
-            images=cluster_by_path.to_dict(orient="index"), 
+            images=cluster_by_path.to_dict(orient="index"),
             proto_dir=self.output_proto_dir)
 
         with open(self.run_dir / "clusters.html", "w") as fh:
@@ -126,7 +127,7 @@ class LoggedKMeansTrainer(LoggingTrainerMixin, KMeansTrainer):
     """
     A KMeansTrainer with hooks to track training progress
     """
-    
+
     output_proto_dir = "prototypes"
 
     @torch.no_grad()
@@ -154,10 +155,10 @@ class LoggedSpritesTrainer(LoggingTrainerMixin, SpritesTrainer):
 
 
 def run_kmeans_training(
-        clustering_id: str, 
-        dataset_id: str, 
-        parameters: dict, 
-        logger: TLogger=LoggerHelper) -> Path:
+        clustering_id: str,
+        dataset_id: str,
+        parameters: dict,
+        logger: TLogger = LoggerHelper) -> Path:
     """
     Main function to run DTI clustering training
 
@@ -194,29 +195,18 @@ def run_kmeans_training(
     return run_dir
 
 
-def freeze_bg(train_config: dict):
-    # Data parameters are respectively [foreground, background, masks]
-
-    train_config["data"]["freeze"] = [False, True, False]
-    # Initialisation method
-    train_config["data"]["init"] = ["constant", "constant", "sample"]
-    # For constant initialization, value of pixels to be set
-    train_config["data"]["value"] = [1., 0., 0.]
-
-    return train_config
-
 def run_sprites_training(
-        clustering_id: str, 
-        dataset_id: str, 
-        parameters: dict, 
-        logger: TLogger=LoggerHelper) -> Path:
+        clustering_id: str,
+        dataset_id: str,
+        parameters: dict,
+        logger: TLogger = LoggerHelper) -> Path:
     """
     Main function to run DTI sprites training
 
     Parameters:
     - clustering_id: the ID of the clustering task
     - dataset_id: the ID of the dataset
-    - parameters: an object containing the training parameters (for now: n_prototypes, transformation_sequence)
+    - parameters: an object containing the training parameters (for now: n_prototypes, transformation_sequence, bg_option)
     - logger: a logger object
     """
     # Load config template
@@ -226,8 +216,13 @@ def run_sprites_training(
     train_config["dataset"]["tag"] = dataset_id
     run_dir = RUNS_PATH / clustering_id
 
-    if parameters.get("use_constant_bg", False):
-        train_config = freeze_bg(train_config)
+    if parameters.get("bg_option"):
+        # Data parameters are respectively [foreground, background, masks]
+        train_config["data"] = {
+            "freeze": [False, True, False],
+            "init": ["constant", "constant", "sample"],
+            "value": [1., 0., 0.]
+        }
 
     # Set training parameters from parameters
     if "n_prototypes" in parameters:

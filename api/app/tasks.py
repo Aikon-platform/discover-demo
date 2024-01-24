@@ -61,11 +61,12 @@ def train_dti(
         dataset_ready_file.touch()
 
     # Start training
-    use_sprites = parameters.get("use_sprites", False)
-    if use_sprites:
-        output_path = run_sprites_training(clustering_id, dataset_id, parameters, logger)
-    else:
+    if parameters.get("bg_option", "0_dti") == "0_dti":
+        # Use DTI clustering
         output_path = run_kmeans_training(clustering_id, dataset_id, parameters, logger)
+    else:
+        # Use DTI sprites (1_learn_bg / 2_const_bg)
+        output_path = run_sprites_training(clustering_id, dataset_id, parameters, logger)
 
     # zip results to config.DTI_RESULTS_PATH
     with ZipFile(result_file, "w") as zipObj:

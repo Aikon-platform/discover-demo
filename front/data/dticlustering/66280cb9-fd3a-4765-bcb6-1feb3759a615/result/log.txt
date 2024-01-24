@@ -1,0 +1,28 @@
+Traceback (most recent call last):
+  File "/Users/segolene/Desktop/DTI-demo/api/./app/utils/logging.py", line 312, in execute
+    result = func(*args, **kwargs, logger=logger)
+  File "/Users/segolene/Desktop/DTI-demo/api/./app/tasks.py", line 71, in train_dti
+    output_path = run_sprites_training(clustering_id, dataset_id, parameters, logger)
+  File "/Users/segolene/Desktop/DTI-demo/api/./app/training.py", line 242, in run_sprites_training
+    trainer.run(seed=train_config["training"]["seed"])
+  File "/Users/segolene/Desktop/DTI-demo/api/./app/training.py", line 42, in run
+    return super().run(*args, **kwargs)
+  File "/Users/segolene/Desktop/DTI-demo/api/./app/dti/src/utils/__init__.py", line 102, in wrapper
+    return f(*args, **kw)
+  File "/Users/segolene/Desktop/DTI-demo/api/./app/dti/src/sprites_trainer.py", line 467, in run
+    self.single_train_batch_run(images, img_masks, epoch=epoch)
+  File "/Users/segolene/Desktop/DTI-demo/api/./app/dti/src/sprites_trainer.py", line 518, in single_train_batch_run
+    self.optimizer.step()
+  File "/Users/segolene/Desktop/DTI-demo/api/venv/lib/python3.10/site-packages/torch/optim/lr_scheduler.py", line 65, in wrapper
+    return wrapped(*args, **kwargs)
+  File "/Users/segolene/Desktop/DTI-demo/api/venv/lib/python3.10/site-packages/torch/optim/optimizer.py", line 113, in wrapper
+    return func(*args, **kwargs)
+  File "/Users/segolene/Desktop/DTI-demo/api/venv/lib/python3.10/site-packages/torch/autograd/grad_mode.py", line 27, in decorate_context
+    return func(*args, **kwargs)
+  File "/Users/segolene/Desktop/DTI-demo/api/venv/lib/python3.10/site-packages/torch/optim/adam.py", line 157, in step
+    adam(params_with_grad,
+  File "/Users/segolene/Desktop/DTI-demo/api/venv/lib/python3.10/site-packages/torch/optim/adam.py", line 213, in adam
+    func(params,
+  File "/Users/segolene/Desktop/DTI-demo/api/venv/lib/python3.10/site-packages/torch/optim/adam.py", line 307, in _single_tensor_adam
+    param.addcdiv_(exp_avg, denom, value=-step_size)
+RuntimeError: unsupported operation: more than one element of the written-to tensor refers to a single memory location. Please clone() the tensor before performing the operation.

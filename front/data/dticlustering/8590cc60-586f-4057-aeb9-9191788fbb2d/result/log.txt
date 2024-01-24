@@ -1,0 +1,14 @@
+Traceback (most recent call last):
+  File "/Users/segolene/Desktop/DTI-demo/api/./app/utils/logging.py", line 312, in execute
+    result = func(*args, **kwargs, logger=logger)
+  File "/Users/segolene/Desktop/DTI-demo/api/./app/tasks.py", line 68, in train_dti
+    output_path = run_kmeans_training(clustering_id, dataset_id, parameters, logger)
+  File "/Users/segolene/Desktop/DTI-demo/api/./app/training.py", line 191, in run_kmeans_training
+    trainer.run(seed=train_config["training"]["seed"])
+  File "/Users/segolene/Desktop/DTI-demo/api/./app/training.py", line 41, in run
+    return super().run(*args, **kwargs)
+  File "/Users/segolene/Desktop/DTI-demo/api/./app/dti/src/utils/__init__.py", line 102, in wrapper
+    return f(*args, **kw)
+  File "/Users/segolene/Desktop/DTI-demo/api/./app/dti/src/kmeans_trainer.py", line 400, in run
+    self.print_and_log_info("Training run is over")
+ValueError: too many values to unpack (expected 3)

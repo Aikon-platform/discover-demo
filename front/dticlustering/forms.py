@@ -14,6 +14,12 @@ DTI_TRANSFORM_OPTIONS = [
     ('4_tps', 'Thin plate spline')
 ]
 
+DTI_BACKGROUND_OPTIONS = [
+    ('0_dti', 'Use unmodified image'),
+    ('1_learn_bg', 'Use reconstructed background'),
+    ('2_const_bg', 'Use contant background'),
+]
+
 class DTIClusteringForm(forms.ModelForm):
     dataset_zip = ContentRestrictedFileField(
         label='Dataset', help_text='A .zip file containing the dataset to be clustered',
@@ -31,14 +37,14 @@ class DTIClusteringForm(forms.ModelForm):
         max_value=50,
         initial=10,
         required=True)
-    p_use_background = forms.BooleanField(
-        label='Use background', 
-        help_text='Whether to separate background/foreground (using DTI sprites) or not (using DTI clustering)',
-        required=False)
-    p_constant_bg = forms.BooleanField(
-        label='Use constant background',
-        help_text='Whether to use uniform background or learn background',
-        required=False)
+
+    p_background = forms.ChoiceField(
+        label='Background',
+        help_text='How background is treated for clustering',
+        choices=DTI_BACKGROUND_OPTIONS,
+        widget=forms.RadioSelect,
+        required=True,
+        initial='0_dti')
     p_transforms = forms.MultipleChoiceField(
         label='Transforms', 
         help_text='The transforms to be used for clustering', 
@@ -71,8 +77,7 @@ class DTIClusteringForm(forms.ModelForm):
 
         instance.parameters = {
             'n_prototypes': self.cleaned_data['p_n_clusters'],
-            'use_sprites': self.cleaned_data['p_use_background'],
-            'use_constant_bg': self.cleaned_data['p_constant_bg'],
+            'bg_option': self.cleaned_data['p_background'],
             'transformation_sequence': p_transforms
         }
 
