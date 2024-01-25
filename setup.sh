@@ -30,6 +30,7 @@ sudo apt-get install redis-server python3.10 python3.10-venv python3.10-dev curl
 colorEcho yellow "\nAPI virtual env ..."
 python3.10 -m venv api/venv
 api/venv/bin/pip install -r api/requirements.txt
+api/venv/bin/pip install python-dotenv
 
 colorEcho yellow "\nFront virtual env ..."
 python3.10 -m venv front/venv
@@ -90,10 +91,10 @@ update_env() {
 cp "$API_ENV".template "$API_ENV"
 cp "$FRONT_ENV".template "$FRONT_ENV"
 
-colorEcho yellow "\nSetting API .env file ..."
+colorEcho yellow "\nSetting $API_ENV ..."
 update_env "$API_ENV"
 
-colorEcho yellow "\nSetting Front .env file ..."
+colorEcho yellow "\nSetting $FRONT_ENV file ..."
 update_env "$FRONT_ENV"
 
 . "$API_ENV"
@@ -146,6 +147,8 @@ export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
 
 nvm install node
+sudo apt install npm
+
 npm install -g webpack
 npm install -g sass
 npm install -D webpack-cli
@@ -153,6 +156,8 @@ npm install -D webpack-cli
 cd webpack
 colorEcho yellow "\nInit npm project inside $(pwd) ..."
 npm init
+
+npm install
 
 npm run start
 npm run production
