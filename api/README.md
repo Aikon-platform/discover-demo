@@ -12,17 +12,16 @@ You need to install redis and python:
 sudo apt-get install redis-server python3-venv python3-dev
 ```
 
-Configure Redis
-```bash
-# Find config file
-sudo find / -name redis.
-vi <path/to/redis.conf>
-```
-
-Find (`/` command then type `requirepass`) and modify directive (uncomment and set password):
-```bash
-requirepass <redis_password>
-```
+[//]: # (Configure Redis)
+[//]: # (```bash)
+[//]: # (# Find config file)
+[//]: # (sudo find / -name redis.)
+[//]: # (vi <path/to/redis.conf>)
+[//]: # (```)
+[//]: # (Find &#40;`/` command then type `requirepass`&#41; and modify directive &#40;uncomment and set password&#41;:)
+[//]: # (```bash)
+[//]: # (requirepass <redis_password>)
+[//]: # (```)
 
 You need to init the dti submodule (and have the access to the [dti-sprites](https://github.com/sonatbaltaci/dti-sprites) project):
 

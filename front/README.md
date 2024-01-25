@@ -50,7 +50,7 @@ You can now connect to [localhost:8000](http://localhost:8000/) and see the webs
 
 ### Webpack setup
 
-This project uses webpack to bundle the javascript and sass components (commited in `shared/static/`).
+This project uses webpack to bundle the javascript and sass components (committed in `shared/static/`).
 
 If you want to develop those components, you need first to [install npm](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm), for example by installing nvm, and then initializing npm:
 
@@ -204,7 +204,7 @@ python manage.py migrate
 yes | python manage.py collectstatic
 ```
 
-And then restart the services, with 
+And then restart the services, with
 
 ```bash
 sudo service apache2 restart
