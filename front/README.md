@@ -169,8 +169,8 @@ Requires=redis.service
 StartLimitIntervalSec=60
 
 [Service]
-WorkingDirectory=/home/discover/website/front/
-ExecStart=/home/discover/website/front/venv/bin/python manage.py rundramatiq -p 1 -t 1
+WorkingDirectory=/home/path/to/front/
+ExecStart=/home/path/to/front/venv/bin/python manage.py rundramatiq -p 1 -t 1
 User=www-data
 Group=www-data
 Restart=on-failure

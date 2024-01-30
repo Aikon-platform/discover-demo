@@ -22,7 +22,29 @@ colorEcho() {
     esac
 }
 
-colorEcho purple "\n\n=====================================\n======= REQUIREMENTS INSTALL ========\n====================================="
+echoTitle(){
+    sep_line="========================================"
+    len_title=${#1}
+
+    if [ "$len_title" -gt 40 ]; then
+        sep_line=$(printf "%0.s=" $(seq 1 $len_title))
+        title="$1"
+    else
+        diff=$((38 - len_title))
+        half_diff=$((diff / 2))
+        sep=$(printf "%0.s=" $(seq 1 $half_diff))
+
+        if [ $((diff % 2)) -ne 0 ]; then
+            title="$sep $1 $sep="
+        else
+            title="$sep $1 $sep"
+        fi
+    fi
+
+    colorEcho purple "\n\n$sep_line\n$title\n$sep_line"
+}
+
+echoTitle "REQUIREMENTS INSTALL"
 
 colorEcho yellow "\nOS packages ..."
 sudo apt-get install redis-server python3.10 python3.10-venv python3.10-dev curl
@@ -36,7 +58,7 @@ colorEcho yellow "\nFront virtual env ..."
 python3.10 -m venv front/venv
 front/venv/bin/pip install -r front/requirements.txt
 
-colorEcho purple "\n\n=====================================\n=== SET UP ENVIRONMENT VARIABLES ====\n====================================="
+echoTitle "SET UP ENVIRONMENT VARIABLES"
 API_ENV="$SCRIPT_DIR"/api/.env
 FRONT_ENV="$SCRIPT_DIR"/front/.env
 
@@ -48,7 +70,7 @@ prompt_user() {
     env_var=$(colorEcho 'red' "$1")
     default_val="$2"
     current_val="$3"
-    if [  "$2" != "$3" ]; then
+    if [ "$2" != "$3" ]; then
         default="Press enter for $(colorEcho 'cyan' "$default_val")"
     elif [ -n "$current_val" ]; then
         default="Press enter to keep $(colorEcho 'cyan' "$current_val")"
@@ -100,7 +122,7 @@ update_env "$FRONT_ENV"
 . "$API_ENV"
 
 if [ "$TARGET" == "dev" ]; then
-    colorEcho purple "\n\n=====================================\n======== PRE-COMMIT INSTALL =========\n====================================="
+    echoTitle "PRE-COMMIT INSTALL"
     api/venv/bin/pip install pre-commit
     pre-commit install
 fi
@@ -114,7 +136,7 @@ set_redis() {
     colorEcho yellow "\n\nModifying Redis configuration file $REDIS_CONF ..."
 
     # use the same redis password for api and front
-    sed -i '' -e "s~^$REDIS_PASSWORD=.*~$REDIS_PASSWORD=\"$redis_psw\"~" "$FRONT_ENV"
+    sed -i '' -e "s~^REDIS_PASSWORD=.*~REDIS_PASSWORD=\"$redis_psw\"~" "$FRONT_ENV"
 
     sudo sed -i -e "s/\nrequirepass [^ ]*/requirepass $redis_psw/" "$REDIS_CONF"
     sudo sed -i -e "s/# requirepass [^ ]*/requirepass $redis_psw/" "$REDIS_CONF"
@@ -125,11 +147,11 @@ set_redis() {
 # NOTE uncomment to use Redis password
 # set_redis $REDIS_PASSWORD
 
-colorEcho purple "\n\n=====================================\n===== DOWNLOADING DTI SUBMODULE =====\n====================================="
+echoTitle "DOWNLOADING DTI SUBMODULE"
 git submodule init
 git submodule update
 
-colorEcho purple "\n\n=====================================\n========= INITIALIZE DJANGO =========\n====================================="
+echoTitle "INITIALIZE DJANGO"
 
 . "$FRONT_ENV"
 
@@ -139,12 +161,14 @@ cd front
 colorEcho yellow "\nCreating superuser\nusername: $ADMIN_NAME\nemail: $ADMIN_EMAIL\npassword: <same-as-db-password> ..."
 echo "from django.contrib.auth.models import User; User.objects.create_superuser('$ADMIN_NAME', '$ADMIN_EMAIL', '$DB_PASSWORD')" | ./venv/bin/python manage.py shell
 
-colorEcho purple "\n\n=====================================\n=========== SETUP WEBPACK ===========\n====================================="
+echoTitle "SETUP WEBPACK"
 
 curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.5/install.sh | bash
 export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
 [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
+
+# BUG not working from there
 
 nvm install node
 sudo apt install npm
