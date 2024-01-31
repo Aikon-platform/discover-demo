@@ -227,7 +227,7 @@ def run_sprites_training(
     Parameters:
     - clustering_id: the ID of the clustering task
     - dataset_id: the ID of the dataset
-    - parameters: an object containing the training parameters (for now: n_prototypes, transformation_sequence, bg_option)
+    - parameters: an object containing the training parameters (for now: n_prototypes, transformation_sequence, background_option)
     - logger: a logger object
     """
     # Load config template
@@ -237,7 +237,7 @@ def run_sprites_training(
     train_config["dataset"]["tag"] = dataset_id
     run_dir = RUNS_PATH / clustering_id
 
-    if parameters.get("bg_option", "1_learn_bg") == "2_const_bg":
+    if parameters.get("background_option", "1_learn_bg") == "2_const_bg":
         # Data parameters are respectively [foreground, background, masks]
         train_config["model"]["prototype"]["data"]["freeze"][1] = True
         train_config["model"]["prototype"]["data"]["init"][1] = "constant"

@@ -9,14 +9,16 @@ from . import config
 from .training import DATASETS_PATH, run_kmeans_training, run_sprites_training
 from .utils.logging import notifying, TLogger, LoggerHelper
 
-@dramatiq.actor(time_limit=1000*60*60, max_retries=0, store_results=True)
+
+@dramatiq.actor(time_limit=1000 * 60 * 60, max_retries=0, store_results=True)
 @notifying
 def train_dti(
-    clustering_id: str, 
-    dataset_id: str, 
-    dataset_url: str, 
-    parameters: Optional[dict]=None, 
-    logger: TLogger=LoggerHelper):
+    clustering_id: str,
+    dataset_id: str,
+    dataset_url: str,
+    parameters: Optional[dict] = None,
+    logger: TLogger = LoggerHelper,
+):
     """
     Train a DTI model
 
@@ -60,13 +62,21 @@ def train_dti(
         print("Dataset already ready")
         dataset_ready_file.touch()
 
-    # Start training
-    if parameters.get("bg_option", "0_dti") == "0_dti":
-        # Use DTI clustering
-        output_path = run_kmeans_training(clustering_id, dataset_id, parameters, logger)
+    use_sprites = parameters.get("use_sprites", False)
+    if use_sprites:
+        output_path = run_sprites_training(
+            clustering_id, dataset_id, parameters, logger
+        )
     else:
-        # Use DTI sprites (1_learn_bg / 2_const_bg)
-        output_path = run_sprites_training(clustering_id, dataset_id, parameters, logger)
+        output_path = run_kmeans_training(clustering_id, dataset_id, parameters, logger)
+
+    # # Start training
+    # if parameters.get("background_option", "0_dti") == "0_dti":
+    #     # Use DTI clustering
+    #     output_path = run_kmeans_training(clustering_id, dataset_id, parameters, logger)
+    # else:
+    #     # Use DTI sprites (1_learn_bg / 2_const_bg)
+    #     output_path = run_sprites_training(clustering_id, dataset_id, parameters, logger)
 
     # zip results to config.DTI_RESULTS_PATH
     with ZipFile(result_file, "w") as zipObj:
@@ -74,7 +84,7 @@ def train_dti(
             # if file.suffix == ".pkl": # Don't include the model
             #    continue
 
-            if file.suffix == ".png": # Convert to jpg if not transparent
+            if file.suffix == ".png":  # Convert to jpg if not transparent
                 img = Image.open(file)
                 if img.mode != "RGBA" and img.format != "JPEG":
                     img.save(file, "JPEG", quality=85)
