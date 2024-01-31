@@ -19,4 +19,4 @@ docker rm demowebsiteapi
 
 docker run -d --gpus 1 --name demowebsiteapi \
    -v $DATA_FOLDER:/data/ -p 127.0.0.1:8001:8001 \
-   --restart unless-stopped demowebsiteapi
+   --restart unless-stopped --ipc=host demowebsiteapi
