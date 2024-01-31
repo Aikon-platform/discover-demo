@@ -53,6 +53,18 @@ And the server:
 
 ### Deploy
 
+Clone and init submodule
+
+```shell
+git clone git@github.com:Evarin/DTI-demo.git
+cd api/
+
+git submodule init
+git submodule update
+```
+
+Install docker and the [nvidia-container-toolkit](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html) following NVIDIA's instructions (this will be needed for the docker to use the GPU).
+
 Copy the file `.env` to a file `.env.prod`. Change it to `TARGET=prod`, and indicate the appropriate credentials.
 
 ```shell
@@ -60,9 +72,7 @@ cp .env.template .env.prod
 sed -i '' -e "s~^TARGET=.*~TARGET=\"prod\"~" .env.prod
 ```
 
-Install docker and the [nvidia-container-toolkit](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html) following NVIDIA's instructions (this will be needed for the docker to use the GPU).
-
-Modify the directory (`DATA_FOLDER`) and userid (`DEMO_UID`) binding in `docker.sh` to ensure it is correct.
+Modify the directory (`DATA_FOLDER`) and id of the user that execute Dockerfile (`DEMO_UID`) binding in `docker.sh` to ensure it is correct.
 
 Build the docker using the premade script:
 
