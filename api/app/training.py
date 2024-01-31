@@ -241,7 +241,7 @@ def run_sprites_training(
         # Data parameters are respectively [foreground, background, masks]
         train_config["model"]["prototype"]["data"]["freeze"][1] = True
         train_config["model"]["prototype"]["data"]["init"][1] = "constant"
-        train_config["model"]["prototype"]["data"]["value"][1] = 0.0
+        train_config["model"]["prototype"]["data"]["value"][1] = 0.1
 
     # Set training parameters from parameters
     if "n_prototypes" in parameters:
