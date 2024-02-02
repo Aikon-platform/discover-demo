@@ -11,7 +11,13 @@ Please refer to [api/README](api/README.md) and [front/README](front/README.md) 
 >     - `sudo apt install git`
 >     - Having configured [SSH access to GitHub](https://docs.github.com/en/authentication/connecting-to-github-with-ssh)
 
-## Development : Running everything at once
+## Development
+
+To install the API and Front application following the instructions in [api/README](api/README.md) and [front/README](front/README.md)
+
+```bash
+bash setup.sh
+```
 
 To start everything in one killable process, run (after installing each part like advised in the subfolders):
 

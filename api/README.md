@@ -12,21 +12,29 @@ You need to install redis and python:
 sudo apt-get install redis-server python3-venv python3-dev
 ```
 
+[//]: # (Configure Redis)
+[//]: # (```bash)
+[//]: # (# Find config file)
+[//]: # (sudo find / -name redis.)
+[//]: # (vi <path/to/redis.conf>)
+[//]: # (```)
+[//]: # (Find &#40;`/` command then type `requirepass`&#41; and modify directive &#40;uncomment and set password&#41;:)
+[//]: # (```bash)
+[//]: # (requirepass <redis_password>)
+[//]: # (```)
+
 You need to init the dti submodule (and have the access to the [dti-sprites](https://github.com/sonatbaltaci/dti-sprites) project):
 
 ```bash
-cd app/dti
 git submodule init
 git submodule update
-cd ../../
 ```
 
 Create a python virtual environment and install the required packages:
 
 ```bash
 python3 -m venv venv
-. venv/bin/activate
-pip install -r requirements.txt
+./venv/bin/pip install -r requirements.txt
 ```
 
 You can now run the API worker:
@@ -45,11 +53,26 @@ And the server:
 
 ### Deploy
 
-Copy the file `.env.template` to a file `.env.prod`. Change it to `TARGET=prod`, and indicate the appropriate credentials.
+Clone and init submodule
+
+```shell
+git clone git@github.com:Evarin/DTI-demo.git
+cd api/
+
+git submodule init
+git submodule update
+```
 
 Install docker and the [nvidia-container-toolkit](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html) following NVIDIA's instructions (this will be needed for the docker to use the GPU).
 
-Modify the directory and user binding in `docker.sh` to ensure it is correct.
+Copy the file `.env` to a file `.env.prod`. Change it to `TARGET=prod`, and indicate the appropriate credentials.
+
+```shell
+cp .env.template .env.prod
+sed -i '' -e "s~^TARGET=.*~TARGET=\"prod\"~" .env.prod
+```
+
+Modify the directory (`DATA_FOLDER`) and id of the user that execute Dockerfile (`DEMO_UID`) binding in `docker.sh` to ensure it is correct.
 
 Build the docker using the premade script:
 

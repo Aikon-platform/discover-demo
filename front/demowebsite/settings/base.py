@@ -90,7 +90,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 DRAMATIQ_BROKER = {
     "BROKER": "dramatiq.brokers.redis.RedisBroker",
     "OPTIONS": {
-        "url": ENV("REDIS_URL", default="redis:///2"),
+        "url": ENV("REDIS_URL", default="redis:///2"),  # f"redis://:{ENV('REDIS_PASSWORD')}@localhost:6379/1"
     },
     "MIDDLEWARE": [
     ]

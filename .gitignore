@@ -53,6 +53,16 @@ __pypackages__/
 celerybeat-schedule
 celerybeat.pid
 
+# OS generated files
+*.swp
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
 # Environments
 .env
 .env.prod
@@ -65,6 +75,10 @@ venv.bak/
 
 # Specific for this project
 front/media/
+front/data/
+api/data/
 
 # Webpack builds
 node_modules/
+
+.idea/

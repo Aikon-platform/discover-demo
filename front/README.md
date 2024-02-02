@@ -8,6 +8,10 @@ This folder contains the resources for the front-end server.
 
 Copy the file `.env.template` to a file `.env`. Change its content to match your setup (especially regarding the paths).
 
+```bash
+cp ./.env{.template,}
+```
+
 You need to install redis and python:
 
 ```bash
@@ -30,7 +34,6 @@ Initialize django:
 ./venv/bin/python manage.py createsuperuser
 ```
 
-
 You can now run the frontend worker (meant for collecting API results, or doing cleanup tasks):
 
 ```bash
@@ -47,7 +50,7 @@ You can now connect to [localhost:8000](http://localhost:8000/) and see the webs
 
 ### Webpack setup
 
-This project uses webpack to bundle the javascript and sass components (commited in `shared/static/`).
+This project uses webpack to bundle the javascript and sass components (committed in `shared/static/`).
 
 If you want to develop those components, you need first to [install npm](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm), for example by installing nvm, and then initializing npm:
 
@@ -56,6 +59,8 @@ If you want to develop those components, you need first to [install npm](https:/
 curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.5/install.sh | bash
 # Install node
 nvm install node
+# Install webpack
+npm install -g webpack
 ```
 
 You then need to initialize npm in the webpack folder, and install all required packages:
@@ -79,6 +84,12 @@ npm run production
 
 **Note:** If you only need to update css, you can simply set up any sass compiler, to take as input `webpack/src/sass/style.scss` and output `shared/static/css/style.css`, it might be much quicker.
 
+```bash
+# For example
+npm install -g sass
+sass webpack/src/sass/style.scss shared/static/css/style.css
+```
+
 ## Production
 
 ### Initial deployment
@@ -97,7 +108,7 @@ source venv/bin/activate
 pip install -r requirements-prod.txt
 ```
 
-Create a database using postgresl (or change the DATABASE [setting](demowebsite/settings/prod.py) to use another db backend):
+Create a database using postgresql (or change the DATABASE [setting](demowebsite/settings/prod.py) to use another db backend):
 
 ```bash
 # Install postgresql
@@ -158,8 +169,8 @@ Requires=redis.service
 StartLimitIntervalSec=60
 
 [Service]
-WorkingDirectory=/home/discover/website/front/
-ExecStart=/home/discover/website/front/venv/bin/python manage.py rundramatiq -p 1 -t 1
+WorkingDirectory=/home/path/to/front/
+ExecStart=/home/path/to/front/venv/bin/python manage.py rundramatiq -p 1 -t 1
 User=www-data
 Group=www-data
 Restart=on-failure
@@ -193,7 +204,7 @@ python manage.py migrate
 yes | python manage.py collectstatic
 ```
 
-And then restart the services, with 
+And then restart the services, with
 
 ```bash
 sudo service apache2 restart

@@ -8,7 +8,7 @@ from torch.utils.data import DataLoader
 import pandas as pd
 from jinja2 import Environment, FileSystemLoader
 
-from . import config # overrides dti_source config
+from . import config  # overrides dti_source config
 
 from .dti.src.kmeans_trainer import Trainer as KMeansTrainer
 from .dti.src.sprites_trainer import Trainer as SpritesTrainer
@@ -20,10 +20,12 @@ from .utils.logging import TLogger, LoggerHelper
 KMEANS_CONFIG_FILE = Path(__file__).parent / "templates" / "kmeans-conf.yml"
 SPRITES_CONFIG_FILE = Path(__file__).parent / "templates" / "sprites-conf.yml"
 
+
 class LoggingTrainerMixin:
     """
     A mixin with hooks to track training progress inside dti Trainers
     """
+
     output_proto_dir: str = "prototypes"
 
     def __init__(self, logger: TLogger, *args, **kwargs):
@@ -36,19 +38,23 @@ class LoggingTrainerMixin:
 
     def run(self, *args, **kwargs):
         # Log epoch progress start
-        self.jlogger.progress(self.start_epoch-1, self.n_epoches, title="Training epoch")
+        self.jlogger.progress(
+            self.start_epoch - 1, self.n_epoches, title="Training epoch"
+        )
 
         return super().run(*args, **kwargs)
 
     def update_scheduler(self, epoch, batch):
         # Log epoch progress
-        self.jlogger.progress(epoch-1, self.n_epoches, title="Training epoch")
+        self.jlogger.progress(epoch - 1, self.n_epoches, title="Training epoch")
 
         return super().update_scheduler(epoch, batch)
-    
+
     def save_training_metrics(self):
         # Log epoch progress end
-        self.jlogger.progress(self.n_epoches, self.n_epoches, title="Training epoch", end=True)
+        self.jlogger.progress(
+            self.n_epoches, self.n_epoches, title="Training epoch", end=True
+        )
         self.jlogger.info("Training over, running evaluation")
 
         return super().save_training_metrics()
@@ -73,26 +79,32 @@ class LoggingTrainerMixin:
 
         # Create cluster folders
         for k in range(self.n_prototypes):
-            path = (cluster_path / f"cluster{k}")
+            path = cluster_path / f"cluster{k}"
             path.mkdir(parents=True, exist_ok=True)
 
         # Iterate over dataset
         for images, labels, masks, paths in train_loader:
             images = images.to(self.device)
-            distances, argmin_idx = self._get_cluster_argmin_idx(images) # depends on the method
+            distances, argmin_idx = self._get_cluster_argmin_idx(
+                images
+            )  # depends on the method
 
             transformed_images = self.model.transform(images)
             argmin_idx = argmin_idx.astype(np.int32)
 
             # Save individual images to their cluster folder
-            for img, idx, d, p, tsf_imgs in zip(images, argmin_idx, distances, paths, transformed_images):
+            for img, idx, d, p, tsf_imgs in zip(
+                images, argmin_idx, distances, paths, transformed_images
+            ):
                 convert_to_img(img).save(
                     cluster_path / f"cluster{idx}" / f"{k_image}_raw.png"
                 )
                 convert_to_img(tsf_imgs[idx]).save(
                     cluster_path / f"cluster{idx}" / f"{k_image}_tsf.png"
                 )
-                cluster_by_path.append((k_image, os.path.relpath(p, dataset.data_path), idx, d))
+                cluster_by_path.append(
+                    (k_image, os.path.relpath(p, dataset.data_path), idx, d)
+                )
                 k_image += 1
 
         dataset.output_paths = False
@@ -105,12 +117,13 @@ class LoggingTrainerMixin:
         cluster_by_path.to_json(self.run_dir / "cluster_by_path.json", orient="index")
 
         # Render jinja template
-        env = Environment(loader=FileSystemLoader('app/templates'))
-        template = env.get_template('result-template.html')
+        env = Environment(loader=FileSystemLoader("app/templates"))
+        template = env.get_template("result-template.html")
         output_from_parsed_template = template.render(
             clusters=range(self.n_prototypes),
-            images=cluster_by_path.to_dict(orient="index"), 
-            proto_dir=self.output_proto_dir)
+            images=cluster_by_path.to_dict(orient="index"),
+            proto_dir=self.output_proto_dir,
+        )
 
         with open(self.run_dir / "clusters.html", "w") as fh:
             fh.write(output_from_parsed_template)
@@ -126,13 +139,15 @@ class LoggedKMeansTrainer(LoggingTrainerMixin, KMeansTrainer):
     """
     A KMeansTrainer with hooks to track training progress
     """
-    
+
     output_proto_dir = "prototypes"
 
     @torch.no_grad()
     def _get_cluster_argmin_idx(self, images):
         distances = self.model(images)[1]
-        dist_min_by_sample, argmin_idx = map(lambda t: t.cpu().numpy(), distances.min(1))
+        dist_min_by_sample, argmin_idx = map(
+            lambda t: t.cpu().numpy(), distances.min(1)
+        )
         return dist_min_by_sample, argmin_idx
 
 
@@ -140,24 +155,26 @@ class LoggedSpritesTrainer(LoggingTrainerMixin, SpritesTrainer):
     """
     A SpritesTrainer with hooks to track training progress
     """
+
     output_proto_dir = "masked_prototypes"
 
     @torch.no_grad()
     def _get_cluster_argmin_idx(self, images):
         dist = self.model(images)[1]
         if self.n_backgrounds > 1:
-            dist = dist.view(
-                images.size(0), self.n_prototypes, self.n_backgrounds
-            ).min(2)[0]
+            dist = dist.view(images.size(0), self.n_prototypes, self.n_backgrounds).min(
+                2
+            )[0]
         dist_min_by_sample, argmin_idx = map(lambda t: t.cpu().numpy(), dist.min(1))
         return dist_min_by_sample, argmin_idx
 
 
 def run_kmeans_training(
-        clustering_id: str, 
-        dataset_id: str, 
-        parameters: dict, 
-        logger: TLogger=LoggerHelper) -> Path:
+    clustering_id: str,
+    dataset_id: str,
+    parameters: dict,
+    logger: TLogger = LoggerHelper,
+) -> Path:
     """
     Main function to run DTI clustering training
 
@@ -179,7 +196,9 @@ def run_kmeans_training(
         train_config["model"]["n_prototypes"] = parameters["n_prototypes"]
 
     if "transformation_sequence" in parameters:
-        train_config["model"]["transformation_sequence"] = parameters["transformation_sequence"]
+        train_config["model"]["transformation_sequence"] = parameters[
+            "transformation_sequence"
+        ]
 
     # Save config to file
     config_file = CONFIGS_PATH / f"{clustering_id}.yml"
@@ -187,7 +206,9 @@ def run_kmeans_training(
     dump(train_config, open(config_file, "w"), Dumper=Dumper)
 
     # Run training
-    trainer = LoggedKMeansTrainer(logger, config_file, run_dir, seed=train_config["training"]["seed"])
+    trainer = LoggedKMeansTrainer(
+        logger, config_file, run_dir, seed=train_config["training"]["seed"]
+    )
     trainer.run(seed=train_config["training"]["seed"])
 
     # Return output directory
@@ -195,17 +216,18 @@ def run_kmeans_training(
 
 
 def run_sprites_training(
-        clustering_id: str, 
-        dataset_id: str, 
-        parameters: dict, 
-        logger: TLogger=LoggerHelper) -> Path:
+    clustering_id: str,
+    dataset_id: str,
+    parameters: dict,
+    logger: TLogger = LoggerHelper,
+) -> Path:
     """
     Main function to run DTI sprites training
 
     Parameters:
     - clustering_id: the ID of the clustering task
     - dataset_id: the ID of the dataset
-    - parameters: an object containing the training parameters (for now: n_prototypes, transformation_sequence)
+    - parameters: an object containing the training parameters (for now: n_prototypes, transformation_sequence, background_option)
     - logger: a logger object
     """
     # Load config template
@@ -215,13 +237,23 @@ def run_sprites_training(
     train_config["dataset"]["tag"] = dataset_id
     run_dir = RUNS_PATH / clustering_id
 
+    if parameters.get("background_option", "1_learn_bg") == "2_const_bg":
+        # Data parameters are respectively [foreground, background, masks]
+        train_config["model"]["prototype"]["data"]["freeze"][1] = True
+        train_config["model"]["prototype"]["data"]["init"][1] = "constant"
+        train_config["model"]["prototype"]["data"]["value"][1] = 0.1
+
     # Set training parameters from parameters
     if "n_prototypes" in parameters:
         train_config["model"]["n_sprites"] = parameters["n_prototypes"]
 
     if "transformation_sequence" in parameters:
-        train_config["model"]["transformation_sequence"] = parameters["transformation_sequence"]
-        train_config["model"]["transformation_sequence_bkg"] = parameters["transformation_sequence"]
+        train_config["model"]["transformation_sequence"] = parameters[
+            "transformation_sequence"
+        ]
+        train_config["model"]["transformation_sequence_bkg"] = parameters[
+            "transformation_sequence"
+        ]
 
     # Save config to file
     config_file = CONFIGS_PATH / f"{clustering_id}.yml"
@@ -229,7 +261,9 @@ def run_sprites_training(
     dump(train_config, open(config_file, "w"), Dumper=Dumper)
 
     # Run training
-    trainer = LoggedSpritesTrainer(logger, config_file, run_dir, seed=train_config["training"]["seed"])
+    trainer = LoggedSpritesTrainer(
+        logger, config_file, run_dir, seed=train_config["training"]["seed"]
+    )
     trainer.run(seed=train_config["training"]["seed"])
 
     # Return output directory

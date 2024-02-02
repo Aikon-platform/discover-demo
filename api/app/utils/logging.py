@@ -65,7 +65,7 @@ class LoggerHelper:
         text = " ".join(str(p) for p in s) 
         
         if exception:
-            text += "\n " + traceback.format_exc(limit=1)
+            text += f"\n {traceback.format_exc(limit=1)}"
         
         base_logger.warning(text)
 
@@ -74,7 +74,7 @@ class LoggerHelper:
         text = " ".join(str(p) for p in s) 
         
         if exception:
-            text += "\n " + traceback.format_exc()
+            text += f"\n {traceback.format_exc()}"
         
         base_logger.error(text)
 

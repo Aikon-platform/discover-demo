@@ -1,0 +1,3 @@
+-r api/requirements.txt
+-r front/requirements.txt
+pre-commit==2.19.0
