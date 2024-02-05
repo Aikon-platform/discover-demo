@@ -17,28 +17,41 @@ import shutil
 from typing import Dict, Any
 
 from datasets.models import ZippedDataset
+from requests import RequestException
 
 User = get_user_model()
 
-DTI_API_URL = getattr(settings, 'DTI_API_URL', 'http://localhost:5000')
-BASE_URL = getattr(settings, 'BASE_URL', 'http://localhost:8000')
+DTI_API_URL = getattr(settings, "DTI_API_URL", "http://localhost:5000")
+BASE_URL = getattr(settings, "BASE_URL", "http://localhost:8000")
+
 
 class DTIClustering(models.Model):
     """
     Main model for a clustering query and result
     """
+
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    name = models.CharField(max_length=64, default="dti", blank=True, 
-                            verbose_name="Clustering name", help_text="An optional name to identify this clustering")
+    name = models.CharField(
+        max_length=64,
+        default="dti",
+        blank=True,
+        verbose_name="Clustering name",
+        help_text="An optional name to identify this clustering",
+    )
 
     notify_email = models.BooleanField(
-        default=False, verbose_name="Notify by email", blank=True,
-        help_text="Send an email when the clustering is finished")
+        default=False,
+        verbose_name="Notify by email",
+        blank=True,
+        help_text="Send an email when the clustering is finished",
+    )
 
-    status = models.CharField(max_length=20, default='PENDING', editable=False)
+    status = models.CharField(max_length=20, default="PENDING", editable=False)
     is_finished = models.BooleanField(default=False, editable=False)
     requested_on = models.DateTimeField(auto_now_add=True, editable=False)
-    requested_by = models.ForeignKey(User, null=True, on_delete=models.SET_NULL, editable=False)
+    requested_by = models.ForeignKey(
+        User, null=True, on_delete=models.SET_NULL, editable=False
+    )
 
     # The clustering tracking id
     api_tracking_id = models.UUIDField(null=True, editable=False)
@@ -48,7 +61,7 @@ class DTIClustering(models.Model):
     parameters = models.JSONField(null=True)
 
     class Meta:
-        ordering = ['-requested_on']
+        ordering = ["-requested_on"]
         permissions = [
             ("monitor_dticlustering", "Can monitor DTI Clustering"),
         ]
@@ -63,42 +76,42 @@ class DTIClustering(models.Model):
         Path to the result folder, relative to MEDIA_ROOT
         """
         return f"dticlustering/{self.id}/result"
-    
+
     @property
     def result_full_path(self) -> Path:
         """
         Full path to the result folder
         """
         return Path(settings.MEDIA_ROOT) / self.result_media_path
-    
+
     @property
     def log_file_path(self) -> Path:
         """
         Full path to the log file
         """
         return self.result_full_path / "log.txt"
-    
+
     @property
     def result_media_url(self) -> str:
         """
         URL to the result folder, including MEDIA_URL
         """
         return f"{settings.MEDIA_URL}{self.result_media_path}"
-    
+
     @property
     def result_zip_url(self) -> str:
         """
         URL to the result zip file
         """
         return f"{self.result_media_url}/results.zip"
-    
+
     @property
     def result_zip_exists(self) -> bool:
         """
         True if the result zip file exists
         """
         return (self.result_full_path / "results.zip").exists()
-    
+
     @property
     def result_summary_url(self) -> str:
         """
@@ -115,7 +128,7 @@ class DTIClustering(models.Model):
             return None
         with open(self.log_file_path, "r") as f:
             return f.read()
-    
+
     def write_log(self, text: str):
         """
         Writes text to the log file
@@ -128,7 +141,9 @@ class DTIClustering(models.Model):
         """
         Returns a unique token to secure in the notification callback URL
         """
-        return uuid.uuid5(uuid.NAMESPACE_URL, settings.SECRET_KEY[:10] + str(self.id)).hex
+        return uuid.uuid5(
+            uuid.NAMESPACE_URL, settings.SECRET_KEY[:10] + str(self.id)
+        ).hex
 
     def start_clustering(self):
         """
@@ -142,10 +157,10 @@ class DTIClustering(models.Model):
                     "dataset_id": str(self.dataset.id),
                     "clustering_id": str(self.id),
                     "parameters": json.dumps(self.parameters),
-                    "notify_url": f"{settings.BASE_URL}{reverse('dticlustering:notify', kwargs={'pk': self.pk})}?token={self.get_token()}"
-                }
+                    "notify_url": f"{settings.BASE_URL}{reverse('dticlustering:notify', kwargs={'pk': self.pk})}?token={self.get_token()}",
+                },
             )
-        except ConnectionError:
+        except (ConnectionError, RequestException):
             self.write_log("Connection error when starting task")
             self.status = "ERROR"
             self.is_finished = True
@@ -176,7 +191,7 @@ class DTIClustering(models.Model):
             api_query = requests.post(
                 f"{DTI_API_URL}/clustering/{self.api_tracking_id}/cancel",
             )
-        except ConnectionError:
+        except (ConnectionError, RequestException):
             self.write_log("Connection error when cancelling task")
             self.save()
             return
@@ -205,6 +220,7 @@ class DTIClustering(models.Model):
             self.save()
             # start collecting results
             from .tasks import collect_results
+
             collect_results.send(str(self.pk), data["output"]["result_url"])
         elif event == "ERROR":
             self.finish_clustering("ERROR", data["error"])
@@ -231,7 +247,6 @@ class DTIClustering(models.Model):
             except:
                 self.write_log(f"Error sending email: {traceback.format_exc()}")
 
-
     def get_progress(self):
         """
         Queries the API to get the task progress
@@ -240,23 +255,20 @@ class DTIClustering(models.Model):
             api_query = requests.get(
                 f"{DTI_API_URL}/clustering/{self.api_tracking_id}/status",
             )
-        except ConnectionError:
+        except (ConnectionError, RequestException):
             return {
                 "status": "UNKNOWN",
-                "error": "Connection error when getting task progress from the worker"
+                "error": "Connection error when getting task progress from the worker",
             }
 
         try:
-            return {
-                "status": self.status,
-                **api_query.json()
-            }
+            return {"status": self.status, **api_query.json()}
         except:
             self.write_log(f"Error when reading clustering progress: {api_query.text}")
             return {
                 "status": "UNKNOWN",
             }
-        
+
     @staticmethod
     def get_api_monitoring():
         """
@@ -266,7 +278,7 @@ class DTIClustering(models.Model):
             api_query = requests.get(
                 f"{DTI_API_URL}/clustering/monitor",
             )
-        except ConnectionError:
+        except (ConnectionError, RequestException):
             return {
                 "error": "Connection error when getting monitoring data from the worker"
             }
@@ -274,10 +286,8 @@ class DTIClustering(models.Model):
         try:
             return api_query.json()
         except:
-            return {
-                "error": "Error when reading monitoring data"
-            }
-        
+            return {"error": "Error when reading monitoring data"}
+
     @staticmethod
     def get_frontend_monitoring():
         """
@@ -295,20 +305,25 @@ class DTIClustering(models.Model):
             "n_datasets": n_datasets,
             "n_clusterings": n_clusterings,
         }
-    
+
     @staticmethod
-    def clear_old_clusterings(days_before:int=30) -> Dict[str, int]:
+    def clear_old_clusterings(days_before: int = 30) -> Dict[str, int]:
         """
         Clears all clusterings older than days_before days
         """
-        old_clusterings = DTIClustering.objects.filter(requested_on__lte=timezone.now() - timezone.timedelta(days=days_before))
+        old_clusterings = DTIClustering.objects.filter(
+            requested_on__lte=timezone.now() - timezone.timedelta(days=days_before)
+        )
 
         # remove results
         for c in old_clusterings:
             shutil.rmtree(c.result_full_path, ignore_errors=True)
 
         # remove all datasets except those who have a clustering younger than days_before days
-        old_datasets = ZippedDataset.objects.exclude(dticlustering__requested_on__gt=timezone.now() - timezone.timedelta(days=days_before))
+        old_datasets = ZippedDataset.objects.exclude(
+            dticlustering__requested_on__gt=timezone.now()
+            - timezone.timedelta(days=days_before)
+        )
         for d in old_datasets:
             d.zip_file.delete()
 
@@ -324,7 +339,7 @@ class DTIClustering(models.Model):
         return cleared_data
 
     @staticmethod
-    def clear_api_old_clusterings(days_before:int=30) -> Dict[str, Any]:
+    def clear_api_old_clusterings(days_before: int = 30) -> Dict[str, Any]:
         """
         Clears all clusterings older than days_before days from the API server
         """
@@ -333,19 +348,19 @@ class DTIClustering(models.Model):
                 f"{DTI_API_URL}/clustering/monitor/clear",
                 data={
                     "days_before": days_before,
-                }
+                },
             )
-        except ConnectionError:
+        except (ConnectionError, RequestException):
             return {
                 "error": "Connection error when clearing old clusterings from the worker"
             }
-        
+
         try:
             return api_query.json()
         except:
             return {
                 "error": "Error when output from API server",
-                "output": api_query.text
+                "output": api_query.text,
             }
 
     @cached_property
@@ -383,7 +398,7 @@ class DTIClustering(models.Model):
 
         # List prototypes
         prototypes = {
-            int(c.name[len("prototype"):-4])
+            int(c.name[len("prototype") : -4])
             for c in prototypes_path.glob("prototype*")
             if c.suffix in [".jpg", ".png"]
         }
@@ -418,10 +433,10 @@ class DTIClustering(models.Model):
             )
 
             cluster = {
-                "proto_url": proto_url, 
-                "id": p, 
-                "name": f"Cluster {p}", 
-                "images": []
+                "proto_url": proto_url,
+                "id": p,
+                "name": f"Cluster {p}",
+                "images": [],
             }
             clusters[p] = cluster
 
@@ -443,7 +458,7 @@ class DTIClustering(models.Model):
                     "raw_url": f"clusters/cluster{p}/{img.name}",
                     "tsf_url": f"clusters/cluster{p}/{img_id}_tsf{img.suffix}",
                     "path": None,
-                    "distance": 100.,
+                    "distance": 100.0,
                     "id": img_id,
                 }
                 if str(img_id) in image_data:
@@ -451,7 +466,7 @@ class DTIClustering(models.Model):
                     assert img_ext_data["cluster_id"] == p
                     img_data["path"] = img_ext_data["path"]
                     img_data["distance"] = img_ext_data["distance"]
-                
+
                 cluster["images"].append(img_data)
 
         return result_dict
@@ -461,22 +476,32 @@ class SavedClustering(models.Model):
     """
     Model for saving clustering modifications made by user
     """
-    from_dti = models.ForeignKey(DTIClustering, on_delete=models.CASCADE, related_name="saved_clustering")
+
+    from_dti = models.ForeignKey(
+        DTIClustering, on_delete=models.CASCADE, related_name="saved_clustering"
+    )
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    name = models.CharField(max_length=64, default="dti", blank=True, 
-                            verbose_name="Clustering name", help_text="An optional name to identify this clustering")
+    name = models.CharField(
+        max_length=64,
+        default="dti",
+        blank=True,
+        verbose_name="Clustering name",
+        help_text="An optional name to identify this clustering",
+    )
 
     date = models.DateTimeField(auto_now=True, editable=False)
 
     clustering_data = models.JSONField(null=True)
 
     class Meta:
-        ordering = ['-date']
+        ordering = ["-date"]
         verbose_name = "Manual clustering"
 
     def get_absolute_url(self) -> str:
-        return reverse("dticlustering:saved", kwargs={"pk": self.pk, "from_pk": self.from_dti_id})
-    
+        return reverse(
+            "dticlustering:saved", kwargs={"pk": self.pk, "from_pk": self.from_dti_id}
+        )
+
     def format_as_csv(self) -> str:
         """
         Returns a CSV string with the clustering data
