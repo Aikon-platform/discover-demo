@@ -35,12 +35,12 @@ class DTIClustering(models.Model):
         max_length=64,
         default="dti",
         blank=True,
-        verbose_name="Clustering name",
-        help_text="An optional name to identify this clustering",
+        verbose_name="Experiment name",
+        help_text="Optional name to identify this clustering experiment",
     )
 
     notify_email = models.BooleanField(
-        default=False,
+        default=True,
         verbose_name="Notify by email",
         blank=True,
         help_text="Send an email when the clustering is finished",
