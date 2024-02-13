@@ -129,10 +129,7 @@ fi
 
 set_redis() {
     redis_psw="$1"
-    REDIS_CONF=/etc/redis/redis.conf
-    if [ ! -f "$REDIS_CONF" ]; then
-        REDIS_CONF=/usr/local/etc/redis.conf # MacOs
-    fi
+    REDIS_CONF=$(redis-cli INFO | grep config_file | awk -F: '{print $2}' | tr -d '[:space:]')
     colorEcho yellow "\n\nModifying Redis configuration file $REDIS_CONF ..."
 
     # use the same redis password for api and front
