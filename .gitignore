@@ -82,3 +82,5 @@ api/data/
 node_modules/
 
 .idea/
+
+front/shared/static/css/style.css.map
