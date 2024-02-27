@@ -7,8 +7,8 @@
         <h1>Monitoring dashboard</h1>
 
         <p>
-            <a href="{% url 'dticlustering:list' %}" class="btn is-outline">
-                <span class="iconify" data-icon="mdi:list-box"></span> <span>View all DTI tasks</span>
+            <a href="{% url app_name|add:':list' %}" class="btn is-outline">
+                <span class="iconify" data-icon="mdi:list-box"></span> <span>&lt; all {{ task_name }} experiments</span>
             </a>
         </p>
 
@@ -27,7 +27,7 @@
             {% if api.total_size %}
                 <p>Total disk usage for datasets and trained models: <b>{{ api.total_size|filesizeformat }}</b></p>
             {% endif %}
-            <form action="{% url "dticlustering:monitor_clear_api" %}" method="post">
+            <form action="{% url app_name|add:':monitor_clear_api' %}" method="post">
                 {% csrf_token %}
                 <p>
                     <button type="submit" class="btn">
@@ -39,9 +39,9 @@
         {% endif %}
 
         <h2>Front-end status</h2>
-        <p>{{ frontend.n_clusterings }} DTI clustering tasks requested, using {{ frontend.n_datasets }} datasets.</p>
+        <p>{{ frontend.n_clusterings }} {{ task_name }} tasks requested, using {{ frontend.n_datasets }} datasets.</p>
         <p>Total disk usage for datasets and results: <b>{{ frontend.total_size|filesizeformat }}</b></p>
-        <form action="{% url "dticlustering:monitor_clear_front" %}" method="post">
+        <form action="{% url app_name|add:':monitor_clear_front' %}" method="post">
             {% csrf_token %}
             <p>
                 <button type="submit" class="btn">

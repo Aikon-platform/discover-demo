@@ -173,11 +173,18 @@ class DTIClustering(models.Model):
             )
             return
 
+        print(
+            f"Request for clustering failed with {api_query.status_code}: {api_query.text}"
+        )
+
         try:
             api_result = api_query.json()
             self.api_tracking_id = api_result["tracking_id"]
-        except:
-            self.write_log(f"Error starting clustering: {api_query.text}")
+        except Exception as e:
+            exc = f"\n[{e.__class__.__name__}] {e}\nStack Trace:\n{traceback.format_exc()}\n"
+            self.write_log(
+                f"Request for clustering failed with {api_query.status_code}: {api_query.text}\n{exc}"
+            )
             self.status = "ERROR"
             self.is_finished = True
 
@@ -499,7 +506,8 @@ class SavedClustering(models.Model):
 
     def get_absolute_url(self) -> str:
         return reverse(
-            "dticlustering:saved", kwargs={"pk": self.pk, "from_pk": self.from_dti_id}
+            "dticlustering:saved",
+            kwargs={"pk": self.pk, "from_pk": self.from_pk},  # self.from_dti_id}
         )
 
     def format_as_csv(self) -> str:

@@ -1,11 +1,11 @@
 {% extends "demowebsite/base.html" %}
 
-{% block title %}Delete a record{% endblock %}
+{% block title %}Delete a task{% endblock %}
 
 {% block content %}
 <div class="centerwrap">
-    <h1>Delete DTI Clustering</h1>
-    <p>Are you sure you want to delete the DTI clustering #{{ object.id }}?</p>
+    <h1>Delete {{ task_name }}</h1>
+    <p>Are you sure you want to delete the {{ task_name }} #{{ object.id }}?</p>
     <form action="" method="post" enctype="multipart/form-data">
         {% csrf_token %}
         <input type="submit" value="Delete"> - <a href="{{ object.get_absolute_url }}">Take me back</a>

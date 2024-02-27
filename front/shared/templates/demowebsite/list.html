@@ -1,0 +1,72 @@
+{% extends "demowebsite/base.html" %}
+{% load shared_tags %}
+
+{% block title %}List of previous {{ task_name }} experiments{% endblock %}
+
+{% block content %}
+<div class="centerwrap">
+    {% if filter %}
+        <p class="breadcrumbs">
+            <a href="{% url app_name|add:':list' %}">
+                &lt; all {{ task_name }} experiments
+            </a>
+        </p>
+        <h1>{{ filter }}</h1>
+    {% else %}
+        <h1>All {{ task_name }} experiments</h1>
+    {% endif %}
+
+    {% include "demowebsite/pagination.html" %}
+
+    <p>
+        <a href="{% url app_name|add:':start' %}" class="btn btn-primary">
+            <span class="iconify" data-icon="mdi:clock-start"></span> <span>Start a new {{ task_name }}</span>
+        </a>
+        {% can_monitor request.user app_name as is_admin %}
+        {% if is_admin %}
+            <a href="{% url app_name|add:':monitor' %}" class="btn is-outline">
+                <span class="iconify" data-icon="mdi:database-cog"></span> <span>Monitor {{ task_name }} experiments</span>
+            </a>
+        {% endif %}
+    </p>
+
+    <div class="dti-list">
+        {% for task in object_list %}
+            <div class="row">
+                <div class="col">
+                    <h2>
+                        <a href="{{ task.get_absolute_url }}">
+                            <span class="id-main">{{ task.name }}-{{ task.id|uuid_prefix }}</span>
+                            <span class="id-suffix">{{ task.id|uuid_suffix }}</span>
+                        </a>
+                    </h2>
+                    {% if not filter %}
+                        <p>└ dataset
+                            <a href="{% url app_name|add:':list_perdataset' task.dataset.pk %}">
+                                <span class="id-main">{{ task.dataset.name }}-{{ task.dataset.id|uuid_prefix }}</span>
+                                <span class="id-suffix">{{ task.dataset.id|uuid_suffix }}</span>
+                            </a>
+                        </p>
+                    {% endif %}
+                    {% for saved_task in task.task.all %}
+                        <p>└ manual clustering
+                            <a href="{{ task.get_absolute_url }}">
+                                <span class="id-main">{{ task.name }}-{{ task.id|uuid_prefix }}</span>
+                                <span class="id-suffix">{{ task.id|uuid_suffix }}</span>
+                            </a>
+                        </p>
+                    {% endfor %}
+                </div>
+                <div class="col">
+                    <p class="status status-{{ task.status }}">{{ task.status }}</p>
+                </div>
+                <p class="user"><span class="iconify" data-icon="mdi:account"></span> {{ task.requested_by.username }}</p>
+                <p class="date">{{ task.requested_on|date:"Y-m-d H:i" }}</p>
+            </div>
+        {% endfor %}
+    </div>
+
+    {% include "demowebsite/pagination.html" %}
+
+</div>
+{% endblock %}

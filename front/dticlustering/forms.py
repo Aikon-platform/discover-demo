@@ -64,7 +64,7 @@ class DTIClusteringForm(forms.ModelForm):
 
     class Meta:
         model = DTIClustering
-        # fields = ("name", "dataset_zip", "dataset_name", "notify_email")
+        fields = ("name", "dataset_zip", "dataset_name", "notify_email")
         fieldsets = (
             (
                 "Dataset",

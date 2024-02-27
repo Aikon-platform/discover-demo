@@ -5,14 +5,24 @@
 
 {% block content %}
 <div class="centerwrap">
-    {% if request.user.is_authenticated %}<p class="breadcrumbs"><a href="{% url "dticlustering:list" %}">&lt; clustering list</a></p>{% endif %}
+    {% if request.user.is_authenticated %}
+        <p class="breadcrumbs">
+            <a href="{% url "dticlustering:list" %}">
+                &lt; clustering list
+            </a>
+        </p>
+    {% endif %}
     <h1>Clustering result {{ object.id }}</h1>
     <p>Based on DTI task <a href="{{ from_dti.get_absolute_url }}">#{{ from_dti.name }}-{{ from_dti.id }}</a></p>
     {% if object.id %}
-    <p>
-    <a href="{% url "dticlustering:saved_delete" object.from_dti_id object.pk %}" class="btn"><span class="iconify" data-icon="mdi:delete"></span> <span>Delete</span></a>
-    <a class="btn" href="{% url "dticlustering:saved_export" object.from_dti_id object.pk %}"><span class="iconify" data-icon="mdi:folder-download"></span> <span>Export as CSV</span></a>
-    </p>
+        <p>
+            <a href="{% url "dticlustering:saved_delete" object.from_pk object.pk %}" class="btn"> {# object.from_dti_id #}
+                <span class="iconify" data-icon="mdi:delete"></span> <span>Delete</span>
+            </a>
+            <a class="btn" href="{% url "dticlustering:saved_export" object.from_pk object.pk %}"> {# object.from_dti_id #}
+                <span class="iconify" data-icon="mdi:folder-download"></span> <span>Export as CSV</span>
+            </a>
+        </p>
     {% endif %}
 
     <form action="" method="POST" class="cl-hidden">
