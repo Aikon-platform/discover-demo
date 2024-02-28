@@ -216,11 +216,9 @@ class SavedClusteringCSVExport(LoginRequiredMixin, SingleObjectMixin, View):
 
         return response
 
-# SuperUser views
-
 class DTIClusteringList(LoginRequiredMixin, ListView):
     """
-    List of all clusterings [for admins]
+    List of all clusterings
     """
     model = DTIClustering
     template_name = 'dticlustering/list.html'
@@ -228,14 +226,14 @@ class DTIClusteringList(LoginRequiredMixin, ListView):
 
     def get_queryset(self):
         # if user doesn't have dticlustering.monitor right, only show their own clusterings
-        qset =  super().get_queryset().order_by("-requested_on").prefetch_related("dataset", "requested_by")
+        qset =  super().get_queryset().order_by("-requested_on").prefetch_related("dataset", "requested_by", "saved_clustering")
         if not self.request.user.has_perm("dticlustering.monitor_dticlustering"):
             qset = qset.filter(requested_by=self.request.user)
         return qset
 
 class DTIClusteringByDatasetList(DTIClusteringList):
     """
-    List of all clusterings for a given dataset [for admins]
+    List of all clusterings for a given dataset
     """
     def get_queryset(self):
         return super().get_queryset().filter(dataset__id=self.kwargs["dataset_pk"])
@@ -247,6 +245,8 @@ class DTIClusteringByDatasetList(DTIClusteringList):
 
         return context
 
+# SuperUser views
+    
 class MonitoringView(PermissionRequiredMixin, LoginRequiredMixin, TemplateView):
     """
     Monitoring view
