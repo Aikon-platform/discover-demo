@@ -28,6 +28,9 @@ You need to init the dti submodule (and have the access to the [dti-sprites](htt
 ```bash
 git submodule init
 git submodule update
+
+# once initiate, update the submodule code with
+git submodule update --remote
 ```
 
 Create a python virtual environment and install the required packages:
