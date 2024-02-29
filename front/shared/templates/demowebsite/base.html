@@ -19,7 +19,7 @@
             </a>
 
             <ul class="nav col-12 col-lg-auto me-lg-auto mb-2 justify-content-center mb-md-0">
-                <li><a href="{% url 'home' %}" class="nav-link px-2 text-secondary">Discover Demo</a></li>
+                <li id="nav-title"><a href="{% url 'home' %}" class="nav-link px-2 text-secondary">Discover Demo</a></li>
                 {% can_admin_accounts request.user as is_admin %}
                 {% if is_admin %}
                     <li>

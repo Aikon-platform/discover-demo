@@ -91,6 +91,11 @@ a {
     object-fit: contain; /* or object-fit: cover; */
 }
 
+#nav-title {
+    font-family: monospace;
+    font-size: larger;
+}
+
 .content {
     display: flex;
     flex-direction: column;
