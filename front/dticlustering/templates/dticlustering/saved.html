@@ -16,10 +16,10 @@
     <p>Based on DTI task <a href="{{ from_dti.get_absolute_url }}">#{{ from_dti.name }}-{{ from_dti.id }}</a></p>
     {% if object.id %}
         <p>
-            <a href="{% url "dticlustering:saved_delete" object.from_pk object.pk %}" class="btn"> {# object.from_dti_id #}
+            <a href="{% url "dticlustering:saved_delete" object.from_dti_id object.pk %}" class="btn">
                 <span class="iconify" data-icon="mdi:delete"></span> <span>Delete</span>
             </a>
-            <a class="btn" href="{% url "dticlustering:saved_export" object.from_pk object.pk %}"> {# object.from_dti_id #}
+            <a class="btn" href="{% url "dticlustering:saved_export" object.from_dti_id object.pk %}">
                 <span class="iconify" data-icon="mdi:folder-download"></span> <span>Export as CSV</span>
             </a>
         </p>
@@ -32,13 +32,14 @@
 </div>
 
 <div id="result" class="cluster-viewer"></div>
-    <script type="text/javascript" src="{% static "js/build.js" %}"></script>
-    <script type="text/javascript">
-        console.log(document.getElementById("id_clustering_data"))
-        const FORM_FIELD = document.getElementById("id_clustering_data");
-        let result_data = JSON.parse(FORM_FIELD.value);
-        console.log(result_data);
-        DemoTools.initClusterViewer(document.getElementById("result"), result_data, "{{ from_dti.result_media_url|escapejs }}/", true, {{ editing|yesno:"true,false"}}, FORM_FIELD);
-    </script>
-</div>
+
+<script type="text/javascript" src="{% static "js/build.js" %}"></script>
+<script type="text/javascript">
+    console.log(document.getElementById("id_clustering_data"))
+    const FORM_FIELD = document.getElementById("id_clustering_data");
+    let result_data = JSON.parse(FORM_FIELD.value);
+    console.log(result_data);
+    DemoTools.initClusterViewer(document.getElementById("result"), result_data, "{{ from_dti.result_media_url|escapejs }}/", true, {{ editing|yesno:"true,false"}}, FORM_FIELD);
+</script>
+{#</div>#}
 {% endblock %}

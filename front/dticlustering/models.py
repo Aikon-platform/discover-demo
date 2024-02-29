@@ -507,7 +507,7 @@ class SavedClustering(models.Model):
     def get_absolute_url(self) -> str:
         return reverse(
             "dticlustering:saved",
-            kwargs={"pk": self.pk, "from_pk": self.from_pk},  # self.from_dti_id}
+            kwargs={"pk": self.pk, "from_pk": self.from_dti_id},  # self.from_dti_id}
         )
 
     def format_as_csv(self) -> str:
