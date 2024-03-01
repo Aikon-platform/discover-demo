@@ -1,6 +1,7 @@
 # MODIFY THOSE VARIABLES TO MATCH YOUR SYSTEM
 DATA_FOLDER=/media/dyonisos/data/dtidemo/
 DEMO_UID=1019
+DEVICE_NB=3
 
 
 docker kill demowebsiteapi;
@@ -17,6 +18,6 @@ fi;
 
 docker rm demowebsiteapi
 
-docker run -d --gpus 1 --name demowebsiteapi \
+docker run -d --gpus $DEVICE_NB --name demowebsiteapi \
    -v $DATA_FOLDER:/data/ -p 127.0.0.1:8001:8001 \
    --restart unless-stopped --ipc=host demowebsiteapi

@@ -75,7 +75,11 @@ cp .env.template .env.prod
 sed -i '' -e "s~^TARGET=.*~TARGET=\"prod\"~" .env.prod
 ```
 
-Modify the directory (`DATA_FOLDER`) and id of the user that execute Dockerfile (`DEMO_UID`) binding in `docker.sh` to ensure it is correct.
+In `docker.sh`, modify the variables depending on your setup:
+- `DATA_FOLDER`: absolute path to directory where results are stored
+- `DEMO_UID`: id of the user that execute Dockerfile
+- `DEVICE_NB`: GPU number
+
 
 Build the docker using the premade script:
 
