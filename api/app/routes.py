@@ -13,6 +13,7 @@ from .main import app
 from .tasks import train_dti
 from .utils.fileutils import xaccel_send_from_directory
 
+
 @app.route("/clustering/start", methods=["POST"])
 def start_clustering():
     """
@@ -31,7 +32,7 @@ def start_clustering():
     """
 
     # Extract clustering_id, dataset_id, dataset_url from POST parameters
-    dataset_url = request.form["dataset_url"] # Throw 400 if not exists
+    dataset_url = request.form["dataset_url"]  # Throw 400 if not exists
 
     clustering_id = slugify(request.form.get("clustering_id", str(uuid.uuid4())))
     dataset_id = slugify(request.form.get("dataset_id", str(uuid.uuid4())))
@@ -39,32 +40,32 @@ def start_clustering():
     parameters = json.loads(request.form.get("parameters", "{}"))
 
     task = train_dti.send(
-        clustering_id=clustering_id, 
-        dataset_id=dataset_id, 
-        dataset_url=dataset_url, 
-        parameters=parameters, 
-        notify_url=notify_url
+        clustering_id=clustering_id,
+        dataset_id=dataset_id,
+        dataset_url=dataset_url,
+        parameters=parameters,
+        notify_url=notify_url,
     )
 
     return {
         "tracking_id": task.message_id,
         "clustering_id": clustering_id,
-        "dataset_id": dataset_id
+        "dataset_id": dataset_id,
     }
 
+
 @app.route("/clustering/<tracking_id>/cancel", methods=["POST"])
-def cancel_clustering(tracking_id:str):
+def cancel_clustering(tracking_id: str):
     """
     Cancel a DTI clustering task
     """
     abort(tracking_id)
 
-    return {
-        "tracking_id": tracking_id
-    }
+    return {"tracking_id": tracking_id}
+
 
 @app.route("/clustering/<tracking_id>/status", methods=["GET"])
-def status(tracking_id:str):
+def status(tracking_id: str):
     """
     Get the status of a DTI clustering task
     """
@@ -73,22 +74,31 @@ def status(tracking_id:str):
     except ResultMissing:
         log = None
     except ResultFailure as e:
-        log = {"status": "ERROR", "infos": [f"Error: Actor raised {e.orig_exc_type} ({e.orig_exc_msg})"]}
+        log = {
+            "status": "ERROR",
+            "infos": [f"Error: Actor raised {e.orig_exc_type} ({e.orig_exc_msg})"],
+        }
 
     return {
         "tracking_id": tracking_id,
         "log": log,
     }
 
+
 @app.route("/clustering/<tracking_id>/result", methods=["GET"])
-def result(tracking_id:str):
+def result(tracking_id: str):
     """
     Get the result of a DTI clustering task
     """
     if not config.USE_NGINX_XACCEL:
-        return send_from_directory(config.DTI_RESULTS_PATH, f"{slugify(tracking_id)}.zip")
-    
-    return xaccel_send_from_directory(config.DTI_RESULTS_PATH, config.DTI_XACCEL_PREFIX, f"{slugify(tracking_id)}.zip")
+        return send_from_directory(
+            config.DTI_RESULTS_PATH, f"{slugify(tracking_id)}.zip"
+        )
+
+    return xaccel_send_from_directory(
+        config.DTI_RESULTS_PATH, config.DTI_XACCEL_PREFIX, f"{slugify(tracking_id)}.zip"
+    )
+
 
 @app.route("/clustering/qsizes", methods=["GET"])
 def qsizes():
@@ -98,21 +108,19 @@ def qsizes():
     try:
         return {
             "queues": {
-                q: 
-                {
-                    "name": q,
-                    "size": train_dti.broker.do_qsize(q)
-                } 
+                q: {"name": q, "size": train_dti.broker.do_qsize(q)}
                 for q in train_dti.broker.get_declared_queues()
             }
         }
     except AttributeError:
-        return {
-            "error": "Cannot get queue sizes from broker"
-        }
-    
+        return {"error": "Cannot get queue sizes from broker"}
+
+
 @app.route("/clustering/monitor", methods=["GET"])
 def monitor():
+    import platform
+    import torch
+
     """
     Get the status of the clustering service
     """
@@ -121,10 +129,48 @@ def monitor():
     for path in config.DTI_DATA_FOLDER.glob("**/*"):
         total_size += path.stat().st_size
 
+    gpu_info = {}
+    try:
+        gpu_info["cuda_available"] = torch.cuda.is_available()
+
+        if gpu_info["cuda_available"]:
+            gpu_info["num_gpus"] = torch.cuda.device_count()
+
+            # Get details for each GPU
+            gpu_details = []
+            for i in range(torch.cuda.device_count()):
+                gpu = torch.cuda.get_device_properties(i)
+                gpu_details.append(
+                    {
+                        "gpu_index": i,
+                        "name": gpu.name,
+                        "cuda_capability": f"{gpu.major}.{gpu.minor}",
+                    }
+                )
+
+            gpu_info["gpu_details"] = gpu_details
+
+            # import GPUtil
+            # gpu_utilization = GPUtil.getGPUs()
+            # gpu_info["gpu_utilization"] = [
+            #     {"gpu_index": i, "utilization": gpu.load * 100} for i, gpu in enumerate(gpu_utilization)
+            # ]
+
+    except Exception as e:
+        gpu_info["error"] = str(e)
+
     return {
         "total_size": total_size,
-        **qsizes()
+        "gpu_info": gpu_info,
+        "system_info": {
+            "system": platform.system(),
+            "version": platform.version(),
+            "machine": platform.machine(),
+            "processor": platform.processor(),
+        },
+        **qsizes(),
     }
+
 
 @app.route("/clustering/monitor/clear", methods=["POST"])
 def clear():
@@ -142,14 +188,22 @@ def clear():
     for path in RUNS_PATH.glob("*"):
         logfile = path / "trainer.log"
         # if logfile is older than 30 days, delete the run
-        if not logfile.exists() or (datetime.now() - datetime.fromtimestamp(logfile.stat().st_mtime)).days > 30:
+        if (
+            not logfile.exists()
+            or (datetime.now() - datetime.fromtimestamp(logfile.stat().st_mtime)).days
+            > 30
+        ):
             shutil.rmtree(path)
             output["cleared_runs"] += 1
 
     for path in DATASETS_PATH.glob("*"):
         metafile = path / "ready.meta"
         # if metafile is older than 30 days, delete the dataset
-        if not metafile.exists() or (datetime.now() - datetime.fromtimestamp(metafile.stat().st_mtime)).days > 30:
+        if (
+            not metafile.exists()
+            or (datetime.now() - datetime.fromtimestamp(metafile.stat().st_mtime)).days
+            > 30
+        ):
             shutil.rmtree(path)
             output["cleared_datasets"] += 1
 
