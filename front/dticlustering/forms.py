@@ -17,7 +17,7 @@ DTI_TRANSFORM_OPTIONS = [
 DTI_BACKGROUND_OPTIONS = [
     ("0_dti", "Use unmodified image"),
     ("1_learn_bg", "Use reconstructed background"),
-    ("2_const_bg", "Use contant background"),
+    ("2_const_bg", "Use constant background"),
 ]
 
 

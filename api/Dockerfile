@@ -2,8 +2,7 @@
 FROM ubuntu:22.04
 
 ENV USER demowebsite
-# Modify to match your user id
-ARG USERID 1001
+ARG USERID
 
 RUN useradd -u ${USERID} -m -d /home/${USER} ${USER}
 
@@ -28,7 +27,7 @@ RUN apt-get update && apt-get install -y \
     build-essential \
     python3-dev \
     python3-venv \
-    redis-server \ 
+    redis-server \
     nginx
 
 WORKDIR /home/${USER}

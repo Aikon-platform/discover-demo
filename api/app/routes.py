@@ -118,12 +118,11 @@ def qsizes():
 
 @app.route("/clustering/monitor", methods=["GET"])
 def monitor():
-    import platform
-    import torch
-
     """
     Get the status of the clustering service
     """
+    import torch
+
     # Get total size of the results directory
     total_size = 0
     for path in config.DTI_DATA_FOLDER.glob("**/*"):
@@ -150,25 +149,16 @@ def monitor():
 
             gpu_info["gpu_details"] = gpu_details
 
-            # import GPUtil
-            # gpu_utilization = GPUtil.getGPUs()
-            # gpu_info["gpu_utilization"] = [
-            #     {"gpu_index": i, "utilization": gpu.load * 100} for i, gpu in enumerate(gpu_utilization)
-            # ]
-
     except Exception as e:
         gpu_info["error"] = str(e)
 
+    return {"total_size": total_size, "gpu_info": gpu_info}
+
+
+@app.route("/test", methods=["GET"])
+def test():
     return {
-        "total_size": total_size,
-        "gpu_info": gpu_info,
-        "system_info": {
-            "system": platform.system(),
-            "version": platform.version(),
-            "machine": platform.machine(),
-            "processor": platform.processor(),
-        },
-        **qsizes(),
+        "response": "ok",
     }
 
 
