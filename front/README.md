@@ -194,8 +194,7 @@ The front-end has to connect to the API server. You need to define `DTI_API_URL`
 #### Secure connection
 
 A good thing is to tunnel securely the connection between both. For `discover-demo.enpc.fr`, it is done with `spiped`, based on [this tutorial](https://www.digitalocean.com/community/tutorials/how-to-encrypt-traffic-to-redis-with-spiped-on-ubuntu-16-04)
-(with target ports 8001, in service `spiped-connect` on frontend server and `spiped-dti` on worker).
-See [api/README](../api/README.md) for detailed instructions
+See [api/README](../api/README.md) for detailed instructions.
 
 ### Updating
 

@@ -86,7 +86,7 @@ su - ${USER} # Reload session for the action to take effect
 ```
 
 In [`docker.sh`](docker.sh), modify the variables depending on your setup:
-- `DATA_FOLDER`: absolute path to directory where results are stored
+- `DATA_FOLDER`: absolute path to directory where results are stored (`sudo chmod 777 <data-folder>`)
 - `DEMO_UID`: Universally Unique Identifier of the user that execute Dockerfile (`id -u <username>`)
 - `DEVICE_NB`: GPU number
 
@@ -99,18 +99,19 @@ bash docker.sh rebuild
 
 It should have started the docker, check it is the case with:
 - `docker logs demowebsiteapi --tail 50`: show last 50 log messages
-- `docker ps` show running docker containers
+- `docker ps`: show running docker containers
+- `curl 127.0.0.1:8001/test`: show if container receives requests
 
 The API is now accessible locally at `http://localhost:8001`.
 
 #### Secure connection
 
 A good thing is to tunnel securely the connection between API and front. For `discover-demo.enpc.fr`, it is done with `spiped`, based on [this tutorial](https://www.digitalocean.com/community/tutorials/how-to-encrypt-traffic-to-redis-with-spiped-on-ubuntu-16-04)
-(with target ports 8001, in service `spiped-connect` on frontend server and `spiped-dti` on worker).
+(with target ports `8001`, in service `spiped-connect` on frontend server and `spiped-dti` on worker).
 
 ```bash
 sudo apt-get update
-sudo apt-get install spiped # install spiped
+sudo apt-get install spiped
 sudo mkdir /etc/spiped
 sudo dd if=/dev/urandom of=/etc/spiped/dti.key bs=32 count=1
 sudo chmod 644 /etc/spiped/dti.key
@@ -127,6 +128,7 @@ After=network-online.target
 StartLimitIntervalSec=300
 
 [Service]
+# Redirects [<docker-ip>]:8001 to [0.0.0.0]:8080 and encrypts it with dti.key on the way
 ExecStart=/usr/bin/spiped -F -d -s [0.0.0.0]:8080 -t [<docker-ip>]:8001 -k /etc/spiped/dti.key
 Restart=on-failure
 
@@ -134,15 +136,18 @@ Restart=on-failure
 WantedBy=multi-user.target
 ```
 
-Enable service
+Open port to external requests and enable spiped service
 ```bash
+sudo ufw allow 8080 # open firewall and allow incoming traffic on port 8080
+
 sudo systemctl daemon-reload
 sudo systemctl start spiped-dti.service
 sudo systemctl enable spiped-dti.service
 ```
 
-Transfer key to front
+Transfer key to front ([`spiped`](https://github.com/tarsnap/spiped) uses symmetric encryption with same keys on both servers)
 ```bash
+# from your local machine
 scp <gpu-host>:/etc/spiped/dti.key ~
 sudo chmod 644 ~/dti.key
 scp ~/dti.key <front-host>:.
@@ -163,6 +168,7 @@ After=network-online.target
 StartLimitIntervalSec=300
 
 [Service]
+# Redirects [<gpu-ip>]:8080 output to [0.0.0.0]:8080 and decrypts it with dti.key on the way
 ExecStart=/usr/bin/spiped -F -e -s [127.0.0.1]:8001 -t [<gpu-ip>]:8080 -k /etc/spiped/dti.key
 Restart=Always
 
@@ -175,6 +181,12 @@ Enable service
 sudo systemctl daemon-reload
 sudo systemctl start spiped-connect.service
 sudo systemctl enable spiped-connect.service
+```
+
+Test connexion between worker and front
+```bash
+curl --http0.9 195.221.193.143:8080/test # outputs the encrypted message
+curl localhost:8001/test # outputs {"response":"ok"}
 ```
 
 ### Update
