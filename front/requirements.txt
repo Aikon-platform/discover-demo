@@ -3,3 +3,4 @@ dramatiq[redis]
 django-dramatiq
 django-environ
 requests
+Pillow

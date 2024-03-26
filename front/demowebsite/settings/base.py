@@ -22,6 +22,7 @@ INSTALLED_APPS = [
     'shared',
     'datasets',
     'dticlustering',
+    'watermarks',
 
     'django.contrib.admin',
 ]
