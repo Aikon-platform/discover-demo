@@ -55,7 +55,10 @@ class SingleWatermarkDetection(models.Model):
             )
             response.raise_for_status()
             self.annotations = response.json()
-            self.status = "SUCCESS"
+            if "error" in self.annotations:
+                self.status = "ERROR"
+            else:
+                self.status = "SUCCESS"
         except (ConnectionError, requests.RequestException) as e:
             self.annotations = {"error": "Could not connect to the API", "traceback": traceback.format_exc()}
             self.status = "ERROR"
