@@ -58,38 +58,55 @@ And the server:
 
 Requirements:
 - Docker
-- Python 3.10
+- [nvidia-container-toolkit](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html)
+- Python >=3.10
+
+Create a user (replace `<docker-user>` by the name you want) to run the Docker
+```bash
+sudo useradd -m <docker-user>
+sudo passwd <docker-user>
+sudo usermod -aG sudo <docker-user>
+sudo -iu <docker-user> # Connect as user
+
+sudo usermod -aG docker $USER
+su - ${USER} # Reload session for the action to take effect
+
+id -u <docker-user> # Get uuid => DEMO_UID
+```
+
+Configure SSH connexion to GitHub for user:
+- Generate key with `ssh-keygen`
+- Copy key `cat ~/.ssh/id_ed25519.pub`
+- [Add SSH key](https://github.com/settings/ssh/new) to your GitHub account
 
 Clone and init submodule
-
-```shell
+```bash
 git clone git@github.com:Evarin/DTI-demo.git
-cd api/
+cd DTI-demo/api/
 
 git submodule init
 git submodule update
 ```
 
-Install docker and the [nvidia-container-toolkit](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html) following NVIDIA's instructions (this will be needed for the docker to use the GPU).
-
 Copy the file `.env` to a file `.env.prod`. Change it to `TARGET=prod`, and indicate the appropriate credentials.
 
-```shell
+```bash
 cp .env.template .env.prod
-sed -i '' -e "s~^TARGET=.*~TARGET=\"prod\"~" .env.prod
+sed -i -e 's/^TARGET=.*/TARGET="prod"/' .env.prod
 ```
 
-Add the user to Docker group
+Create a folder (`DATA_FOLDER`) to store results of experiments and set its permissions:
 ```bash
-sudo usermod -aG docker $USER
-su - ${USER} # Reload session for the action to take effect
+mkdir </path/to/results/> # e.g. /media/<docker-user>/data
+sudo chmod o+X </path>
+sudo chmod o+X </path/to>
+sudo chmod -R u+rwX </path/to/results/>
 ```
 
 In [`docker.sh`](docker.sh), modify the variables depending on your setup:
-- `DATA_FOLDER`: absolute path to directory where results are stored (`sudo chmod 777 <data-folder>`)
-- `DEMO_UID`: Universally Unique Identifier of the user that execute Dockerfile (`id -u <username>`)
-- `DEVICE_NB`: GPU number
-
+- `DATA_FOLDER`: absolute path to directory where results are stored
+- `DEMO_UID`: Universally Unique Identifier of the `<docker-user>` (`id -u <username>`)
+- `DEVICE_NB`: GPU number to be used by container (get available GPU with `nvidia-smi`)
 
 Build the docker using the premade script:
 
@@ -101,6 +118,7 @@ It should have started the docker, check it is the case with:
 - `docker logs demowebsiteapi --tail 50`: show last 50 log messages
 - `docker ps`: show running docker containers
 - `curl 127.0.0.1:8001/test`: show if container receives requests
+- `docker exec demowebsiteapi /bin/nvidia-smi`: checks that docker communicates with nvidia
 
 The API is now accessible locally at `http://localhost:8001`.
 
