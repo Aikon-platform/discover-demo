@@ -17,4 +17,6 @@ BROKER_URL = "redis:///1"
 DTI_DATA_FOLDER = Path(ENV("DTI_DATA_FOLDER", default=f"{BASE_DIR}/data"))
 DTI_RESULTS_PATH = DTI_DATA_FOLDER / "results"
 
+WATERMARKS_MODEL_FOLDER = Path(ENV("WATERMARKS_MODEL_FOLDER", default=f"{BASE_DIR}/data/models"))
+
 USE_NGINX_XACCEL = False

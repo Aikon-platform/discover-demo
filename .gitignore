@@ -77,8 +77,11 @@ venv.bak/
 front/media/
 front/data/
 api/data/
+api/runs/
 
 # Webpack builds
 node_modules/
 
 .idea/
+
+front/shared/static/css/style.css.map

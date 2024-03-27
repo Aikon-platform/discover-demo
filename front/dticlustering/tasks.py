@@ -2,7 +2,6 @@ import dramatiq
 import requests
 from zipfile import ZipFile
 import traceback
-import shutil
 
 from .models import DTIClustering
 
@@ -10,14 +9,15 @@ from .models import DTIClustering
 All dramatiq tasks related to the DTI clustering
 """
 
+
 @dramatiq.actor
-def collect_results(dticlustering_id:str, result_url:str):
+def collect_results(dticlustering_id: str, result_url: str):
     """
     Download the results from the API and save them to the dticlustering.results_path
     """
     try:
         dticlustering = DTIClustering.objects.get(id=dticlustering_id)
-        
+
         # download the results from the API
         res = requests.get(result_url, stream=True)
         res.raise_for_status()
@@ -34,7 +34,14 @@ def collect_results(dticlustering_id:str, result_url:str):
 
         # create a summary.zip file, with cherry picked content
         summaryzipfile = dticlustering.result_full_path / "summary.zip"
-        cherrypick = ["*.csv", "clusters.html", "clusters/**/*_raw.*", "backgrounds/*", "masked_prototypes/*", "prototypes/*"]
+        cherrypick = [
+            "*.csv",
+            "clusters.html",
+            "clusters/**/*_raw.*",
+            "backgrounds/*",
+            "masked_prototypes/*",
+            "prototypes/*",
+        ]
 
         with ZipFile(summaryzipfile, "w") as zipObj:
             for cp in cherrypick:

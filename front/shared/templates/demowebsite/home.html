@@ -1,12 +1,44 @@
 {% extends "demowebsite/base.html" %}
+{% load static %}
 
 {% block title %}Research demos{% endblock %}
 
 {% block content %}
-<div class="centerwrap">
-    <h1>Research demos</h1>
-    <div class="demo-list">
-        <div class="card"><a href="{% url 'dticlustering:list' %}">DTI Clustering</a></div>
+    {#<div class="centerwrap">#}
+    {#    <h1>Research demos</h1>#}
+    {#    <div class="demo-list">#}
+    {#        <div class="card"><a href="{% url 'dticlustering:list' %}">DTI Clustering</a></div>#}
+    {#    </div>#}
+    {#</div>#}
+
+    <div class="centerwrap container px-4 py-5" id="demo-list">
+        <h2 class="pb-2 border-bottom">Research demos</h2>
+
+        <div class="row row-cols-1 row-cols-lg-3 align-items-stretch g-4 py-5">
+            <div class="col">
+                <a href="{% url 'dticlustering:list' %}">
+                    <div class="card card-cover h-100 overflow-hidden text-bg-dark rounded-4 shadow-lg" style="background-image: url('{% static "img/DTI-clustering.png" %}');">
+                        <div class="d-flex flex-column h-100 p-5 pb-3 text-white text-shadow">
+                            <h3 class="pt-5 mt-5 mb-4 display-6 lh-1 fw-bold">DTI Clustering</h3>
+                            <small>Group images dataset on content</small>
+                        </div>
+                    </div>
+                </a>
+
+            </div>
+
+            <div class="col">
+                <a href="{% url 'watermarks:detect' %}">
+                    <div class="card card-cover h-100 overflow-hidden text-bg-dark rounded-4 shadow-lg" style="background-image: url('{% static "img/watermark-detect.jpg" %}');">
+                        <div class="d-flex flex-column h-100 p-5 pb-3 text-white text-shadow">
+                            <h3 class="pt-5 mt-5 mb-4 display-6 lh-1 fw-bold">Watermark Detection</h3>
+                            <small>Detect a historical watermark in a page</small>
+                        </div>
+                    </div>
+                </a>
+
+            </div>
+
+        </div>
     </div>
-</div>
 {% endblock %}

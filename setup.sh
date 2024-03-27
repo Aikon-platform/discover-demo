@@ -88,6 +88,19 @@ get_env_value() {
     echo "$value"
 }
 
+get_os() {
+    unameOut="$(uname -s)"
+    case "${unameOut}" in
+        Linux*)     os=Linux;;
+        Darwin*)    os=Mac;;
+        CYGWIN*)    os=Cygwin;;
+        MINGW*)     os=MinGw;;
+        MSYS_NT*)   os=Git;;
+        *)          os="UNKNOWN:${unameOut}"
+    esac
+    echo "${os}"
+}
+
 update_env() {
     env_file=$1
     params=($(awk -F= '/^[^#]/ {print $1}' "$env_file"))
@@ -129,10 +142,8 @@ fi
 
 set_redis() {
     redis_psw="$1"
-    REDIS_CONF=/etc/redis/redis.conf
-    if [ ! -f "$REDIS_CONF" ]; then
-        REDIS_CONF=/usr/local/etc/redis.conf # MacOs
-    fi
+    # MacOS usually /opt/homebrew/etc/redis.conf
+    REDIS_CONF=$(redis-cli INFO | grep config_file | awk -F: '{print $2}' | tr -d '[:space:]')
     colorEcho yellow "\n\nModifying Redis configuration file $REDIS_CONF ..."
 
     # use the same redis password for api and front

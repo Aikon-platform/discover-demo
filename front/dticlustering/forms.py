@@ -15,9 +15,9 @@ DTI_TRANSFORM_OPTIONS = [
 ]
 
 DTI_BACKGROUND_OPTIONS = [
-    ("0_dti", "Use unmodified image"),
-    ("1_learn_bg", "Use reconstructed background"),
-    ("2_const_bg", "Use constant background"),
+    ("0_dti", "No background model"),
+    ("1_learn_bg", "Learned background model"),
+    ("2_const_bg", "Constant background model"),
 ]
 
 
@@ -47,7 +47,7 @@ class DTIClusteringForm(forms.ModelForm):
 
     p_background = forms.ChoiceField(
         label="Background",
-        help_text="How background is treated for clustering",
+        # help_text="How background is treated for clustering",
         choices=DTI_BACKGROUND_OPTIONS,
         widget=forms.RadioSelect,
         required=True,
@@ -65,6 +65,20 @@ class DTIClusteringForm(forms.ModelForm):
     class Meta:
         model = DTIClustering
         fields = ("name", "dataset_zip", "dataset_name", "notify_email")
+        fieldsets = (
+            (
+                "Dataset",
+                {
+                    "fields": ("name", "dataset_zip", "dataset_name", "notify_email"),
+                },
+            ),
+            (
+                "Clustering Options",
+                {
+                    "fields": ("p_n_clusters", "p_background", "p_transforms"),
+                },
+            ),
+        )
 
     def __init__(self, *args, **kwargs):
         self.__dataset = kwargs.pop("dataset", None)

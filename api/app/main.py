@@ -29,4 +29,5 @@ dramatiq.set_broker(broker)
 
 # Import routes and tasks
 from .routes import *
+from .routes_watermarks import *
 from .tasks import *
