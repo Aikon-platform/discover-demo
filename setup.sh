@@ -46,7 +46,7 @@ echoTitle(){
 
 echoTitle "REQUIREMENTS INSTALL"
 
-colorEcho yellow "\nOS packages ..."
+colorEcho yellow "\nSystem packages ..."
 sudo apt-get install redis-server python3.10 python3.10-venv python3.10-dev curl
 
 colorEcho yellow "\nAPI virtual env ..."
@@ -142,7 +142,6 @@ fi
 
 set_redis() {
     redis_psw="$1"
-    # MacOS usually /opt/homebrew/etc/redis.conf
     REDIS_CONF=$(redis-cli INFO | grep config_file | awk -F: '{print $2}' | tr -d '[:space:]')
     colorEcho yellow "\n\nModifying Redis configuration file $REDIS_CONF ..."
 
