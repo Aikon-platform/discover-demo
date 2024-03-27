@@ -22,7 +22,7 @@ def annotator():
 
         image = request.files["image"]
         img = Image.open(image)
-        img = ImageOps.exif_transpose(img)
+        img = ImageOps.exif_transpose(img).convert("RGB")
         img = transforms.Resize((1000, 1000))(img)
         img = transforms.ToTensor()(img)
         h, w = img.shape[-2:]

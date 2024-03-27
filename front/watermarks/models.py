@@ -13,7 +13,7 @@ User = get_user_model()
 
 path_query_images = PathAndRename("watermarks/queries/")
 
-WATERMARKS_API_URL = getattr(settings, "WATERMARKS_API_URL", "http://localhost:5000/watermarks/")
+WATERMARKS_API_URL = getattr(settings, "DTI_API_URL", "http://localhost:5000")
 
 class SingleWatermarkDetection(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -50,7 +50,7 @@ class SingleWatermarkDetection(models.Model):
         """
         try:
             response = requests.post(
-                f"{WATERMARKS_API_URL}detect",
+                f"{WATERMARKS_API_URL}/watermarks/detect",
                 files={"image": open(self.image.path, "rb")},
             )
             response.raise_for_status()
@@ -86,5 +86,6 @@ class SingleWatermarkDetection(models.Model):
 
         img = Image.open(self.image)
         img = ImageOps.exif_transpose(img)
+        img = img.convert("RGB")
         img.thumbnail((1000, 1000))
         img.save(self.image.path, quality=60)

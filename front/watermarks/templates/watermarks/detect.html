@@ -33,6 +33,9 @@
             </style>
             <h3>{{ detection.name }}</h3>
             <p>Detection status: <span class="status status-{{ detection.status }}">{{ detection.status }}</span></p>
+            {% if detection.status == "SUCCESS" and not detection.bounding_boxes %}
+                <p class="status">No watermarks detected</p>
+            {% endif %}
             <div class="viewer">
                 <div class="watermark">
                     <img src="{{ detection.image.url }}">
@@ -42,8 +45,10 @@
                 </div>
             </div>
             <details>
-                <summary>Full annotations</summary>
-                <pre>{{ detection.annotations }}</pre>
+                <summary>Full output</summary>
+                <pre>{% if detection.annotations.items %}{% for k, v in detection.annotations.items %}
+{{ k }}: {{ v }}
+{% endfor %}{% else %}{{ detection.annotations }}{% endif %}</pre>
             </details>
         {% endif %}
 
