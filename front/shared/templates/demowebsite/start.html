@@ -4,7 +4,7 @@
 
 {% block content %}
 <div class="centerwrap">
-    <h1>Start a new {{ task_name }}</h1>
+    <h1 class="is-title is-size-2 py-3 has-text-link">Start a new {{ task_name }}</h1>
     {% if from_task %}
         <p>Using same dataset as {{ task_name }} <a href="{{ from_task.get_absolute_url }}">#{{ from_task.id }}</a></p>
     {% endif %}

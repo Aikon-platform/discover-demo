@@ -4,7 +4,7 @@
 
 {% block content %}
 <div class="centerwrap">
-    <h1>Cancel {{ task_name }}</h1>
+    <h1 class="is-title is-size-2 py-3 has-text-link">Cancel {{ task_name }}</h1>
     <p>Are you sure you want to cancel the {{ task_name }} task #{{ object.id }}?</p>
     <form action="" method="post" enctype="multipart/form-data">
         {% csrf_token %}

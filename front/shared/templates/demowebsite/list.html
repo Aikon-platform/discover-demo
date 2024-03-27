@@ -1,30 +1,30 @@
 {% extends "demowebsite/base.html" %}
 {% load shared_tags %}
 
-{% block title %}List of previous {{ task_name }} experiments{% endblock %}
+{% block title %}List of {{ task_name }} experiments{% endblock %}
 
 {% block content %}
 <div class="centerwrap">
     {% if filter %}
         <p class="breadcrumbs">
-            <a href="{% url app_name|add:':list' %}">
+            <a class="button is-link is-outlined" href="{% url app_name|add:':list' %}">
                 &lt; all {{ task_name }} experiments
             </a>
         </p>
-        <h1>{{ filter }}</h1>
+        <h1 class="is-title is-size-2 py-3 has-text-link">{{ filter }}</h1>
     {% else %}
-        <h1>All {{ task_name }} experiments</h1>
+        <h1 class="is-title is-size-2 py-3 has-text-link">All {{ task_name }} experiments</h1>
     {% endif %}
 
-    {% include "demowebsite/pagination.html" %}
+    {% include "includes/pagination.html" %}
 
     <p>
-        <a href="{% url app_name|add:':start' %}" class="btn btn-primary">
+        <a class="button is-link" href="{% url app_name|add:':start' %}">
             <span class="iconify" data-icon="mdi:clock-start"></span> <span>Start a new {{ task_name }}</span>
         </a>
         {% can_monitor request.user app_name as is_admin %}
         {% if is_admin %}
-            <a href="{% url app_name|add:':monitor' %}" class="btn is-outline">
+            <a href="{% url app_name|add:':monitor' %}" class="button is-link is-outlined">
                 <span class="iconify" data-icon="mdi:database-cog"></span> <span>Monitor {{ task_name }} experiments</span>
             </a>
         {% endif %}

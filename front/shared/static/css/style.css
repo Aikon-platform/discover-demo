@@ -387,6 +387,16 @@ ul.messages li.warning, ul.messages li.error {
   border-bottom: none;
 }
 
+.clickable {
+  transition: all 0.3s ease;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.3) !important;
+}
+
+.clickable:hover {
+  transform: translateY(2px);
+  box-shadow: 0 0 3px rgba(0, 0, 0, 0.6) !important;
+}
+
 .tck-progress .tck-bar-list > * {
   margin: 0.5em 0;
   background-color: #fff;
@@ -751,3 +761,5 @@ ul.messages li.warning, ul.messages li.error {
   font-size: 0.8em;
   opacity: 0.8;
 }
+
+/*# sourceMappingURL=style.css.map */

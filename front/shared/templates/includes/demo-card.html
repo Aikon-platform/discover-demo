@@ -1,16 +1,23 @@
 {% load static %}
 {% load shared_tags %}
 
-<div class="col">
-    {% with demo|add_str:":start" as demo_url %}
-    <a href="{% url demo_url %}">
-        <div class="card card-cover h-100 overflow-hidden text-bg-dark rounded-4 shadow-lg"
-             style="background-image: url('{% static "img/"|add:demo|add:".png" %}');">
-            <div class="d-flex flex-column h-100 p-5 pb-3 text-white text-shadow">
-                <h3 class="pt-5 mt-5 mb-4 display-6 lh-1 fw-bold">{{ demo_title }}</h3>
-                <small>{{ demo_subtitle }}</small>
+{% with demo|add_str:":start" as demo_url %}
+    <a class="column is-one-third" href="{% url demo_url %}">
+        <div class="card clickable">
+            <div class="card-image">
+                <figure class="image is-4by3">
+                    <img src="{% static 'img/'|add:demo|add:'.png' %}" alt="{{ demo }} image"/>
+                </figure>
+            </div>
+            <div class="card-content">
+                <div class="media">
+                    <div class="media-content" style="height: 95px">
+                        <p class="title is-4">{{ demo_title }}</p>
+                        <p class="subtitle is-6">{{ demo_subtitle }}</p>
+                    </div>
+                </div>
             </div>
         </div>
+
     </a>
-    {% endwith %}
-</div>
+{% endwith %}

@@ -7,7 +7,6 @@ from flask import (
     url_for,
     jsonify,
 )
-import os
 from pathlib import Path
 from PIL import Image, ImageOps
 from torchvision import transforms

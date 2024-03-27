@@ -3,74 +3,82 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{% block title %}{% endblock %}</title>
     <link rel="stylesheet" href="{% static "css/style.css" %}?v1.0">
     <link rel="icon" type="image/png" href="{% static "img/favicon.png" %}"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@1.0.0/css/bulma.min.css">
     {% block extra_head %}{% endblock %}
 </head>
 <body>
-<header class="p-3 text-bg-dark">
-    <div class="container">
-        <div class="d-flex flex-wrap align-items-center justify-content-center justify-content-lg-start">
-            <a href="{% url 'home' %}" class="d-flex align-items-center mb-2 mb-lg-0 text-white text-decoration-none">
-                <img id="nav-icon" src="{% static "img/favicon.png" %}" alt="Icon">
+<nav class="navbar" role="navigation" aria-label="main navigation">
+    <div class="navbar-brand ml-3">
+        <a class="navbar-item" href="{% url 'home' %}">
+            <img id="nav-icon" src="{% static "img/favicon.png" %}" alt="Icon">
+        </a>
+
+        <a role="button" class="navbar-burger" aria-label="menu" aria-expanded="false" data-target="navbar-content">
+            <span aria-hidden="true"></span>
+            <span aria-hidden="true"></span>
+            <span aria-hidden="true"></span>
+            <span aria-hidden="true"></span>
+        </a>
+    </div>
+
+    <div id="navbar-content" class="navbar-menu">
+        <div class="navbar-start">
+            <a id="nav-title" href="{% url 'home' %}" class="navbar-item nav-link px-2 mt-1">
+                Discover Demo
             </a>
 
-            <ul class="nav col-12 col-lg-auto me-lg-auto mb-2 justify-content-center mb-md-0">
-                <li id="nav-title"><a href="{% url 'home' %}" class="nav-link px-2 text-secondary">Discover Demo</a></li>
-                {% can_admin_accounts request.user as is_admin %}
-                {% if is_admin %}
-                    <li>
-                    <a href="{% url "accounts_admin" %}" title="Admin accounts" class="nav-link px-2 text-white">
-                        <span class="iconify" data-icon="mdi:shield-crown"></span> <span>Admin</span>
-                    </a>
-                {% endif %}
-                <li><a href="{% url 'dticlustering:list' %}" class="nav-link px-2 text-white">DTI clusterings</a></li>
-            </ul>
+            {% can_admin_accounts request.user as is_admin %}
+            {% if is_admin %}
+                <a href="{% url "accounts_admin" %}" title="Admin accounts" class="navbar-item">
+                    <span class="iconify mr-1" data-icon="mdi:shield"></span> <span>Admin</span>
+                </a>
+            {% endif %}
 
-            <div class="text-end">
+            <div class="navbar-item has-dropdown is-hoverable">
+                <a class="navbar-link">
+                    Demos
+                </a>
+
+                <div class="navbar-dropdown">
+                    <a href="{% url 'dticlustering:list' %}" class="navbar-item">
+                        DTI clustering
+                    </a>
+                    <a href="{% url 'watermarks:start' %}" class="navbar-item">
+                        Watermark detection
+                    </a>
+                    {# <hr class="navbar-divider"> #}
+                    {# <a class="navbar-item">Report an issue</a> #}
+                </div>
+            </div>
+        </div>
+
+        <div class="navbar-end mr-3">
+            <div class="navbar-item">
                 {% if request.user.is_authenticated %}
-                    <a class="btn btn-outline-light me-2" href="{% url 'account' %}" title="Profile">
-                        <span class="iconify" data-icon="mdi:account"></span> {{ user.username }}
-                    </a>
-                    <a class="btn btn-outline-light me-2" href="{% url 'logout' %}" title="Log out">
-                        <span class="iconify" data-icon="mdi:logout"></span> Logout
-                    </a>
+                    <div class="buttons">
+                        <a class="button is-link" href="{% url 'account' %}" title="Profile">
+                            {{ user.username }}
+                        </a>
+                        <a class="button is-link is-outlined" href="{% url 'logout' %}" title="Log out">
+                            Log out
+                        </a>
+                    </div>
                 {% else %}
-                    <a class="btn btn-outline-light me-2" href="{% url 'login' %}">Login</a>
+                    <div class="buttons">
+                        <a class="button is-info is-outlined" href="{% url 'login' %}">Log in</a>
+                    </div>
                 {% endif %}
             </div>
         </div>
     </div>
-</header>
+</nav>
 
-<div class="wrapper">
-
-
-    {#    <header>#}
-    {#        <div class="centerwrap">#}
-    {#            <div class="title menu">#}
-    {#                <a href="{% url 'home' %}">Discover Demo</a>#}
-    {#                {% can_admin_accounts request.user as is_admin %}#}
-    {#                {% if is_admin %}#}
-    {#                    <a href="{% url "accounts_admin" %}" title="Admin accounts"><span class="iconify" data-icon="mdi:shield-crown"></span> <span>Admin</span></a>#}
-    {#                {% endif %}#}
-    {#            </div>#}
-    {#            <div class="menu">#}
-    {#                <a href="{% url 'dticlustering:list' %}">DTI clusterings</a>#}
-    {#                {% if request.user.is_authenticated %}#}
-    {#                    <a href="{% url 'account' %}" title="Profile"><span class="iconify" data-icon="mdi:account"></span> {{ user.username }}</a>#}
-    {#                    <a href="{% url 'logout' %}" title="Log out"><span class="iconify" data-icon="mdi:logout"></span></a>#}
-    {#                {% else %}#}
-    {#                    <a href="{% url 'login' %}">Login</a>#}
-    {#                {% endif %}#}
-    {#            </div>#}
-    {#        </div>#}
-    {#    </header>#}
-
-
+<div class="wrapper container" style="min-height: 80vh">
     <div class="content">
-
         {% if messages %}
             <div class="centerwrap">
                 <ul class="messages">
@@ -82,8 +90,11 @@
         {% endif %}
         {% block content %}{% endblock %}
     </div>
-    <footer></footer>
 </div>
+
+<footer class="footer">
+    {# <div class="content columns"> TODO PUT INSTITUTIONS LOGOS </div> #}
+</footer>
 {% block extra_js %}{% endblock %}
 <script src="https://code.iconify.design/3/3.1.1/iconify.min.js"></script>
 </body>
