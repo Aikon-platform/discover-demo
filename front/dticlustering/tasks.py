@@ -11,12 +11,12 @@ All dramatiq tasks related to the DTI clustering
 
 
 @dramatiq.actor
-def collect_results(dticlustering_id: str, result_url: str):
+def collect_results(experiment_id: str, result_url: str):
     """
     Download the results from the API and save them to the dticlustering.results_path
     """
     try:
-        dticlustering = DTIClustering.objects.get(id=dticlustering_id)
+        dticlustering = DTIClustering.objects.get(id=experiment_id)
 
         # download the results from the API
         res = requests.get(result_url, stream=True)

@@ -155,7 +155,7 @@ class DTIClustering(models.Model):
                 data={
                     "dataset_url": f"{settings.BASE_URL}{self.dataset.zip_file.url}",
                     "dataset_id": str(self.dataset.id),
-                    "clustering_id": str(self.id),
+                    "experiment_id": str(self.id),
                     "parameters": json.dumps(self.parameters),
                     "notify_url": f"{settings.BASE_URL}{reverse('dticlustering:notify', kwargs={'pk': self.pk})}?token={self.get_token()}",
                 },

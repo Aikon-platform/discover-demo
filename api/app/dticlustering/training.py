@@ -1,5 +1,3 @@
-from typing import Any, Optional
-
 from yaml import load, Loader, dump, Dumper
 from pathlib import Path
 import os, torch
@@ -8,14 +6,12 @@ from torch.utils.data import DataLoader
 import pandas as pd
 from jinja2 import Environment, FileSystemLoader
 
-from . import config  # overrides dti_source config
+from api.app.dticlustering.lib.src import Trainer as KMeansTrainer
+from api.app.dticlustering.lib.src import Trainer as SpritesTrainer
+from api.app.dticlustering.lib.src import RUNS_PATH, CONFIGS_PATH
+from api.app.dticlustering.lib.src import convert_to_img
 
-from .dti.src.kmeans_trainer import Trainer as KMeansTrainer
-from .dti.src.sprites_trainer import Trainer as SpritesTrainer
-from .dti.src.utils.path import RUNS_PATH, DATASETS_PATH, CONFIGS_PATH
-from .dti.src.utils.image import convert_to_img
-
-from .utils.logging import TLogger, LoggerHelper
+from api.app.shared.utils.logging import TLogger, LoggerHelper
 
 KMEANS_CONFIG_FILE = Path(__file__).parent / "templates" / "kmeans-conf.yml"
 SPRITES_CONFIG_FILE = Path(__file__).parent / "templates" / "sprites-conf.yml"
