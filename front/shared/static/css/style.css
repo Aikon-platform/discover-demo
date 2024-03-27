@@ -31,6 +31,11 @@ a {
   object-fit: contain; /* or object-fit: cover; */
 }
 
+#nav-title {
+  font-family: monospace;
+  font-size: larger;
+}
+
 .content {
   display: flex;
   flex-direction: column;
@@ -746,5 +751,3 @@ ul.messages li.warning, ul.messages li.error {
   font-size: 0.8em;
   opacity: 0.8;
 }
-
-/*# sourceMappingURL=style.css.map */

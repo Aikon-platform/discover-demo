@@ -1,0 +1,18 @@
+{% load static %}
+{% load shared_tags %}
+
+<div class="row row-cols-1 row-cols-lg-3 align-items-stretch g-4 py-5">
+    <div class="col">
+        {% with demo|add_str:":list" as demo_url %}
+        <a href="{% url demo_url %}">
+            <div class="card card-cover h-100 overflow-hidden text-bg-dark rounded-4 shadow-lg"
+                 style="background-image: url('{% static "img/"|add:demo|add:".png" %}');">
+                <div class="d-flex flex-column h-100 p-5 pb-3 text-white text-shadow">
+                    <h3 class="pt-5 mt-5 mb-4 display-6 lh-1 fw-bold">{{ demo_title }}</h3>
+                    <small>{{ demo_subtitle }}</small>
+                </div>
+            </div>
+        </a>
+        {% endwith %}
+    </div>
+</div>

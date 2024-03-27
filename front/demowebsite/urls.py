@@ -4,11 +4,11 @@ from django.conf import settings
 from django.urls import path, include
 
 urlpatterns = [
-    path('', include('shared.urls')),
-    path('dti/', include('dticlustering.urls')),
-
-    path('admin/', admin.site.urls),
-    path('accounts/', include('django.contrib.auth.urls')),
+    path("", include("shared.urls")),
+    path("dti/", include("dticlustering.urls")),
+    path("similarity/", include("similarity.urls")),
+    path("admin/", admin.site.urls),
+    path("accounts/", include("django.contrib.auth.urls")),
 ]
 
 # Serve media files in development
