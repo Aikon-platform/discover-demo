@@ -6,12 +6,12 @@ from torch.utils.data import DataLoader
 import pandas as pd
 from jinja2 import Environment, FileSystemLoader
 
-from api.app.dticlustering.lib.src import Trainer as KMeansTrainer
-from api.app.dticlustering.lib.src import Trainer as SpritesTrainer
-from api.app.dticlustering.lib.src import RUNS_PATH, CONFIGS_PATH
-from api.app.dticlustering.lib.src import convert_to_img
+from .lib.src.kmeans_trainer import Trainer as KMeansTrainer
+from .lib.src.sprites_trainer import Trainer as SpritesTrainer
+from .const import RUNS_PATH, CONFIGS_PATH
+from .lib.src.utils.image import convert_to_img
 
-from api.app.shared.utils.logging import TLogger, LoggerHelper
+from ..shared.utils.logging import TLogger, LoggerHelper
 
 KMEANS_CONFIG_FILE = Path(__file__).parent / "templates" / "kmeans-conf.yml"
 SPRITES_CONFIG_FILE = Path(__file__).parent / "templates" / "sprites-conf.yml"

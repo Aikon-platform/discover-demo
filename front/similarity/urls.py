@@ -4,5 +4,5 @@ from .views import *
 app_name = "similarity"
 
 urlpatterns = [
-    path("", SimilarityList.as_view(), name="list"),
+    path("", SimilarityStart.as_view(), name="start"),
 ]

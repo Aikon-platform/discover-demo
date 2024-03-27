@@ -6,7 +6,7 @@ from dramatiq.brokers.redis import RedisBroker
 from dramatiq_abort import Abortable, backends
 from dramatiq.middleware import CurrentMessage
 from dramatiq.results.backends import RedisBackend
-from api.app.shared.utils.logging import LoggedResults
+from .shared.utils.logging import LoggedResults
 
 # Flask setup
 app = Flask(__name__)

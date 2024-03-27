@@ -8,6 +8,8 @@ from typing import Union
 
 from slugify import slugify
 
+TPath = Union[str, os.PathLike]
+
 
 def xaccel_send_from_directory(directory: TPath, redirect: TPath, path: TPath):
     """

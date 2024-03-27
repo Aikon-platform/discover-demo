@@ -7,11 +7,11 @@ import json
 import shutil
 from datetime import datetime
 
-from . import config
+from .. import config
 
-from .main import app
+from ..main import app
 from .tasks import train_dti
-from .utils.fileutils import xaccel_send_from_directory
+from ..shared.utils.fileutils import xaccel_send_from_directory
 
 
 @app.route("/clustering/start", methods=["POST"])

@@ -5,13 +5,13 @@ import requests
 from zipfile import ZipFile
 from PIL import Image
 
-from . import config
-from api.app.dticlustering.training import (
-    DATASETS_PATH,
+from .. import config
+from .const import DATASETS_PATH
+from .training import (
     run_kmeans_training,
     run_sprites_training,
 )
-from .utils.logging import notifying, TLogger, LoggerHelper
+from ..shared.utils.logging import notifying, TLogger, LoggerHelper
 
 
 @dramatiq.actor(time_limit=1000 * 60 * 60, max_retries=0, store_results=True)

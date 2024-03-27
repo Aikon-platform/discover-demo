@@ -2,7 +2,7 @@
 {% load shared_tags %}
 
 <div class="col">
-    {% with demo|add_str:":list" as demo_url %}
+    {% with demo|add_str:":start" as demo_url %}
     <a href="{% url demo_url %}">
         <div class="card card-cover h-100 overflow-hidden text-bg-dark rounded-4 shadow-lg"
              style="background-image: url('{% static "img/"|add:demo|add:".png" %}');">
