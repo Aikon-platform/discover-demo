@@ -1,0 +1,63 @@
+{% extends "demowebsite/base.html" %}
+
+{% block title %}
+    Watermark detection {{ detection.name }}
+{% endblock %}
+
+{% block content %}
+    <div class="centerwrap container px-4 py-5">
+        <h1>Watermark detection</h1>
+
+        {% if detection %}
+            <style>
+                .viewer {
+                    display: flex;
+                    justify-content: center;
+                }
+                .watermark {
+                    position: relative;
+                    display: inline-block;
+                }
+
+                .watermark img {
+                    max-width: 100%;
+                    max-height: 80vh;
+                    height: auto;
+                    width: auto;
+                }
+
+                .bbox {
+                    position: absolute;
+                    border: 2px solid red;
+                }
+            </style>
+            <h3>{{ detection.name }}</h3>
+            <p>Detection status: <span class="status status-{{ detection.status }}">{{ detection.status }}</span></p>
+            {% if detection.status == "SUCCESS" and not detection.bounding_boxes %}
+                <p class="status">No watermarks detected</p>
+            {% endif %}
+            <div class="viewer">
+                <div class="watermark">
+                    <img src="{{ detection.image.url }}">
+                    {% for bbox in detection.bounding_boxes %}
+                        <div class="bbox" style="left: {{ bbox.x }}%; top: {{ bbox.y }}%; width: {{ bbox.width }}%; height: {{ bbox.height }}%; opacity: {{ bbox.score }}"></div>
+                    {% endfor %}
+                </div>
+            </div>
+            <details>
+                <summary>Full output</summary>
+                <pre>{% if detection.annotations.items %}{% for k, v in detection.annotations.items %}
+{{ k }}: {{ v }}
+{% endfor %}{% else %}{{ detection.annotations }}{% endif %}</pre>
+            </details>
+        {% endif %}
+
+        <h3>Process a new image</h3>
+        <form method="post" enctype="multipart/form-data" action="{% url 'watermarks:detect' %}">
+            {% csrf_token %}
+            {% include "demowebsite/baseform.html" %}
+            <button type="submit">Submit</button>
+        </form>
+    </div>
+
+{% endblock %}

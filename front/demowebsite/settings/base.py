@@ -21,6 +21,7 @@ INSTALLED_APPS = [
     "datasets",
     "dticlustering",
     "similarity",
+    "watermarks",
     "django.contrib.admin",
 ]
 

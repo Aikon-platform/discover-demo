@@ -7,7 +7,12 @@
     <div class="centerwrap" id="demo-list">
         <h2 class="pb-2 border-bottom">Research demos</h2>
 
+        <div class="row row-cols-1 row-cols-lg-3 align-items-stretch g-4 py-5">
+
         {% include "includes/demo-card.html" with demo="dticlustering" demo_title="DTI clustering" demo_subtitle="Group images dataset on content" %}
-        {% include "includes/demo-card.html" with demo="similarity" demo_title="Similarity retrieval" demo_subtitle="Find most similar images" %}
+        {% include "includes/demo-card.html" with demo="watermark-detect" demo_title="Watermark detection" demo_subtitle="Detect a historical watermark in a page" %}
+        {#{% include "includes/demo-card.html" with demo="similarity" demo_title="Similarity retrieval" demo_subtitle="Find most similar images" %}#}
+
+        </div>
     </div>
 {% endblock %}
