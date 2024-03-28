@@ -21,7 +21,7 @@ from requests import RequestException
 
 User = get_user_model()
 
-DTI_API_URL = getattr(settings, "DTI_API_URL", "http://localhost:5000")
+API_URL = getattr(settings, "API_URL", "http://localhost:5000")
 BASE_URL = getattr(settings, "BASE_URL", "http://localhost:8000")
 
 
@@ -151,7 +151,7 @@ class DTIClustering(models.Model):
         """
         try:
             api_query = requests.post(
-                f"{DTI_API_URL}/clustering/start",
+                f"{API_URL}/clustering/start",
                 data={
                     "dataset_url": f"{settings.BASE_URL}{self.dataset.zip_file.url}",
                     "dataset_id": str(self.dataset.id),
@@ -196,7 +196,7 @@ class DTIClustering(models.Model):
         """
         try:
             api_query = requests.post(
-                f"{DTI_API_URL}/clustering/{self.api_tracking_id}/cancel",
+                f"{API_URL}/clustering/{self.api_tracking_id}/cancel",
             )
         except (ConnectionError, RequestException):
             self.write_log("Connection error when cancelling task")
@@ -260,7 +260,7 @@ class DTIClustering(models.Model):
         """
         try:
             api_query = requests.get(
-                f"{DTI_API_URL}/clustering/{self.api_tracking_id}/status",
+                f"{API_URL}/clustering/{self.api_tracking_id}/status",
             )
         except (ConnectionError, RequestException):
             return {
@@ -283,7 +283,7 @@ class DTIClustering(models.Model):
         """
         try:
             api_query = requests.get(
-                f"{DTI_API_URL}/clustering/monitor",
+                f"{API_URL}/clustering/monitor",
             )
         except (ConnectionError, RequestException):
             return {
@@ -352,7 +352,7 @@ class DTIClustering(models.Model):
         """
         try:
             api_query = requests.post(
-                f"{DTI_API_URL}/clustering/monitor/clear",
+                f"{API_URL}/clustering/monitor/clear",
                 data={
                     "days_before": days_before,
                 },

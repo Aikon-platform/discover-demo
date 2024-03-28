@@ -68,9 +68,6 @@ sudo passwd <docker-user>
 sudo usermod -aG sudo <docker-user>
 sudo -iu <docker-user> # Connect as user
 
-sudo usermod -aG docker $USER
-su - ${USER} # Reload session for the action to take effect
-
 id -u <docker-user> # Get uuid => DEMO_UID
 ```
 
@@ -91,9 +88,15 @@ git submodule update
 Copy the file `.env` to a file `.env.prod`. Change it to `TARGET=prod`, and indicate the appropriate credentials.
 
 ```bash
-cp .env.template .env.prod
-sed -i -e 's/^TARGET=.*/TARGET="prod"/' .env.prod
+cp app/shared/.env.template app/shared/.env.prod
+sed -i -e 's/^TARGET=.*/TARGET="prod"/' app/shared/.env.prod
 ```
+
+Additionally, in [`app/shared/.env.prod`](app/shared/.env.template), pay attention to match these variables to your setup:
+- `INSTALLED_APPS`: list of apps (folder names) to be used by the API
+- `DATA_FOLDER`: absolute path to directory where results are stored
+- `DEMO_UID`: Universally Unique Identifier of the `<docker-user>` (`id -u <username>`)
+- `DEVICE_NB`: GPU number to be used by container (get available GPU with `nvidia-smi`)
 
 Create a folder (`DATA_FOLDER`) to store results of experiments and set its permissions:
 ```bash
@@ -102,11 +105,6 @@ sudo chmod o+X </path>
 sudo chmod o+X </path/to>
 sudo chmod -R u+rwX </path/to/results/>
 ```
-
-In [`docker.sh`](docker.sh), modify the variables depending on your setup:
-- `DATA_FOLDER`: absolute path to directory where results are stored
-- `DEMO_UID`: Universally Unique Identifier of the `<docker-user>` (`id -u <username>`)
-- `DEVICE_NB`: GPU number to be used by container (get available GPU with `nvidia-smi`)
 
 Build the docker using the premade script:
 
@@ -146,7 +144,7 @@ After=network-online.target
 StartLimitIntervalSec=300
 
 [Service]
-# Redirects [<docker-ip>]:8001 to [0.0.0.0]:8080 and encrypts it with dti.key on the way
+# Redirects <docker-ip>:8001 to 0.0.0.0:8080 and encrypts it with dti.key on the way
 ExecStart=/usr/bin/spiped -F -d -s [0.0.0.0]:8080 -t [<docker-ip>]:8001 -k /etc/spiped/dti.key
 Restart=on-failure
 
@@ -176,7 +174,9 @@ sudo chmod 644 /etc/spiped/dti.key
 ```
 
 Create service config file for spiped on front machine (`sudo vi /etc/systemd/system/spiped-connect.service`)
-Get `<gpu-ip>` with `hostname -I` on the machine where is deployed the API
+Get `<gpu-ip>` with `hostname -I` on the machine where is deployed the API.
+
+⚠️ Note to match the output IP (`127.0.0.1:8001` in this example) to the `API_URL` in [`front/.env`](../front/.env)
 
 ```bash
 [Unit]
@@ -186,7 +186,7 @@ After=network-online.target
 StartLimitIntervalSec=300
 
 [Service]
-# Redirects [<gpu-ip>]:8080 output to [0.0.0.0]:8080 and decrypts it with dti.key on the way
+# Redirects <gpu-ip>:8080 output to 127.0.0.1:8001 and decrypts it with dti.key on the way
 ExecStart=/usr/bin/spiped -F -e -s [127.0.0.1]:8001 -t [<gpu-ip>]:8080 -k /etc/spiped/dti.key
 Restart=Always
 

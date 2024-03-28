@@ -13,7 +13,8 @@ User = get_user_model()
 
 path_query_images = PathAndRename("watermarks/queries/")
 
-WATERMARKS_API_URL = getattr(settings, "DTI_API_URL", "http://localhost:5000")
+WATERMARKS_API_URL = getattr(settings, "API_URL", "http://localhost:5000")
+
 
 class SingleWatermarkDetection(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -37,13 +38,13 @@ class SingleWatermarkDetection(models.Model):
 
     def __str__(self):
         return self.image.name
-    
+
     class Meta:
         ordering = ["-requested_on"]
 
     def get_absolute_url(self):
         return reverse("watermarks:detect-result", args=[str(self.id)])
-    
+
     def fetch_annotations(self):
         """
         Fetch the annotations from the API
@@ -60,7 +61,10 @@ class SingleWatermarkDetection(models.Model):
             else:
                 self.status = "SUCCESS"
         except (ConnectionError, requests.RequestException) as e:
-            self.annotations = {"error": "Could not connect to the API", "traceback": traceback.format_exc()}
+            self.annotations = {
+                "error": "Could not connect to the API",
+                "traceback": traceback.format_exc(),
+            }
             self.status = "ERROR"
         finally:
             self.is_finished = True
@@ -74,11 +78,17 @@ class SingleWatermarkDetection(models.Model):
         scores = self.annotations.get("scores", [])
         # convert xyxy to xywh and filter out low scores
         return [
-            {"x": box[0]*100, "y": box[1]*100, 
-             "width": (box[2] - box[0])*100, "height": (box[3] - box[1])*100, 
-             "score": score} 
-            for (box, score) in zip(bboxes, scores) if score > 0.5]
-    
+            {
+                "x": box[0] * 100,
+                "y": box[1] * 100,
+                "width": (box[2] - box[0]) * 100,
+                "height": (box[3] - box[1]) * 100,
+                "score": score,
+            }
+            for (box, score) in zip(bboxes, scores)
+            if score > 0.5
+        ]
+
     def compress_image(self):
         """
         Compress the image to a smaller size

@@ -12,6 +12,7 @@ from .. import config
 from ..main import app
 from .tasks import train_dti
 from ..shared.utils.fileutils import xaccel_send_from_directory
+from .const import DTI_RESULTS_PATH, DATASETS_PATH, RUNS_PATH
 
 
 @app.route("/clustering/start", methods=["POST"])
@@ -91,12 +92,10 @@ def result(tracking_id: str):
     Get the result of a DTI clustering task
     """
     if not config.USE_NGINX_XACCEL:
-        return send_from_directory(
-            config.DTI_RESULTS_PATH, f"{slugify(tracking_id)}.zip"
-        )
+        return send_from_directory(DTI_RESULTS_PATH, f"{slugify(tracking_id)}.zip")
 
     return xaccel_send_from_directory(
-        config.DTI_RESULTS_PATH, config.DTI_XACCEL_PREFIX, f"{slugify(tracking_id)}.zip"
+        DTI_RESULTS_PATH, config.DTI_XACCEL_PREFIX, f"{slugify(tracking_id)}.zip"
     )
 
 
@@ -134,7 +133,6 @@ def clear():
     """
     Clear the results directory
     """
-    from api.app.dticlustering.lib.src import DATASETS_PATH, RUNS_PATH
 
     output = {
         "cleared_runs": 0,
@@ -164,7 +162,7 @@ def clear():
             shutil.rmtree(path)
             output["cleared_datasets"] += 1
 
-    for path in config.DTI_RESULTS_PATH.glob("*.zip"):
+    for path in DTI_RESULTS_PATH.glob("*.zip"):
         # if path is older than 30 days, delete the result
         if (datetime.now() - datetime.fromtimestamp(path.stat().st_mtime)).days > 30:
             path.unlink()

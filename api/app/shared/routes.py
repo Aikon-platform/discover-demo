@@ -8,8 +8,6 @@ import shutil
 
 from .. import config
 
-from ..main import app
-from ..tasks import train_dti
 from .utils.fileutils import xaccel_send_from_directory, is_too_old
 
 

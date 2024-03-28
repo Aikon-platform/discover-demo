@@ -189,7 +189,7 @@ service dramatiq start
 
 ### Link with API
 
-The front-end has to connect to the API server. You need to define `DTI_API_URL` to do so.
+The front-end has to connect to the API server. You need to define `API_URL` to do so.
 
 #### Secure connection
 

@@ -13,8 +13,8 @@ from torchvision import transforms
 import torch
 import traceback
 
-from api.app.main import app
-from api.app.config import WATERMARKS_MODEL_FOLDER
+from ..main import app
+from .const import WATERMARKS_MODEL_FOLDER
 
 MODEL = None
 MODEL_PATH = Path(WATERMARKS_MODEL_FOLDER) / "detection.pth"

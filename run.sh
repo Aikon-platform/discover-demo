@@ -1,8 +1,8 @@
 #! /bin/bash
 (trap 'kill 0' SIGINT;
-    (cd api/ && . .env && export CUDA_VISIBLE_DEVICES=$DEV_GPU) &
-    (venv/bin/flask --app app.main run --debug -p "$DEV_PORT") &
-    (cd api/ && venv/bin/dramatiq app.main -p 1 -t 1) &
+    (. api/app/shared/.env && export CUDA_VISIBLE_DEVICES=$DEVICE_NB) &
+    (cd api/ && venv/bin/flask --app app.main run --debug -p $DEV_PORT) &
+    (cd api/ && venv/bin/dramatiq app.main -t 1 -p 1) &
     (cd front/ && venv/bin/python manage.py runserver) &
-    (cd front/ && venv/bin/python manage.py rundramatiq -p 1 -t 1);
+    (cd front/ && venv/bin/python manage.py rundramatiq -t 1 -p 1);
 );

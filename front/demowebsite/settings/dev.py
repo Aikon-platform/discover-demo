@@ -12,5 +12,5 @@ DATABASES = {
 
 EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 
-DTI_API_URL = f'http://localhost:{ENV("API_DEV_PORT")}'
+API_URL = f'http://localhost:{ENV("API_DEV_PORT")}'
 BASE_URL = "http://localhost:8000"

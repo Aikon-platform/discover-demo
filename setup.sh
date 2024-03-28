@@ -59,8 +59,6 @@ python3.10 -m venv front/venv
 front/venv/bin/pip install -r front/requirements.txt
 
 echoTitle "SET UP ENVIRONMENT VARIABLES"
-API_ENV="$SCRIPT_DIR"/api/.env
-FRONT_ENV="$SCRIPT_DIR"/front/.env
 
 generate_random_string() {
     echo "$(openssl rand -base64 32 | tr -d '/\n')"
@@ -123,16 +121,26 @@ update_env() {
     done
 }
 
+API_ENV="$SCRIPT_DIR"/api/app/shared/.env
+FRONT_ENV="$SCRIPT_DIR"/front/.env
+
 cp "$API_ENV".template "$API_ENV"
 cp "$FRONT_ENV".template "$FRONT_ENV"
 
 colorEcho yellow "\nSetting $API_ENV ..."
 update_env "$API_ENV"
 
-colorEcho yellow "\nSetting $FRONT_ENV file ..."
-update_env "$FRONT_ENV"
-
 . "$API_ENV"
+
+# Convert INSTALLED_APPS into an array
+IFS=',' read -ra API_APPS <<< "$INSTALLED_APPS"
+
+for app in "${API_APPS[@]}"; do
+    APP_ENV="$SCRIPT_DIR"/api/app/$app/.env
+    cp "$APP_ENV".template "$APP_ENV"
+    colorEcho yellow "\nSetting $APP_ENV ..."
+    update_env "$APP_ENV"
+done
 
 if [ "$TARGET" == "dev" ]; then
     echoTitle "PRE-COMMIT INSTALL"
@@ -156,6 +164,9 @@ set_redis() {
 }
 # NOTE uncomment to use Redis password
 # set_redis $REDIS_PASSWORD
+
+colorEcho yellow "\nSetting $FRONT_ENV file ..."
+update_env "$FRONT_ENV"
 
 echoTitle "DOWNLOADING DTI SUBMODULE"
 git submodule init

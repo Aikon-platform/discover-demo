@@ -6,7 +6,7 @@ from zipfile import ZipFile
 from PIL import Image
 
 from .. import config
-from .const import DATASETS_PATH
+from .const import DATASETS_PATH, DTI_RESULTS_PATH
 from .training import (
     run_kmeans_training,
     run_sprites_training,
@@ -37,7 +37,7 @@ def train_dti(
     current_task = CurrentMessage.get_current_message()
     current_task_id = current_task.message_id
 
-    result_file = config.DTI_RESULTS_PATH / f"{current_task_id}.zip"
+    result_file = DTI_RESULTS_PATH / f"{current_task_id}.zip"
     result_file.parent.mkdir(parents=True, exist_ok=True)
 
     # Download and extract dataset to local storage
@@ -76,7 +76,7 @@ def train_dti(
             experiment_id, dataset_id, parameters, logger
         )
 
-    # zip results to config.DTI_RESULTS_PATH
+    # zip results to DTI_RESULTS_PATH
     with ZipFile(result_file, "w") as zipObj:
         for file in output_path.glob("**/*"):
             # if file.suffix == ".pkl": # Don't include the model

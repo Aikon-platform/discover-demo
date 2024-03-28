@@ -1,11 +1,25 @@
 #!/bin/bash
 
-# MODIFY THOSE VARIABLES TO MATCH YOUR SYSTEM
-DATA_FOLDER="/media/dyonisos/data/dtidemo/"
-DEMO_UID=1019
-DEVICE_NB=3
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+
+. "$SCRIPT_DIR/app/shared/.env.prod"
+
+# MODIFY DEFAULT VALUES TO MATCH YOUR SYSTEM
+# TODO mutualize data folder for all installed apps
+DATA_FOLDER=${DATA_FOLDER:-"/media/discoverdemo/data/"}
+DEVICE_NB=${DEVICE_NB:-3}
+DEMO_UID=${DEMO_UID:-$(id -u)}
+
+# Convert INSTALLED_APPS into an array
+#IFS=',' read -ra INSTALLED_APPS <<< "$INSTALLED_APPS"
 
 CONTAINER_NAME="demowebsiteapi"
+
+# Check if the user with uid is part of the docker group
+if ! id -nG "$DEMO_UID" | grep -qw docker; then
+    echo "Adding user with UID $DEMO_UID to the docker group"
+    sudo usermod -aG docker "$DEMO_UID"
+fi
 
 rebuild_image() {
     docker build --rm -t "$CONTAINER_NAME" . -f Dockerfile --build-arg USERID=$DEMO_UID
