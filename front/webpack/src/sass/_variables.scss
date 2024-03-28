@@ -1,4 +1,4 @@
-$main-color: #274C77FF;
+$main-color: hsla(233deg,100%,63%,1);
 $faded-color: lighten(desaturate($main-color, 20%), 25%);
 $bg-color: lighten(desaturate($main-color, 50%), 60%);
 $border-color: saturate(darken($bg-color, 15%), 15%);

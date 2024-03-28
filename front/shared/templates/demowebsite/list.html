@@ -20,12 +20,12 @@
 
     <p>
         <a class="button is-link" href="{% url app_name|add:':start' %}">
-            <span class="iconify" data-icon="mdi:clock-start"></span> <span>Start a new {{ task_name }}</span>
+            <span class="iconify mr-1" data-icon="mdi:clock-start"></span> <span>Start a new {{ task_name }}</span>
         </a>
         {% can_monitor request.user app_name as is_admin %}
         {% if is_admin %}
             <a href="{% url app_name|add:':monitor' %}" class="button is-link is-outlined">
-                <span class="iconify" data-icon="mdi:database-cog"></span> <span>Monitor {{ task_name }} experiments</span>
+                <span class="iconify mr-1" data-icon="mdi:database-cog"></span> <span>Monitor {{ task_name }} experiments</span>
             </a>
         {% endif %}
     </p>
@@ -66,7 +66,7 @@
         {% endfor %}
     </div>
 
-    {% include "demowebsite/pagination.html" %}
+    {% include "includes/pagination.html" %}
 
 </div>
 {% endblock %}

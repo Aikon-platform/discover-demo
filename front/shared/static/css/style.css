@@ -3,19 +3,19 @@
 }
 
 body {
-  background-color: #e8e8e8;
+  background-color: white;
   font: 100% Helvetica, sans-serif;
   margin: 0;
   padding: 0;
 }
 
 h1, h2 {
-  color: #274c77;
+  color: hsl(233, 100%, 63%);
 }
 
 a {
   font-weight: bold;
-  color: #274c77;
+  color: hsl(233, 100%, 63%);
   text-decoration: none !important;
 }
 
@@ -59,88 +59,6 @@ pre {
   text-indent: 0;
 }
 
-form.transparent {
-  background: transparent;
-}
-form .field {
-  border: 2px solid #63686e;
-  border-radius: 5px;
-  margin: 5px 0;
-  display: flex;
-  background: #d9dbdd;
-  padding: 10px;
-}
-form .field > label, form .field > .label {
-  display: inline-block;
-  width: 250px;
-  text-align: right;
-  margin-right: 12px;
-  padding-top: 5px;
-  flex-shrink: 0;
-}
-form .field > label.required:before, form .field > .label.required:before {
-  margin-right: 5px;
-  content: "*";
-  color: #c81307;
-}
-form .field ul li {
-  margin: 5px 0;
-}
-form .field.field-CheckboxSelectMultiple .input input, form .field.field-RadioSelect .input input {
-  position: relative;
-  z-index: 2;
-}
-form .field.field-CheckboxSelectMultiple .input li, form .field.field-RadioSelect .input li {
-  margin-top: 0.3em;
-  display: flex;
-  gap: 0.4em;
-  align-items: center;
-}
-form .field.field-CheckboxSelectMultiple .input label, form .field.field-RadioSelect .input label {
-  color: #e8e8e8;
-  border-radius: 2em;
-  margin-left: -2.2em;
-  padding: 0.35em 0.8em 0.35em 2.2em;
-}
-form .field.field-CheckboxSelectMultiple .input :checked + label, form .field.field-RadioSelect .input :checked + label {
-  background-color: #010204;
-  color: #fff;
-}
-form .field label {
-  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-  font-weight: bold;
-}
-form .field .help, form .field.field-PasswordInput ul li {
-  font-style: italic;
-  font-size: 0.9em;
-  color: #6c8cb1;
-}
-form .field .input {
-  display: inline-block;
-  flex-grow: 1;
-  margin-right: 10px;
-}
-form .field .input label, form .field .input .label {
-  font-weight: 500;
-}
-
-input[type=text], input[type=password],
-input[type=email], input[type=number], textarea, select {
-  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-  font-weight: normal;
-  border: none;
-  border-bottom: 1px solid #b8c1cb;
-  width: 100%;
-  max-width: 100%;
-  padding: 0.6em 1em;
-  transition: border 1s ease-out, background 1s ease-out;
-  background-color: #e8e8e8;
-}
-input[type=text]:focus-visible, input[type=password]:focus-visible,
-input[type=email]:focus-visible, input[type=number]:focus-visible, textarea:focus-visible, select:focus-visible {
-  outline: 2px solid #b8c1cb;
-}
-
 .iconify {
   width: 1em;
   min-width: 1em;
@@ -154,8 +72,6 @@ input[type=submit], input[type=file], button, .btn {
   text-align: center;
   font: 16px "Helvetica Neue", Helvetica, Arial, sans-serif;
   font-weight: 500;
-  background-color: #274c77;
-  color: #fff;
   border: none;
   padding: 0.6em 0.6em;
   border-radius: 5px;
@@ -167,9 +83,6 @@ input[type=submit], input[type=file], button, .btn {
   align-items: center;
   justify-content: space-evenly;
   text-decoration: none;
-}
-input[type=submit]:hover, input[type=file]:hover, button:hover, .btn:hover {
-  background-color: #1a3351;
 }
 input[type=submit] .iconify, input[type=file] .iconify, button .iconify, .btn .iconify {
   margin: 0em;
@@ -208,9 +121,9 @@ input[type=submit].big, input[type=file].big, button.big, .btn.big {
   font-size: 1.3em;
 }
 input[type=submit].is-outline, input[type=file].is-outline, button.is-outline, .btn.is-outline {
-  background-color: whitesmoke;
-  border: 2px solid #274c77;
-  color: #274c77;
+  background-color: white;
+  border: 2px solid hsl(233, 100%, 63%);
+  color: hsl(233, 100%, 63%);
 }
 
 .text-shadow {
@@ -250,9 +163,9 @@ ul.messages li.warning, ul.messages li.error {
   margin: 0 auto;
 }
 .dti-list .row {
-  background-color: whitesmoke;
+  background-color: white;
   border-radius: 5px;
-  border: 2px solid #b8c1cb;
+  border: 2px solid #c0c6f2;
   margin: 0.5em 0;
   position: relative;
   display: flex;
@@ -290,7 +203,7 @@ ul.messages li.warning, ul.messages li.error {
 }
 
 .status {
-  background-color: #274c77;
+  background-color: hsl(233, 100%, 63%);
   color: #fff;
   padding: 0.3em 0.5em;
   margin: 0;
@@ -298,7 +211,7 @@ ul.messages li.warning, ul.messages li.error {
   font-weight: bold;
 }
 .status.status-CANCELLED, .status.status-UNKNOWN {
-  background-color: #63686e;
+  background-color: #949de0;
 }
 .status.status-PENDING {
   background-color: #ccb000;
@@ -325,8 +238,8 @@ ul.messages li.warning, ul.messages li.error {
   align-items: center;
   opacity: 0.7;
   padding: 0.1em;
-  border-top: 1px solid #274c77;
-  border-bottom: 1px solid #274c77;
+  border-top: 1px solid hsl(233, 100%, 63%);
+  border-bottom: 1px solid hsl(233, 100%, 63%);
 }
 .pagination a.pagination-link, .pagination a.pagination-next {
   display: inline-block;
@@ -356,14 +269,14 @@ ul.messages li.warning, ul.messages li.error {
   border-collapse: collapse;
   width: 100%;
   margin: 0.5em 0;
-  border: 2px solid #274c77;
+  border: 2px solid hsl(233, 100%, 63%);
   overflow: hidden;
-  background-color: whitesmoke;
+  background-color: white;
 }
 .table th, .table td {
   padding: 0.5em 1em;
-  border-bottom: 1px solid #274c77;
-  border-right: 1px solid #274c77;
+  border-bottom: 1px solid hsl(233, 100%, 63%);
+  border-right: 1px solid hsl(233, 100%, 63%);
   text-align: left;
   vertical-align: top;
 }
@@ -371,17 +284,17 @@ ul.messages li.warning, ul.messages li.error {
   border-right: none;
 }
 .table th {
-  background-color: #34659d;
+  background-color: #7585ff;
   font-weight: bold;
 }
 .table tr:hover {
   background-color: white;
 }
 .table tr:nth-child(even) {
-  background-color: whitesmoke;
+  background-color: white;
 }
 .table tr:nth-child(odd) {
-  background-color: #e8e8e8;
+  background-color: white;
 }
 .table tr:last-child td {
   border-bottom: none;
@@ -389,12 +302,12 @@ ul.messages li.warning, ul.messages li.error {
 
 .clickable {
   transition: all 0.3s ease;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.3) !important;
+  box-shadow: 0 0 8px rgba(0, 0, 0, 0.3) !important;
 }
 
 .clickable:hover {
   transform: translateY(2px);
-  box-shadow: 0 0 3px rgba(0, 0, 0, 0.6) !important;
+  box-shadow: 0 0 4px rgba(0, 0, 0, 0.6) !important;
 }
 
 .tck-progress .tck-bar-list > * {
@@ -412,23 +325,23 @@ ul.messages li.warning, ul.messages li.error {
   appearance: none;
   background-color: #fff;
   border-radius: 10px;
-  border: 1px solid #274c77;
+  border: 1px solid hsl(233, 100%, 63%);
 }
 .tck-progress .tck-bar-list > * progress::-webkit-progress-bar {
   background-color: #fff;
 }
 .tck-progress .tck-bar-list > * progress::-webkit-progress-value {
-  background-color: #274c77;
+  background-color: hsl(233, 100%, 63%);
 }
 .tck-progress .tck-bar-list > * progress::-moz-progress-bar {
-  background-color: #274c77;
+  background-color: hsl(233, 100%, 63%);
 }
 
 .cluster-viewer {
   width: 100%;
   max-width: 100%;
   padding: 0;
-  background-color: #cececf;
+  background-color: #d9dcf2;
   align-self: stretch;
 }
 .cluster-viewer .cl-anchor {
@@ -471,11 +384,11 @@ ul.messages li.warning, ul.messages li.error {
 }
 .cluster-viewer .cl-cluster-list .cl-cluster > .cl-samples .cl-images > * {
   margin: 0.5em;
-  background-color: rgba(39, 76, 119, 0.5);
+  background-color: rgba(66, 88, 255, 0.5);
   display: inline-block;
   text-align: center;
   vertical-align: middle;
-  color: #274c77;
+  color: hsl(233, 100%, 63%);
   text-decoration: none;
   position: relative;
 }
@@ -494,19 +407,19 @@ ul.messages li.warning, ul.messages li.error {
   height: 20px;
   background-color: #fff;
   border-radius: 5px;
-  border: 3px solid #274c77;
-  outline: 2px solid #274c77;
+  border: 3px solid hsl(233, 100%, 63%);
+  outline: 2px solid hsl(233, 100%, 63%);
   text-decoration: none;
   line-height: 1;
 }
 .cluster-viewer .cl-cluster-list .cl-cluster > .cl-samples .cl-selectable.cl-images > *.cl-selected .cl-selecter {
-  background-color: #274c77;
+  background-color: hsl(233, 100%, 63%);
   border-color: #fff;
-  outline: 2px solid #274c77;
+  outline: 2px solid hsl(233, 100%, 63%);
 }
 .cluster-viewer .cl-cluster-list .cl-cluster > .cl-samples .cl-selectable.cl-images > *.cl-selected img {
-  outline: 4px solid #274c77;
-  border: 4px solid #274c77;
+  outline: 4px solid hsl(233, 100%, 63%);
+  border: 4px solid hsl(233, 100%, 63%);
 }
 .cluster-viewer .cl-cluster-list.cl-display-grid {
   display: flex;
@@ -515,14 +428,14 @@ ul.messages li.warning, ul.messages li.error {
   align-items: stretch;
 }
 .cluster-viewer .cl-cluster-list.cl-display-grid .cl-cluster {
-  background-color: #e8e8e8;
+  background-color: white;
   flex: 1;
   min-width: 300px;
   max-width: 450px;
   border-radius: 5px;
 }
 .cluster-viewer .cl-cluster-list.cl-display-grid .cl-cluster > .cl-props {
-  background-color: #e8e8e8;
+  background-color: white;
 }
 .cluster-viewer .cl-cluster-list.cl-display-grid .cl-cluster > .cl-props .cl-propcontent {
   display: flex;
@@ -564,7 +477,7 @@ ul.messages li.warning, ul.messages li.error {
 }
 .cluster-viewer .cl-cluster-list.cl-display-rows .cl-cluster > * {
   border-radius: 5px;
-  background-color: #e8e8e8;
+  background-color: white;
   display: table-cell;
   padding: 0.5em;
 }
@@ -701,18 +614,18 @@ ul.messages li.warning, ul.messages li.error {
   border-radius: 5px;
 }
 .cluster-viewer .cl-modale .cl-ask-select .cl-ask-list .cl-cluster.cl-selected {
-  outline: 4px solid #274c77;
+  outline: 4px solid hsl(233, 100%, 63%);
 }
 .cluster-viewer .cl-modale .cl-ask-select .cl-ask-list .cl-cluster .cl-images > * {
   width: 64px;
   height: 64px;
   border-radius: 5px;
   margin: 0.1em;
-  background-color: rgba(39, 76, 119, 0.5);
+  background-color: rgba(66, 88, 255, 0.5);
   display: inline-block;
   text-align: center;
   vertical-align: middle;
-  color: #274c77;
+  color: hsl(233, 100%, 63%);
   line-height: 64px;
   text-decoration: none;
 }
@@ -739,10 +652,10 @@ ul.messages li.warning, ul.messages li.error {
   padding: 0.4em;
   font-weight: normal;
   border-radius: 2px;
-  border: 2px solid #274c77;
+  border: 2px solid hsl(233, 100%, 63%);
 }
 .cl-saved-list li > a:not(.btn):hover {
-  background-color: whitesmoke;
+  background-color: white;
 }
 .cl-saved-list li > a:not(.btn) span {
   display: inline-block;

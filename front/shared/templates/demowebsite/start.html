@@ -11,8 +11,8 @@
     <form action="" method="post" enctype="multipart/form-data">
         {% csrf_token %}
         {% include "demowebsite/baseform.html" %}
-        <p class="centerwrap">
-            <input type="submit" value="Start processing">
+        <p class="has-text-centered">
+            <input class="button is-link" type="submit" value="Start processing">
         </p>
     </form>
 </div>

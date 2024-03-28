@@ -64,100 +64,100 @@ pre {
 
 // FORMS AND INPUTS
 
-form {
-
-    &.transparent {
-        background: transparent;
-    }
-
-    .field {
-        border: 2px solid $grey;
-        border-radius: $border-radius;
-        margin: 5px 0;
-        display: flex;
-        background: $light-grey;
-        padding: 10px;
-
-        & > label, & > .label {
-            display:inline-block;
-            width: 250px;
-            text-align: right;
-            margin-right: 12px;
-            padding-top: 5px;
-            flex-shrink: 0;
-
-            &.required:before {
-                margin-right: 5px;
-                content:"*";
-                color: $red;
-            }
-        }
-
-        ul li{
-            margin: 5px 0;
-        }
-
-        &.field-CheckboxSelectMultiple, &.field-RadioSelect {
-            .input {
-                input {
-                    position: relative;
-                    z-index: 2;
-                }
-                li {
-                    margin-top: 0.3em;
-                    display: flex;
-                    gap: 0.4em;
-                    align-items: center;
-                }
-                label {
-                    color: $bg-color;
-                    border-radius: 2em;
-                    margin-left: -2.2em;
-                    padding: 0.35em 0.8em 0.35em 2.2em;
-                }
-                :checked+label {
-                    background-color: $dark-color;
-                    color: #fff;
-                }
-            }
-        }
-
-        label {
-            font-family: $headfont;
-            font-weight: bold;
-        }
-        .help, &.field-PasswordInput ul li {
-            font-style: italic;
-            font-size: 0.9em;
-            color: $faded-color;
-        }
-        .input {
-            display:inline-block;
-            flex-grow:1;
-            margin-right:10px;
-            label, .label {
-                font-weight: 500;
-            }
-        }
-    }
-}
-
-
-input[type='text'], input[type='password'],
-input[type='email'], input[type='number'], textarea, select {
-    font-family: $headfont;
-    font-weight: normal;
-    border: none;
-    border-bottom: 1px solid $border-color;
-    width: 100%;
-    max-width: 100%;
-    padding: 0.6em 1em;
-    transition: border 1s ease-out, background 1s ease-out;
-    background-color: $bg-color;
-    &:focus-visible {
-        outline: 2px solid $border-color;
-    }
-}
+//form {
+//
+//    &.transparent {
+//        background: transparent;
+//    }
+//
+//    .field {
+//        border: 2px solid $grey;
+//        border-radius: $border-radius;
+//        margin: 5px 0;
+//        display: flex;
+//        background: $light-grey;
+//        padding: 10px;
+//
+//        & > label, & > .label {
+//            display:inline-block;
+//            width: 250px;
+//            text-align: right;
+//            margin-right: 12px;
+//            padding-top: 5px;
+//            flex-shrink: 0;
+//
+//            &.required:before {
+//                margin-right: 5px;
+//                content:"*";
+//                color: $red;
+//            }
+//        }
+//
+//        ul li{
+//            margin: 5px 0;
+//        }
+//
+//        &.field-CheckboxSelectMultiple, &.field-RadioSelect {
+//            .input {
+//                input {
+//                    position: relative;
+//                    z-index: 2;
+//                }
+//                li {
+//                    margin-top: 0.3em;
+//                    display: flex;
+//                    gap: 0.4em;
+//                    align-items: center;
+//                }
+//                label {
+//                    color: $bg-color;
+//                    border-radius: 2em;
+//                    margin-left: -2.2em;
+//                    padding: 0.35em 0.8em 0.35em 2.2em;
+//                }
+//                :checked+label {
+//                    background-color: $dark-color;
+//                    color: #fff;
+//                }
+//            }
+//        }
+//
+//        label {
+//            font-family: $headfont;
+//            font-weight: bold;
+//        }
+//        .help, &.field-PasswordInput ul li {
+//            font-style: italic;
+//            font-size: 0.9em;
+//            color: $faded-color;
+//        }
+//        .input {
+//            display:inline-block;
+//            flex-grow:1;
+//            margin-right:10px;
+//            label, .label {
+//                font-weight: 500;
+//            }
+//        }
+//    }
+//}
+//
+//
+//input[type='text'], input[type='password'],
+//input[type='email'], input[type='number'], textarea, select {
+//    font-family: $headfont;
+//    font-weight: normal;
+//    border: none;
+//    //border-bottom: 1px solid $border-color;
+//    width: 100%;
+//    max-width: 100%;
+//    padding: 0.6em 1em;
+//    transition: border 1s ease-out, background 1s ease-out;
+//    // background-color: $bg-color;
+//    //&:focus-visible {
+//    //    outline: 2px solid $border-color;
+//    //}
+//}
 
 .iconify {
     width: 1em;
@@ -172,8 +172,8 @@ input[type="submit"], input[type="file"], button, .btn {
     text-align: center;
     font: 16px $headfont;
     font-weight: 500;
-    background-color: $head-color;
-    color: #fff;
+    //background-color: $head-color;
+    //color: #fff;
     // border: 6px double #fff;
     border: none;
     padding: 0.6em 0.6em;
@@ -187,9 +187,9 @@ input[type="submit"], input[type="file"], button, .btn {
     justify-content: space-evenly;
     text-decoration: none;
 
-    &:hover {
-        background-color: darken($head-color, 10%);
-    }
+    //&:hover {
+    //    background-color: darken($head-color, 10%);
+    //}
 
     .iconify {
         margin: 0em;
@@ -431,12 +431,13 @@ ul.messages {
 
 .clickable {
     transition: all 0.3s ease;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.3) !important;
+    box-shadow: 0 0 8px rgba(0, 0, 0, 0.3) !important;
 }
 .clickable:hover {
     transform: translateY(2px);
-    box-shadow: 0 0 3px rgba(0, 0, 0, 0.6) !important;
+    box-shadow: 0 0 4px rgba(0, 0, 0, 0.6) !important;
 }
+
 
 @import "_progresstracking";
 @import "_clusterviewer";
