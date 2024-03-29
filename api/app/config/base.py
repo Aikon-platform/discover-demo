@@ -1,14 +1,13 @@
 from pathlib import Path
-from ..shared.const import ENV
+from environ import Env
 
 # Path to api/ folder
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
-INSTALLED_APPS = ENV("INSTALLED_APPS").split(",")
+ENV = Env()
+Env.read_env(env_file=f"{BASE_DIR}/.env")
 
-for app in INSTALLED_APPS:
-    # import .env variables for each installed app
-    exec(f"from ..{app}.const import *")
+INSTALLED_APPS = ENV("INSTALLED_APPS").split(",")
 
 
 class FLASK_CONFIG:

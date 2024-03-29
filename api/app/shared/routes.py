@@ -65,7 +65,7 @@ def status(tracking_id: str, task_fct):
     }
 
 
-def result(tracking_id: str, results_dir):
+def result(tracking_id: str, results_dir, xaccel_prefix):
     """
     Get the result of a task
     """
@@ -73,7 +73,7 @@ def result(tracking_id: str, results_dir):
         return send_from_directory(results_dir, f"{slugify(tracking_id)}.zip")
 
     return xaccel_send_from_directory(
-        results_dir, config.DTI_XACCEL_PREFIX, f"{slugify(tracking_id)}.zip"
+        results_dir, xaccel_prefix, f"{slugify(tracking_id)}.zip"
     )
 
 

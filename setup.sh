@@ -68,6 +68,8 @@ prompt_user() {
     env_var=$(colorEcho 'red' "$1")
     default_val="$2"
     current_val="$3"
+    desc="$4"
+
     if [ "$2" != "$3" ]; then
         default="Press enter for $(colorEcho 'cyan' "$default_val")"
     elif [ -n "$current_val" ]; then
@@ -75,7 +77,7 @@ prompt_user() {
         default_val=$current_val
     fi
 
-    read -p "$env_var"$'\n'"$default: " value
+    read -p "$env_var $desc"$'\n'"$default: " value
     echo "${value:-$default_val}"
 }
 
@@ -101,27 +103,38 @@ get_os() {
 
 update_env() {
     env_file=$1
-    params=($(awk -F= '/^[^#]/ {print $1}' "$env_file"))
-    for param in "${params[@]}"; do
-        current_val=$(get_env_value "$param" "$env_file")
-        case $param in
-            *PASSWORD*)
-                default_val="$(generate_random_string)"
-                ;;
-            *SECRET*)
-                default_val="$(generate_random_string)"
-                ;;
-            *)
-                default_val="$current_val"
-                ;;
-        esac
+    IFS=$'\n' read -d '' -r -a lines < "$env_file"  # Read file into array
+    for line in "${lines[@]}"; do
+        if [[ $line =~ ^[^#]*= ]]; then
+            param=$(echo "$line" | cut -d'=' -f1)
+            current_val=$(get_env_value "$param" "$env_file")
 
-        new_value=$(prompt_user "$param" "$default_val" "$current_val")
-        sed -i '' -e "s~^$param=.*~$param=\"$new_value\"~" "$env_file"
+            # Extract description from previous line if it exists
+            desc=""
+            if [[ $prev_line =~ ^# ]]; then
+                desc=$(echo "$prev_line" | sed 's/^#\s*//')
+            fi
+
+            case $param in
+                *PASSWORD*)
+                    default_val="$(generate_random_string)"
+                    ;;
+                *SECRET*)
+                    default_val="$(generate_random_string)"
+                    ;;
+                *)
+                    default_val="$current_val"
+                    ;;
+            esac
+
+            new_value=$(prompt_user "$param" "$default_val" "$current_val" "$desc")
+            sed -i '' -e "s~^$param=.*~$param=\"$new_value\"~" "$env_file"
+        fi
+        prev_line="$line"
     done
 }
 
-API_ENV="$SCRIPT_DIR"/api/app/shared/.env
+API_ENV="$SCRIPT_DIR"/api/.env
 FRONT_ENV="$SCRIPT_DIR"/front/.env
 
 cp "$API_ENV".template "$API_ENV"
@@ -131,16 +144,6 @@ colorEcho yellow "\nSetting $API_ENV ..."
 update_env "$API_ENV"
 
 . "$API_ENV"
-
-# Convert INSTALLED_APPS into an array
-IFS=',' read -ra API_APPS <<< "$INSTALLED_APPS"
-
-for app in "${API_APPS[@]}"; do
-    APP_ENV="$SCRIPT_DIR"/api/app/$app/.env
-    cp "$APP_ENV".template "$APP_ENV"
-    colorEcho yellow "\nSetting $APP_ENV ..."
-    update_env "$APP_ENV"
-done
 
 if [ "$TARGET" == "dev" ]; then
     echoTitle "PRE-COMMIT INSTALL"

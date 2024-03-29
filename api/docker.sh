@@ -1,17 +1,13 @@
 #!/bin/bash
 
-SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+# VALUES TO BE USED BY DOCKER: modify those values to match your system
 
-. "$SCRIPT_DIR/app/shared/.env.prod"
-
-# MODIFY DEFAULT VALUES TO MATCH YOUR SYSTEM
-# TODO mutualize data folder for all installed apps
-DATA_FOLDER=${DATA_FOLDER:-"/media/discoverdemo/data/"}
-DEVICE_NB=${DEVICE_NB:-3}
-DEMO_UID=${DEMO_UID:-$(id -u)}
-
-# Convert INSTALLED_APPS into an array
-#IFS=',' read -ra INSTALLED_APPS <<< "$INSTALLED_APPS"
+# Machine path where docker will store its /data/ folder (API_DATA_FOLDER)
+DATA_FOLDER=/media/discoverdemo/
+# GPU device number to be used by docker
+DEVICE_NB=2
+# User ID to be used by docker
+DEMO_UID=1000
 
 CONTAINER_NAME="demowebsiteapi"
 

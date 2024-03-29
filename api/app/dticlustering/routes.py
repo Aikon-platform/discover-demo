@@ -12,7 +12,13 @@ from .. import config
 from ..main import app
 from .tasks import train_dti
 from ..shared.utils.fileutils import xaccel_send_from_directory
-from .const import DTI_RESULTS_PATH, DATASETS_PATH, RUNS_PATH
+from .const import (
+    DTI_RESULTS_PATH,
+    DATASETS_PATH,
+    RUNS_PATH,
+    DTI_DATA_FOLDER,
+    DTI_XACCEL_PREFIX,
+)
 
 
 @app.route("/clustering/start", methods=["POST"])
@@ -95,7 +101,7 @@ def result(tracking_id: str):
         return send_from_directory(DTI_RESULTS_PATH, f"{slugify(tracking_id)}.zip")
 
     return xaccel_send_from_directory(
-        DTI_RESULTS_PATH, config.DTI_XACCEL_PREFIX, f"{slugify(tracking_id)}.zip"
+        DTI_RESULTS_PATH, DTI_XACCEL_PREFIX, f"{slugify(tracking_id)}.zip"
     )
 
 
@@ -122,7 +128,7 @@ def monitor():
     """
     # Get total size of the results directory
     total_size = 0
-    for path in config.DTI_DATA_FOLDER.glob("**/*"):
+    for path in DTI_DATA_FOLDER.glob("**/*"):
         total_size += path.stat().st_size
 
     return {"total_size": total_size, **qsizes()}

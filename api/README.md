@@ -52,6 +52,12 @@ And the server:
 ./venv/bin/flask --app app.main run --debug
 ```
 
+### Adding new demo
+
+1. Duplicate the [`demo_template`](./app/demo_template) folder
+2. Add relevant variables in [`.env.template`](.env.template) and generate the corresponding [`.env`](.env) file
+3. Add the demo name (i.e. folder name) to the list `INSTALLED_APPS` in [`.env`](.env)
+
 ## Production
 
 ### Deploy
@@ -67,6 +73,9 @@ sudo useradd -m <docker-user>
 sudo passwd <docker-user>
 sudo usermod -aG sudo <docker-user>
 sudo -iu <docker-user> # Connect as user
+
+sudo usermod -aG docker $USER # add user to docker group
+su - ${USER} # Reload session for the action to take effect
 
 id -u <docker-user> # Get uuid => DEMO_UID
 ```
@@ -88,23 +97,23 @@ git submodule update
 Copy the file `.env` to a file `.env.prod`. Change it to `TARGET=prod`, and indicate the appropriate credentials.
 
 ```bash
-cp app/shared/.env.template app/shared/.env.prod
-sed -i -e 's/^TARGET=.*/TARGET="prod"/' app/shared/.env.prod
+cp .env.template .env.prod
+sed -i -e 's/^TARGET=.*/TARGET="prod"/' .env.prod
 ```
-
-Additionally, in [`app/shared/.env.prod`](app/shared/.env.template), pay attention to match these variables to your setup:
-- `INSTALLED_APPS`: list of apps (folder names) to be used by the API
-- `DATA_FOLDER`: absolute path to directory where results are stored
-- `DEMO_UID`: Universally Unique Identifier of the `<docker-user>` (`id -u <username>`)
-- `DEVICE_NB`: GPU number to be used by container (get available GPU with `nvidia-smi`)
 
 Create a folder (`DATA_FOLDER`) to store results of experiments and set its permissions:
 ```bash
-mkdir </path/to/results/> # e.g. /media/<docker-user>/data
+mkdir </path/to/results/> # e.g. /media/<docker-user>/
 sudo chmod o+X </path>
 sudo chmod o+X </path/to>
 sudo chmod -R u+rwX </path/to/results/>
 ```
+
+In [`docker.sh`](docker.sh), modify the variables depending on your setup:
+- `DATA_FOLDER`: absolute path to directory where results are stored
+- `DEMO_UID`: Universally Unique Identifier of the `<docker-user>` (`id -u <username>`)
+- `DEVICE_NB`: GPU number to be used by container (get available GPU with `nvidia-smi`)
+
 
 Build the docker using the premade script:
 
@@ -135,6 +144,7 @@ sudo chmod 644 /etc/spiped/dti.key
 
 Create service config file for spiped (`sudo vi /etc/systemd/system/spiped-dti.service`)
 Get `<docker-ip>` with `docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' demowebsiteapi` or use `127.0.0.1`
+The Docker port (here `8001`) must match the `API_PORT` defined in [`api/.env`](./.env.template)
 
 ```bash
 [Unit]
