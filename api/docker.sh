@@ -1,6 +1,10 @@
 #!/bin/bash
 
-# VALUES TO BE USED BY DOCKER: modify those values to match your system
+###############################
+# VALUES TO BE USED BY DOCKER #
+#    modify those values to   #
+#      match your system      #
+###############################
 
 # Machine path where docker will store its /data/ folder (API_DATA_FOLDER)
 DATA_FOLDER=/media/discoverdemo/
@@ -10,12 +14,6 @@ DEVICE_NB=2
 DEMO_UID=1000
 
 CONTAINER_NAME="demowebsiteapi"
-
-# Check if the user with uid is part of the docker group
-if ! id -nG "$DEMO_UID" | grep -qw docker; then
-    echo "Adding user with UID $DEMO_UID to the docker group"
-    sudo usermod -aG docker "$DEMO_UID"
-fi
 
 rebuild_image() {
     docker build --rm -t "$CONTAINER_NAME" . -f Dockerfile --build-arg USERID=$DEMO_UID
