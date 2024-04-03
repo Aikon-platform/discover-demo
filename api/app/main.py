@@ -7,6 +7,7 @@ from dramatiq_abort import Abortable, backends
 from dramatiq.middleware import CurrentMessage
 from dramatiq.results.backends import RedisBackend
 from .shared.utils.logging import LoggedResults
+from .shared.utils.modular import auto_import_apps
 
 # Flask setup
 app = Flask(__name__)
@@ -28,5 +29,4 @@ broker.add_middleware(results)
 dramatiq.set_broker(broker)
 
 # Import routes and tasks
-from .routes import *
-from .tasks import *
+auto_import_apps(app, config.INSTALLED_APPS, __package__)

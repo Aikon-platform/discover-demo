@@ -9,6 +9,7 @@ Env.read_env(env_file=f"{BASE_DIR}/.env")
 
 INSTALLED_APPS = ENV("INSTALLED_APPS").split(",")
 
+API_DATA_FOLDER = Path(ENV("API_DATA_FOLDER", default=f"{BASE_DIR}/data"))
 
 class FLASK_CONFIG:
     pass

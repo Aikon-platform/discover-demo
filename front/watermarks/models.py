@@ -6,6 +6,7 @@ import uuid
 import requests
 import traceback
 from PIL import Image, ImageOps
+import zipfile
 
 from datasets.utils import PathAndRename
 
@@ -99,3 +100,52 @@ class SingleWatermarkDetection(models.Model):
         img = img.convert("RGB")
         img.thumbnail((1000, 1000))
         img.save(self.image.path, quality=60)
+
+
+class WatermarksSource(models.Model):
+    uid = models.CharField("UID", max_length=50, unique=True)
+    name = models.CharField(max_length=64)
+    active = models.BooleanField(default=True)
+    downloaded = models.BooleanField(default=False)
+    size = models.PositiveIntegerField()
+
+    def __str__(self):
+        return "Watermark source: " + self.name
+    
+    @property
+    def data_folder(self):
+        return "watermarks/sources/" + self.uid
+    
+    @property
+    def data_folder_path(self):
+        return settings.MEDIA_ROOT / self.data_folder
+    
+    @property
+    def data_folder_url(self):
+        return settings.MEDIA_URL + self.data_folder
+    
+    def download_images(self):
+        """
+        Download the images from the API
+        """
+        response = requests.get(f"{WATERMARKS_API_URL}/watermarks/sources/{self.uid}/images")
+        response.raise_for_status()
+        
+        zip_file = self.data_folder_path / "images.zip"
+        with open(zip_file, "wb") as f:
+            f.write(response.content)
+        with zipfile.ZipFile(zip_file, "r") as z:
+            z.extractall(self.data_folder_path)
+        zip_file.unlink()
+
+        self.downloaded = True
+        self.save()
+
+    @staticmethod
+    def get_available_sources(self):
+        """
+        Get the available sources from the API
+        """
+        response = requests.get(f"{WATERMARKS_API_URL}/watermarks/sources")
+        response.raise_for_status()
+        return response.json()

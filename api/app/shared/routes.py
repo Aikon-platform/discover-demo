@@ -11,28 +11,19 @@ from .. import config
 from .utils.fileutils import xaccel_send_from_directory, is_too_old
 
 
-def start_task(request, task_fct):
+def start_task(task_fct, experiment_id, task_kwargs):
     """
     Start a new task
     """
-    dataset_url = request.form["dataset_url"]  # Throw 400 if not exists
-    experiment_id = slugify(request.form.get("experiment_id", str(uuid.uuid4())))
-    dataset_id = slugify(request.form.get("dataset_id", str(uuid.uuid4())))
-    notify_url = request.form.get("notify_url", None)
-    parameters = json.loads(request.form.get("parameters", "{}"))
 
     task = task_fct.send(
-        clustering_id=experiment_id,
-        dataset_id=dataset_id,
-        dataset_url=dataset_url,
-        parameters=parameters,
-        notify_url=notify_url,
+        experiment_id=experiment_id,
+        **task_kwargs
     )
 
     return {
         "tracking_id": task.message_id,
         "experiment_id": experiment_id,
-        "dataset_id": dataset_id,
     }
 
 

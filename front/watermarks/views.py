@@ -1,9 +1,12 @@
 from django.urls import reverse_lazy
-from django.views.generic import CreateView, DetailView
-from django.contrib.auth.mixins import LoginRequiredMixin
+from django.views.generic import CreateView, DetailView, ListView, View
+from django.views.generic.detail import SingleObjectMixin
+from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
 from typing import Any
+import traceback
+from django.shortcuts import redirect
 
-from .models import SingleWatermarkDetection
+from .models import SingleWatermarkDetection, WatermarksSource
 from .forms import SingleWatermarkDetectionForm
 
 class WatermarkQueryView(LoginRequiredMixin, CreateView):
@@ -31,3 +34,35 @@ class WatermarkResultView(LoginRequiredMixin, DetailView):
         context = super().get_context_data(**kwargs)
         context["form"] = SingleWatermarkDetectionForm(user=self.request.user)
         return context
+    
+
+# ADMIN
+
+class ManageSourcesView(PermissionRequiredMixin, LoginRequiredMixin, ListView):
+    """
+    Monitoring view
+    """
+    permission_required = "watermarks.monitor_watermarks"
+    template_name = 'watermarks/sources.html'
+    context_object_name = 'sources'
+    model = WatermarksSource
+
+    def get_context_data(self, **kwargs) -> dict[str, Any]:
+        context = super().get_context_data(**kwargs)
+        try:
+            context["available_sources"] = WatermarksSource.get_available_sources()
+        except Exception as e:
+            context["api_error"] = traceback.format_exc(1)
+        return context
+
+class AddSourceView(PermissionRequiredMixin, LoginRequiredMixin, SingleObjectMixin, View):
+    """
+    Add a new source
+    """
+    permission_required = "watermarks.monitor_watermarks"
+    model = WatermarksSource
+
+    def post(self, request, *args, **kwargs):
+        source = WatermarksSource(uid=request.POST["uid"])
+        source.download_images()
+        return redirect(reverse_lazy("watermarks:sources-manage"))
