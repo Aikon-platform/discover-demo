@@ -12,40 +12,36 @@ from django.views.generic.detail import SingleObjectMixin
 from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
 from django.contrib import messages
 from django.shortcuts import redirect
-from django.utils.decorators import method_decorator
-from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse, Http404, HttpResponse
 import json
 from typing import Any
+
+from tasking.views import (
+    TaskStartView,
+    TaskStatusView,
+    TaskProgressView,
+    TaskCancelView,
+    TaskWatcherView,
+    TaskDeleteView,
+    TaskListView,
+)
 
 from .models import DTIClustering, SavedClustering
 from .forms import DTIClusteringForm, SavedClusteringForm
 
 
-class DTIClusteringStart(LoginRequiredMixin, CreateView):
+class DTIClusteringMixin:
     """
-    Request a clustering
+    Mixin for DTI clustering views
     """
 
     model = DTIClustering
-    template_name = "demowebsite/start.html"
     form_class = DTIClusteringForm
+    task_name = "DTI Clustering"
 
-    def get_form_kwargs(self):
-        kwargs = super().get_form_kwargs()
-        kwargs["user"] = self.request.user
-        return kwargs
 
-    def get_context_data(self, **kwargs) -> dict[str, Any]:
-        context = super().get_context_data(**kwargs)
-        context["task_name"] = "DTI Clustering"
-        return context
-
-    def get_success_url(self):
-        # Start clustering
-        self.object.start_clustering()
-
-        return self.object.get_absolute_url()
+class DTIClusteringStart(DTIClusteringMixin, TaskStartView):
+    pass
 
 
 class DTIClusteringStartFrom(DTIClusteringStart):
@@ -68,118 +64,47 @@ class DTIClusteringStartFrom(DTIClusteringStart):
         return context
 
 
-class DTIClusteringStatus(LoginRequiredMixin, DetailView):
+class DTIClusteringStatus(DTIClusteringMixin, TaskStatusView):
+    pass
+
+
+class DTIClusteringProgress(DTIClusteringMixin, TaskProgressView):
+    pass
+
+
+class DTIClusteringCancel(DTIClusteringMixin, TaskCancelView):
+    pass
+
+
+class DTIClusteringWatcher(DTIClusteringMixin, TaskWatcherView):
+    pass
+
+
+class DTIClusteringDelete(DTIClusteringMixin, TaskDeleteView):
+    pass
+
+
+class DTIClusteringList(DTIClusteringMixin, TaskListView):
+    permission_see_all = "dticlustering.monitor_dticlustering"
+
+    def get_queryset(self):
+        return super().get_queryset().prefetch_related("dataset")
+
+
+class DTIClusteringByDatasetList(DTIClusteringList):
     """
-    Clustering status and results
+    List of all clusterings for a given dataset [for admins]
     """
 
-    model = DTIClustering
-    template_name = "demowebsite/status.html"
-    # context_object_name = 'clustering'
+    def get_queryset(self):
+        return super().get_queryset().filter(dataset__id=self.kwargs["dataset_pk"])
 
-    def get_context_data(self, **kwargs):
+    def get_context_data(self, **kwargs) -> dict[str, Any]:
         context = super().get_context_data(**kwargs)
-        context["app_name"] = "dticlustering"
-        context["task_name"] = "DTI clustering"
+
+        context["filter"] = f"DTI clustering of dataset {self.kwargs['dataset_pk']}"
+
         return context
-
-
-class DTIClusteringProgress(LoginRequiredMixin, SingleObjectMixin, View):
-    """
-    Clustering progress (AJAX)
-    """
-
-    model = DTIClustering
-    context_object_name = "clustering"
-
-    def get(self, *args, **kwargs):
-        if not hasattr(self, "object"):
-            self.object = self.get_object()
-
-        return JsonResponse(
-            {
-                "is_finished": self.object.is_finished,
-                **self.object.get_progress(),
-            }
-        )
-
-
-class DTIClusteringCancel(LoginRequiredMixin, DetailView):
-    """
-    Cancel a clustering
-    """
-
-    model = DTIClustering
-    template_name = "demowebsite/cancel.html"
-    context_object_name = "task"
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context["task_name"] = "DTI Clustering"
-        return context
-
-    def post(self, *args, **kwargs):
-        if not hasattr(self, "object"):
-            self.object = self.get_object()
-
-        self.object.cancel_clustering()
-        return redirect(self.object.get_absolute_url())
-
-
-@method_decorator(csrf_exempt, name="dispatch")
-class DTIClusteringWatcher(SingleObjectMixin, View):
-    """
-    Receive notifications (start, success, error) from a clustering task
-
-    Expects data in the request JSON body
-    """
-
-    model = DTIClustering
-    context_object_name = "task"
-
-    def post(self, *args, **kwargs):
-        object: DTIClustering = self.get_object()
-
-        # check token
-        token = self.request.GET.get("token")
-        if token != object.get_token():
-            return JsonResponse({"success": False, "error": "Invalid token"})
-
-        data = self.request.body.decode("utf-8")
-        data = json.loads(data)
-
-        assert data is not None
-
-        object.receive_notification(data)
-
-        return JsonResponse(
-            {
-                "success": True,
-            }
-        )
-
-
-class DTIClusteringDelete(LoginRequiredMixin, DetailView):
-    """
-    Delete a clustering
-    """
-
-    model = DTIClustering
-    template_name = "demowebsite/delete.html"
-    context_object_name = "task"
-    success_url = reverse_lazy("dticlustering:list")
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context["task_name"] = "DTI Clustering"
-        return context
-
-    def post(self, *args, **kwargs):
-        if not hasattr(self, "object"):
-            self.object = self.get_object()
-
-        self.object.delete()
-        return redirect(self.success_url)
 
 
 class SavedClusteringFromDTI(LoginRequiredMixin, CreateView):
@@ -280,50 +205,6 @@ class SavedClusteringCSVExport(LoginRequiredMixin, SingleObjectMixin, View):
 
 
 # SuperUser views
-
-
-class DTIClusteringList(LoginRequiredMixin, ListView):
-    """
-    List of all clusterings [for admins]
-    """
-
-    model = DTIClustering
-    template_name = "demowebsite/list.html"
-    paginate_by = 40
-
-    def get_queryset(self):
-        # if user doesn't have dticlustering.monitor right, only show their own clusterings
-        qset = (
-            super()
-            .get_queryset()
-            .order_by("-requested_on")
-            .prefetch_related("dataset", "requested_by")
-        )
-        if not self.request.user.has_perm("dticlustering.monitor_dticlustering"):
-            qset = qset.filter(requested_by=self.request.user)
-        return qset
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context["app_name"] = "dticlustering"
-        context["task_name"] = "DTI clustering"
-        return context
-
-
-class DTIClusteringByDatasetList(DTIClusteringList):
-    """
-    List of all clusterings for a given dataset [for admins]
-    """
-
-    def get_queryset(self):
-        return super().get_queryset().filter(dataset__id=self.kwargs["dataset_pk"])
-
-    def get_context_data(self, **kwargs) -> dict[str, Any]:
-        context = super().get_context_data(**kwargs)
-
-        context["filter"] = f"DTI clustering of dataset {self.kwargs['dataset_pk']}"
-
-        return context
 
 
 class MonitoringView(PermissionRequiredMixin, LoginRequiredMixin, TemplateView):

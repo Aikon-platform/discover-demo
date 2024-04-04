@@ -40,7 +40,7 @@
                             <span class="id-suffix">{{ task.id|uuid_suffix }}</span>
                         </a>
                     </h2>
-                    {% if not filter %}
+                    {% if not filter and task.dataset %}
                         <p>└ dataset
                             <a href="{% url app_name|add:':list_perdataset' task.dataset.pk %}">
                                 <span class="id-main">{{ task.dataset.name }}-{{ task.dataset.id|uuid_prefix }}</span>

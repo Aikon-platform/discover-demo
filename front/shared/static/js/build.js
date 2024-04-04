@@ -29869,7 +29869,7 @@ if (
 ) {
   __REACT_DEVTOOLS_GLOBAL_HOOK__.registerInternalModuleStop(new Error());
 }
-        
+
   })();
 }
 
@@ -34018,7 +34018,7 @@ if (
 ) {
   __REACT_DEVTOOLS_GLOBAL_HOOK__.registerInternalModuleStop(new Error());
 }
-        
+
   })();
 }
 
@@ -34692,7 +34692,7 @@ if (
 ) {
   __REACT_DEVTOOLS_GLOBAL_HOOK__.registerInternalModuleStop(new Error());
 }
-        
+
   })();
 }
 
@@ -35213,6 +35213,210 @@ function TaskProgressTracker(props) {
         return (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("div", { className: "tck-progress", children: "Loading..." });
     return ((0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxs)("div", { className: "tck-progress", children: [(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxs)("p", { children: ["Status: ", status.status] }), ((_a = status.log) === null || _a === void 0 ? void 0 : _a.progress) &&
                 (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("div", { className: "tck-bar-list", children: status.log.progress.map((progress, i) => (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxs)("div", { children: [(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxs)("span", { className: "label", children: [progress.context, " ", progress.current, "/", progress.total] }), (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("progress", { className: "bar", value: progress.current, max: progress.total })] }, i)) }), (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("pre", { children: status.status == "PENDING" ? "Waiting for worker..." : (_c = (_b = status.log) === null || _b === void 0 ? void 0 : _b.infos) === null || _c === void 0 ? void 0 : _c.join("\n") })] }));
+}
+
+
+/***/ }),
+
+/***/ "./src/WatermarkMatches/components/Match.tsx":
+/*!***************************************************!*\
+  !*** ./src/WatermarkMatches/components/Match.tsx ***!
+  \***************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   Match: () => (/* binding */ Match)
+/* harmony export */ });
+/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react/jsx-runtime */ "./node_modules/react/jsx-runtime.js");
+/* harmony import */ var _utils__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../utils */ "./src/WatermarkMatches/utils.tsx");
+
+
+function Match({ watermark, similarity, transformation }) {
+    /*
+    Component to render a single watermark match.
+    */
+    return ((0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("div", { className: "match-col column", children: (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("a", { href: (0,_utils__WEBPACK_IMPORTED_MODULE_1__.pageUrlForImage)(watermark), className: "column query-col", target: "_blank", children: (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("img", { src: watermark.image_url, alt: watermark.name }) }) }));
+}
+
+
+/***/ }),
+
+/***/ "./src/WatermarkMatches/components/MatchGroup.tsx":
+/*!********************************************************!*\
+  !*** ./src/WatermarkMatches/components/MatchGroup.tsx ***!
+  \********************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   MatchGroup: () => (/* binding */ MatchGroup)
+/* harmony export */ });
+/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react/jsx-runtime */ "./node_modules/react/jsx-runtime.js");
+/* harmony import */ var _Match__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./Match */ "./src/WatermarkMatches/components/Match.tsx");
+
+
+function MatchGroup({ matches }) {
+    /*
+    Component to render a group of watermark matches.
+    */
+    return ((0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("div", { children: matches.map((match, idx) => ((0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)(_Match__WEBPACK_IMPORTED_MODULE_1__.Match, Object.assign({}, match), idx))) }));
+}
+
+
+/***/ }),
+
+/***/ "./src/WatermarkMatches/components/MatchList.tsx":
+/*!*******************************************************!*\
+  !*** ./src/WatermarkMatches/components/MatchList.tsx ***!
+  \*******************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   MatchList: () => (/* binding */ MatchList)
+/* harmony export */ });
+/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react/jsx-runtime */ "./node_modules/react/jsx-runtime.js");
+/* harmony import */ var _types__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../types */ "./src/WatermarkMatches/types.tsx");
+/* harmony import */ var _MatchRow__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./MatchRow */ "./src/WatermarkMatches/components/MatchRow.tsx");
+
+
+
+function MatchList({ query, matches, source_index, source_url }) {
+    /*
+    Component to render a list of watermark matches.
+    */
+    const all_matches = (0,_types__WEBPACK_IMPORTED_MODULE_1__.unserializeWatermarkOutputs)(query, matches, source_index, source_url);
+    console.log(all_matches);
+    return ((0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxs)("div", { children: [(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("h1", { children: "Watermark Matches" }), (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("div", { children: all_matches.map((matches, idx) => ((0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)(_MatchRow__WEBPACK_IMPORTED_MODULE_2__.MatchRow, { matches: matches }, idx))) })] }));
+}
+
+
+/***/ }),
+
+/***/ "./src/WatermarkMatches/components/MatchRow.tsx":
+/*!******************************************************!*\
+  !*** ./src/WatermarkMatches/components/MatchRow.tsx ***!
+  \******************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   MatchRow: () => (/* binding */ MatchRow)
+/* harmony export */ });
+/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react/jsx-runtime */ "./node_modules/react/jsx-runtime.js");
+/* harmony import */ var _utils__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../utils */ "./src/WatermarkMatches/utils.tsx");
+/* harmony import */ var _MatchGroup__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./MatchGroup */ "./src/WatermarkMatches/components/MatchGroup.tsx");
+
+
+
+function MatchRow({ matches }) {
+    /*
+    Component to render a single watermark match.
+    */
+    const grouped_by_source = matches.matches.reduce((acc, match) => {
+        if (!acc[match.watermark.source.id]) {
+            acc[match.watermark.source.id] = [];
+        }
+        acc[match.watermark.source.id].push(match);
+        return acc;
+    }, {});
+    console.log(grouped_by_source);
+    return ((0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxs)("div", { className: "match-row columns", children: [(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("div", { className: "column query-col", children: (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("img", { src: (0,_utils__WEBPACK_IMPORTED_MODULE_1__.urlForQuery)(matches.query), alt: "Query" }) }), Object.keys(grouped_by_source).map(source_id => ((0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)(_MatchGroup__WEBPACK_IMPORTED_MODULE_2__.MatchGroup, { matches: grouped_by_source[source_id] }, source_id)))] }));
+}
+
+
+/***/ }),
+
+/***/ "./src/WatermarkMatches/index.tsx":
+/*!****************************************!*\
+  !*** ./src/WatermarkMatches/index.tsx ***!
+  \****************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   MatchList: () => (/* reexport safe */ _components_MatchList__WEBPACK_IMPORTED_MODULE_0__.MatchList)
+/* harmony export */ });
+/* harmony import */ var _components_MatchList__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./components/MatchList */ "./src/WatermarkMatches/components/MatchList.tsx");
+
+
+
+
+/***/ }),
+
+/***/ "./src/WatermarkMatches/types.tsx":
+/*!****************************************!*\
+  !*** ./src/WatermarkMatches/types.tsx ***!
+  \****************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   unserializeWatermarkOutputs: () => (/* binding */ unserializeWatermarkOutputs)
+/* harmony export */ });
+function unserializeWatermarkOutputs(query_image, raw, index, base_url) {
+    console.log(raw);
+    const query = {
+        source_url: query_image
+    };
+    const queries = [];
+    if (raw.detection) {
+        for (let i = 0; i < raw.detection.boxes.length; i++) {
+            queries.push({
+                source_url: query_image,
+                bbox: raw.detection.boxes[i],
+                crop_id: i
+            });
+        }
+    }
+    else {
+        queries.push(query);
+    }
+    const source_documents = Object.fromEntries(Object.entries(index.sources).map(([id, source]) => [id, Object.assign({ id: id }, source)]));
+    const source_images = index.images.map((image, i) => ({ id: i, source: source_documents[image.source], name: image.name,
+        page: image.page, image_url: base_url + image.source + "/" + image.name
+    }));
+    const matches = [];
+    for (let i = 0; i < raw.matches.length; i++) {
+        const query = queries[i];
+        const matches_for_query = (raw.matches[i].map(match => {
+            const source_image = source_images[match.source_index];
+            return {
+                watermark: source_image,
+                similarity: match.similarity,
+                transformation: raw.query_flips[match.query_index]
+            };
+        }));
+        matches.push({
+            query,
+            matches: matches_for_query
+        });
+    }
+    return matches;
+}
+
+
+/***/ }),
+
+/***/ "./src/WatermarkMatches/utils.tsx":
+/*!****************************************!*\
+  !*** ./src/WatermarkMatches/utils.tsx ***!
+  \****************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   pageUrlForImage: () => (/* binding */ pageUrlForImage),
+/* harmony export */   urlForQuery: () => (/* binding */ urlForQuery)
+/* harmony export */ });
+function pageUrlForImage(image) {
+    return image.source.page_url.replace("{page}", image.page.toString());
+}
+function urlForQuery(query) {
+    if (query.crop_id !== undefined)
+        return query.source_url.replace(/\.[^.]*$/, `+${query.crop_id}.jpg`);
+    return query.source_url;
 }
 
 
@@ -36908,11 +37112,11 @@ function fixSize(value) {
  */
 const render = (
 // Icon must be validated before calling this function
-icon, 
+icon,
 // Partial properties
-props, 
+props,
 // True if icon should have vertical-align added
-inline, 
+inline,
 // Optional reference for SVG/SPAN, extracted by React.forwardRef()
 ref) => {
     // Get default properties
@@ -37308,7 +37512,7 @@ const _api = {
 /************************************************************************/
 /******/ 	// The module cache
 /******/ 	var __webpack_module_cache__ = {};
-/******/ 	
+/******/
 /******/ 	// The require function
 /******/ 	function __webpack_require__(moduleId) {
 /******/ 		// Check if module is in cache
@@ -37322,17 +37526,17 @@ const _api = {
 /******/ 			loaded: false,
 /******/ 			exports: {}
 /******/ 		};
-/******/ 	
+/******/
 /******/ 		// Execute the module function
 /******/ 		__webpack_modules__[moduleId](module, module.exports, __webpack_require__);
-/******/ 	
+/******/
 /******/ 		// Flag the module as loaded
 /******/ 		module.loaded = true;
-/******/ 	
+/******/
 /******/ 		// Return the exports of the module
 /******/ 		return module.exports;
 /******/ 	}
-/******/ 	
+/******/
 /************************************************************************/
 /******/ 	/* webpack/runtime/compat get default export */
 /******/ 	(() => {
@@ -37345,7 +37549,7 @@ const _api = {
 /******/ 			return getter;
 /******/ 		};
 /******/ 	})();
-/******/ 	
+/******/
 /******/ 	/* webpack/runtime/define property getters */
 /******/ 	(() => {
 /******/ 		// define getter functions for harmony exports
@@ -37357,12 +37561,12 @@ const _api = {
 /******/ 			}
 /******/ 		};
 /******/ 	})();
-/******/ 	
+/******/
 /******/ 	/* webpack/runtime/hasOwnProperty shorthand */
 /******/ 	(() => {
 /******/ 		__webpack_require__.o = (obj, prop) => (Object.prototype.hasOwnProperty.call(obj, prop))
 /******/ 	})();
-/******/ 	
+/******/
 /******/ 	/* webpack/runtime/make namespace object */
 /******/ 	(() => {
 /******/ 		// define __esModule on exports
@@ -37373,7 +37577,7 @@ const _api = {
 /******/ 			Object.defineProperty(exports, '__esModule', { value: true });
 /******/ 		};
 /******/ 	})();
-/******/ 	
+/******/
 /******/ 	/* webpack/runtime/node module decorator */
 /******/ 	(() => {
 /******/ 		__webpack_require__.nmd = (module) => {
@@ -37382,12 +37586,12 @@ const _api = {
 /******/ 			return module;
 /******/ 		};
 /******/ 	})();
-/******/ 	
+/******/
 /******/ 	/* webpack/runtime/publicPath */
 /******/ 	(() => {
 /******/ 		__webpack_require__.p = "/static/";
 /******/ 	})();
-/******/ 	
+/******/
 /************************************************************************/
 var __webpack_exports__ = {};
 // This entry need to be wrapped in an IIFE because it need to be isolated against other modules in the chunk.
@@ -37398,13 +37602,16 @@ var __webpack_exports__ = {};
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   initClusterViewer: () => (/* binding */ initClusterViewer),
-/* harmony export */   initProgressTracker: () => (/* binding */ initProgressTracker)
+/* harmony export */   initProgressTracker: () => (/* binding */ initProgressTracker),
+/* harmony export */   initWatermarkMatches: () => (/* binding */ initWatermarkMatches)
 /* harmony export */ });
 /* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react/jsx-runtime */ "./node_modules/react/jsx-runtime.js");
 /* harmony import */ var react_dom_client__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react-dom/client */ "./node_modules/react-dom/client.js");
 /* harmony import */ var _ClusterApp_components_ClusterApp__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./ClusterApp/components/ClusterApp */ "./src/ClusterApp/components/ClusterApp.tsx");
 /* harmony import */ var _ProgressTracker__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./ProgressTracker */ "./src/ProgressTracker/index.tsx");
 /* harmony import */ var _sass_style_scss__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./sass/style.scss */ "./src/sass/style.scss");
+/* harmony import */ var _WatermarkMatches__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./WatermarkMatches */ "./src/WatermarkMatches/index.tsx");
+
 
 
 
@@ -37413,7 +37620,7 @@ __webpack_require__.r(__webpack_exports__);
 function initClusterViewer(target_root, clustering_data, base_media_url, editable, editing, formfield) {
     /*
     Main entry point for the clustering viewer app.
-  
+
     target_root: the root element to render the app in
     clustering_data: the clustering data to render
     base_media_url: the base url for media files
@@ -37426,11 +37633,22 @@ function initClusterViewer(target_root, clustering_data, base_media_url, editabl
 function initProgressTracker(target_root, tracking_url) {
     /*
     Main entry point for the progress tracker app.
-  
+
     target_root: the root element to render the app in
     tracking_url: the url to track
     */
     (0,react_dom_client__WEBPACK_IMPORTED_MODULE_1__.createRoot)(target_root).render((0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)(_ProgressTracker__WEBPACK_IMPORTED_MODULE_3__.TaskProgressTracker, { tracking_url: tracking_url }));
+}
+function initWatermarkMatches(target_root, query_image, matches, source_url) {
+    /*
+    Main entry point for the watermark matches app.
+
+    target_root: the root element to render the app in
+    matches: the matches to render
+    */
+    fetch(source_url + "index.json").then(response => response.json()).then(index => {
+        (0,react_dom_client__WEBPACK_IMPORTED_MODULE_1__.createRoot)(target_root).render((0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)(_WatermarkMatches__WEBPACK_IMPORTED_MODULE_5__.MatchList, { query: query_image, matches: matches, source_index: index, source_url: source_url }));
+    });
 }
 
 

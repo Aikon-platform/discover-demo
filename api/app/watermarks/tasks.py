@@ -7,21 +7,25 @@ from typing import List, Dict, Optional
 from pathlib import Path
 import json
 import os
-from .const import MODEL_PATHS, DEVICE, WATERMARKS_DATA_FOLDER
+from .const import MODEL_PATHS, DEVICE, WATERMARKS_DATA_FOLDER, WATERMARKS_QUEUE
 from .sources import WatermarkSource
 
 from ..shared.utils.logging import notifying, TLogger, LoggerHelper
 
-FEATURE_TRANSFORMS = lambda sz: transforms.Compose([
-    transforms.Resize((sz, sz)),
-    transforms.ToTensor(),
-    transforms.Normalize(mean=[0.75, 0.70, 0.65], std=[0.14, 0.15, 0.16])
-])
+FEATURE_TRANSFORMS = lambda sz: transforms.Compose(
+    [
+        transforms.Resize((sz, sz)),
+        transforms.ToTensor(),
+        transforms.Normalize(mean=[0.75, 0.70, 0.65], std=[0.14, 0.15, 0.16]),
+    ]
+)
 
-DETECT_TRANSFORMS = transforms.Compose([
-    transforms.Resize((1200, 1200)),
-    transforms.ToTensor(),
-])
+DETECT_TRANSFORMS = transforms.Compose(
+    [
+        transforms.Resize((1200, 1200)),
+        transforms.ToTensor(),
+    ]
+)
 
 MODELS = {}
 
@@ -32,7 +36,10 @@ def auto_load_models(models: List[str] = None):
         models = MODEL_PATHS.keys()
     for model in models:
         if model not in MODELS:
-            MODELS[model] = torch.load(MODEL_PATHS[model], map_location=torch.device(DEVICE)).eval()
+            MODELS[model] = torch.load(
+                MODEL_PATHS[model], map_location=torch.device(DEVICE)
+            ).eval()
+
 
 @torch.no_grad()
 def detect_watermarks(model: torch.nn.Module, img: Image.Image) -> Dict:
@@ -50,11 +57,18 @@ def detect_watermarks(model: torch.nn.Module, img: Image.Image) -> Dict:
         "scores": preds[0]["scores"].cpu().numpy().tolist(),
     }
 
+
 @torch.no_grad()
-def extract_features(model: torch.nn.Module, images: List[Image.Image], resize_to: int=352, transpositions: List[int|None]|None=None) -> torch.Tensor:
+def extract_features(
+    model: torch.nn.Module,
+    images: List[Image.Image],
+    resize_to: int = 352,
+    transpositions: List[int | None] | None = None,
+) -> torch.Tensor:
     device = next(model.parameters()).device
     imgs = []
-    if transpositions is None: transpositions = [None]
+    if transpositions is None:
+        transpositions = [None]
     tf = FEATURE_TRANSFORMS(resize_to)
 
     for image in images:
@@ -64,35 +78,54 @@ def extract_features(model: torch.nn.Module, images: List[Image.Image], resize_t
             imgs.append(img)
 
     imgs = torch.stack(imgs)
-    feats = model(img)
+    feats = model(imgs)
 
     return feats.reshape(len(images), len(transpositions), -1)
 
+
 @torch.no_grad()
-def get_closest_matches(queries: torch.Tensor, source: WatermarkSource, topk: int=20, min_sim=0.3) -> torch.Tensor:
+def get_closest_matches(
+    queries: torch.Tensor, source: WatermarkSource, topk: int = 20, min_sim=0.3
+) -> torch.Tensor:
     n_queries, n_query_flips = queries.shape[:2]
     n_compare, n_compare_flips, n_feats = source.features.shape
-    sim = torch.nn.functional.cosine_similarity(queries.reshape((-1, n_feats)), source.features.reshape((-1, n_feats)), dim=1)
+    queries = torch.nn.functional.normalize(queries, dim=-1).to(
+        source.features.device, source.features.dtype
+    )
+    sim = torch.mm(
+        queries.reshape((-1, n_feats)), source.features.reshape((-1, n_feats)).T
+    )
     sim = sim.reshape(n_queries, n_query_flips, n_compare, n_compare_flips)
     best_qsim, best_qflip = sim.max(dim=1)
     best_ssim, best_sflip = best_qsim.max(dim=2)
     tops = best_ssim.topk(topk, dim=1)
     return [
-        {
-            "similarity": sim.item(),
-            "best_source_flip": best_sflip[i, j].item(),
-            "best_query_flip": best_qflip[i, j, best_sflip[i, j]].item(),
-            "query_index": i,
-            "source_index": j,
-        }
-        for i, (j, sim) in enumerate(zip(tops.indices, tops.values))
+        [
+            {
+                "similarity": ssim.item(),
+                "best_source_flip": best_sflip[i, j].item(),
+                "best_query_flip": best_qflip[i, j, best_sflip[i, j]].item(),
+                "query_index": i,
+                "source_index": j.item(),
+            }
+            for (j, ssim) in (zip(tops.indices[i], tops.values[i]))
+            if ssim > min_sim
+        ]
+        for i in range(n_queries)
     ]
 
+
 @torch.no_grad()
-def _pipeline(image: Image.Image, detect: bool=True, compare_to: Optional[WatermarkSource]=None) -> Dict:
+def _pipeline(
+    image: Image.Image,
+    detect: bool = True,
+    compare_to: Optional[WatermarkSource] = None,
+) -> Dict:
     to_load = []
-    if detect: to_load.append("detection")
-    if compare_to: to_load.append("features")
+    if detect:
+        to_load.append("detection")
+    if compare_to:
+        to_load.append("features")
     auto_load_models(to_load)
 
     image = ImageOps.exif_transpose(image).convert("RGB")
@@ -104,37 +137,63 @@ def _pipeline(image: Image.Image, detect: bool=True, compare_to: Optional[Waterm
 
     if detect:
         boxes = detect_watermarks(MODELS["detection"], image)
-        output["boxes"] = boxes
+        output["detection"] = boxes
         crops = []
         if compare_to:
             for box, score in zip(boxes["boxes"], boxes["scores"]):
                 if score < 0.5 and len(crops) > 0:
                     break
-                box = [box[0] * image.width, box[1] * image.height, box[2] * image.width, box[3] * image.height]
+                box = [
+                    box[0] * image.width,
+                    box[1] * image.height,
+                    box[2] * image.width,
+                    box[3] * image.height,
+                ]
                 cx, cy = (box[0] + box[2]) / 2, (box[1] + box[3]) / 2
                 sz = max(box[2] - box[0], box[3] - box[1]) * 1.20
-                x0, y0, x1, y1 = int(cx - sz / 2), int(cy - sz / 2), int(cx + sz / 2), int(cy + sz / 2)
+                x0, y0, x1, y1 = (
+                    int(cx - sz / 2),
+                    int(cy - sz / 2),
+                    int(cx + sz / 2),
+                    int(cy + sz / 2),
+                )
                 crops.append(image.crop((x0, y0, x1, y1)).resize((resize, resize)))
 
     if compare_to:
-        feats1 = extract_features(MODELS["features"], crops, resize, [None, Image.ROTATE_90, Image.ROTATE_180, Image.ROTATE_270])
-        feats2 = torch.load(MODEL_PATHS[compare_to]).eval().to(DEVICE)
-        output["matches"] = get_closest_matches(feats1, feats2)
-    
+        feats = extract_features(
+            MODELS["features"],
+            crops,
+            resize,
+            [None, Image.ROTATE_90, Image.ROTATE_180, Image.ROTATE_270],
+        )
+        output["matches"] = get_closest_matches(feats, compare_to)
+        output["query_flips"] = [None, "rot90", "rot180", "rot270"]
+
+    print(output)
+
     return output
 
-@dramatiq.actor(time_limit=60000, max_retries=0, store_results=True)
+
+@dramatiq.actor(
+    time_limit=60000, max_retries=0, store_results=True, queue_name=WATERMARKS_QUEUE
+)
 @notifying
-def pipeline(image_path: str, detect: bool=True, experiment_id: str="", compare_to: Optional[str]=None, logger: TLogger=LoggerHelper):
+def pipeline(
+    image_path: str,
+    detect: bool = True,
+    experiment_id: str = "",
+    compare_to: Optional[str] = None,
+    logger: TLogger = LoggerHelper,
+):
     image = Image.open(image_path)
     compare_to = WatermarkSource(compare_to) if compare_to else None
     output = _pipeline(image, detect, compare_to)
 
-    logger.info(f"Experiment {experiment_id} finished with result {output}")
-
     result_dir = WATERMARKS_DATA_FOLDER / "results"
     result_dir.mkdir(parents=True, exist_ok=True)
-    with open(result_dir / f"{CurrentMessage.get_current_message().message_id}.json", "w") as f:
+    with open(
+        result_dir / f"{CurrentMessage.get_current_message().message_id}.json", "w"
+    ) as f:
         json.dump(output, f)
     os.unlink(image_path)
 

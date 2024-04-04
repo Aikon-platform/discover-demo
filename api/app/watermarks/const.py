@@ -17,3 +17,4 @@ MODEL_PATHS = {
 }
 
 DEVICE = "cpu"
+WATERMARKS_QUEUE = "queue1"
