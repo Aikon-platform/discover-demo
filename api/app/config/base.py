@@ -11,11 +11,12 @@ INSTALLED_APPS = ENV("INSTALLED_APPS").split(",")
 
 API_DATA_FOLDER = Path(ENV("API_DATA_FOLDER", default=f"{BASE_DIR}/data"))
 
+
 class FLASK_CONFIG:
     pass
 
 
-BROKER_URL = "redis:///1"
+BROKER_URL = f"redis:///{ENV('REDIS_DB_INDEX', default=0)}"
 # BROKER_URL = f"redis://:{ENV('REDIS_PASSWORD')}@localhost:6379/1"
 
 USE_NGINX_XACCEL = False

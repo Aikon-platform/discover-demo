@@ -136,9 +136,11 @@ update_env() {
 
 API_ENV="$SCRIPT_DIR"/api/.env
 FRONT_ENV="$SCRIPT_DIR"/front/.env
+DEV_ENV="$SCRIPT_DIR"/.env.dev
 
 cp "$API_ENV".template "$API_ENV"
 cp "$FRONT_ENV".template "$FRONT_ENV"
+cp "$DEV_ENV".template "$DEV_ENV"
 
 colorEcho yellow "\nSetting $API_ENV ..."
 update_env "$API_ENV"
