@@ -123,7 +123,7 @@ export function unserializeWatermarkOutputs(query_image: string, raw: WatermarkO
                 return {
                     watermark: source_image,
                     similarity: match.similarity,
-                    transformation: raw.query_flips[match.query_index]
+                    transformation: raw.query_flips[match.best_query_flip]
                 };
             })
         );

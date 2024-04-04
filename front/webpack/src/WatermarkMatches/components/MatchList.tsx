@@ -11,12 +11,9 @@ export function MatchList({ query, matches, source_index, source_url }: MatchLis
 
     return (
         <div>
-            <h1>Watermark Matches</h1>
-            <div>
-                {all_matches.map((matches, idx) => (
-                    <MatchRow key={idx} matches={matches} />
-                ))}
-            </div>
+            {all_matches.map((matches, idx) => (
+                <MatchRow key={idx} matches={matches} />
+            ))}
         </div>
     );
 }

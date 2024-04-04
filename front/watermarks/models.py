@@ -31,7 +31,11 @@ class WatermarkProcessing(AbstractAPITask("watermarks")):
         "Detect and crop watermarks in the image", blank=True, default=True
     )
     compare_to = models.ForeignKey(
-        "WatermarksSource", null=True, on_delete=models.SET_NULL, related_name="queries"
+        "WatermarksSource",
+        null=True,
+        on_delete=models.SET_NULL,
+        related_name="queries",
+        blank=True,
     )
 
     # Results
@@ -79,7 +83,9 @@ class WatermarkProcessing(AbstractAPITask("watermarks")):
         bboxes = detections.get("boxes", [])
         scores = detections.get("scores", [])
         return [
-            (box, score) for (box, score) in zip(bboxes, scores) if score >= min_score
+            (box, score)
+            for k, (box, score) in enumerate(zip(bboxes, scores))
+            if score >= min_score or k == 0
         ]
 
     def get_bounding_boxes_as_xywh_pct(self):

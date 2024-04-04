@@ -131,7 +131,7 @@ def start_task():
         {
             "image_path": str(im_file),
             "detect": detect,
-            "compare_to": source.uid,
+            "compare_to": source.uid if source else None,
             "notify_url": notify_url,
         },
     )

@@ -36,11 +36,6 @@ class WatermarkProcessingStart(WatermarkProcessingMixin, TaskStartView):
 
 class WatermarkProcessingResult(WatermarkProcessingMixin, TaskStatusView):
     model = WatermarkProcessing
-    template_name = "watermarks/detection.html"
-    context_object_name = "detection"
-
-    def get_queryset(self):
-        return super().get_queryset().filter(requested_by=self.request.user)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)

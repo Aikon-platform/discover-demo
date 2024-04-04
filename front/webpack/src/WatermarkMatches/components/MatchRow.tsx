@@ -18,13 +18,16 @@ export function MatchRow({matches}: {matches :WatermarkMatches}) {
     console.log(grouped_by_source);
 
     return (
-        <div className="match-row columns">
-            <div className="column query-col">
+        <div className="match-row columns is-2">
+            <div className="column match-query is-2">
+                <h4>Query</h4>
                 <img src={ urlForQuery(matches.query)} alt="Query" />
             </div>
-            {Object.keys(grouped_by_source).map(source_id => (
-                <MatchGroup key={source_id} matches={grouped_by_source[source_id]} />
-            ))}
+            <div className="column columns match-results is-10">
+                {Object.keys(grouped_by_source).map(source_id => (
+                    <MatchGroup key={source_id} matches={grouped_by_source[source_id]} />
+                ))}
+            </div>
         </div>
     );
 }

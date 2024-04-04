@@ -1,0 +1,59 @@
+@import "_variables";
+
+.watermark-viewer {
+    display: flex;
+    justify-content: center;
+    .watermark {
+        position: relative;
+        display: inline-block;
+        img {
+            max-width: 100%;
+            max-height: 70vh;
+            height: auto;
+            width: auto;
+        }
+        .bbox {
+            position: absolute;
+            border: 2px solid red;
+        }
+    }
+}
+
+.watermark-matches {
+    display: flex;
+    justify-content: center;
+
+    .match-row {
+        display: flex;
+        justify-content: center;
+        gap: 0.5em;
+        .match-group, .match-query {
+            border: 8px solid lighten($faded-color, 5%);
+            padding: 0.5em;
+            border-radius: 4*$border-radius;
+
+            h4 {
+                height: 2.5em;
+                max-height: 2em;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+        }
+
+        .match-query {
+            border-color: $main-color;
+        }
+    }
+}
+
+.match-img {
+    &.rot90 {
+        transform: rotate(270deg);
+    }
+    &.rot180 {
+        transform: rotate(180deg);
+    }
+    &.rot270 {
+        transform: rotate(90deg);
+    }
+}
