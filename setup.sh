@@ -128,7 +128,7 @@ update_env() {
             esac
 
             new_value=$(prompt_user "$param" "$default_val" "$current_val" "$desc")
-            sed -i '' -e "s~^$param=.*~$param=\"$new_value\"~" "$env_file"
+            sed -i -e "s~^$param=.*~$param=\"$new_value\"~" "$env_file"
         fi
         prev_line="$line"
     done

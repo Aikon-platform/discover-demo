@@ -1,6 +1,7 @@
 import functools
 import json
 import logging
+import os
 
 import time
 import dramatiq
@@ -43,19 +44,47 @@ def pprint(o):
         return str(o)
 
 
-class TerminalColors:
-    HEADER = "\033[95m"
-    OKBLUE = "\033[94m"
-    OKGREEN = "\033[92m"
-    WARNING = "\033[93m"
-    FAIL = "\033[91m"
-    ENDC = "\033[0m"
-    BOLD = "\033[1m"
-    UNDERLINE = "\033[4m"
+class ConsoleColors:
+    """
+    Last digit
+    0	black
+    1	red
+    2	green
+    3	yellow
+    4	blue
+    5	magenta
+    6	cyan
+    7	white
+    """
+
+    black = "\033[90m"
+    red = "\033[91m"
+    green = "\033[92m"
+    yellow = "\033[93m"
+    blue = "\033[94m"
+    magenta = "\033[95m"
+    cyan = "\033[96m"
+    white = "\033[97m"
+    bold = "\033[1m"
+    underline = "\033[4m"
+    end = "\033[0m"
 
 
 def get_time():
     return time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime())
+
+
+def get_color(color=None):
+    return getattr(ConsoleColors, color, "\033[94m")
+
+
+# def log_failed_img(img_name, img_url):
+#     if not os.path.isfile(IMG_LOG):
+#         f = open(IMG_LOG, "x")
+#         f.close()
+#
+#     with open(IMG_LOG, "a") as f:
+#         f.write(f"{img_name} {img_url}\n")
 
 
 base_logger = logging.getLogger("DEMO_API")
@@ -83,7 +112,7 @@ class TqdmProgress(tqdm):
 
 class LoggerHelper:
     def __init__(self):
-        raise ValueError("This class is not meant to be instanciated")
+        raise ValueError("This class is not meant to be instanced")
 
     @staticmethod
     def info(*s, **kwargs) -> None:
@@ -202,9 +231,7 @@ class JobLogger:
         return self.get_state(with_warnings=True)
 
     def get_state(self, with_warnings: bool = False):
-        state = {}
-
-        state["id"] = self._id
+        state = {"id": self._id}
 
         if self.description:
             state["description"] = self.description
@@ -239,7 +266,7 @@ class JobLogger:
     def _send_state(self, state: str = "PROGRESS", with_warnings: bool = False) -> None:
         """
         Update the state of the current task
-        Skips warnings unless precised (they can be many)
+        Skips warnings unless otherwise specified (they can be many)
         """
         to_send = {"status": state, **self.get_state(with_warnings=with_warnings)}
 
@@ -370,9 +397,7 @@ def notifying(func: Optional[Callable[..., Any]] = None) -> Callable[..., Any]:
 
             try:
                 notify("STARTED")
-
                 result = func(*args, **kwargs, logger=logger)
-
                 notify("SUCCESS", success=True, output=result)
 
                 return result
@@ -399,3 +424,40 @@ class LoggedResults(Results):
         if store_results:
             logger = JobLogger.getLogger(create=True)
             logger.register_backend(self.backend)
+
+
+def console(msg, color="bold", e: Optional[Exception] = None):
+    print(f"\n\n[{get_time()}]\n{get_color(color)}{pprint(msg)}{ConsoleColors.end}\n")
+    if e:
+        print(
+            f"\nStack Trace:\n{get_color('red')}{traceback.format_exc()}{ConsoleColors.end}\n"
+        )
+
+
+class LoggingTaskMixin:
+    def __init__(self, logger: TLogger, *args, **kwargs):
+        self.jlogger = logger
+        super().__init__(*args, **kwargs)
+
+    def print_and_log(self, s, e: Optional[Exception] = None, **kwargs) -> None:
+        console(s, e=e)
+        if e:
+            self.jlogger.error(s, exception=e)
+            return
+        self.jlogger.info(s)
+
+    def print_and_log_info(self, s) -> None:
+        console(s)
+        self.jlogger.info(s)
+
+    def print_and_log_warning(self, s) -> None:
+        console(s, color="yellow")
+        self.jlogger.warning(s)
+
+    def print_and_log_error(self, s, e: Exception) -> None:
+        console(s, color="red", e=e)
+        self.jlogger.error(s, exception=e)
+
+    def run_task(self, *args, **kwargs):
+        result = super().run_task(*args, **kwargs)
+        return result

@@ -13,6 +13,7 @@ scipy
 scikit-learn
 matplotlib
 seaborn
+opencv-python
 
 kornia==0.7.*
 torch==1.12.1+cu116

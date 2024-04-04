@@ -54,9 +54,10 @@ And the server:
 
 ### Adding new demo
 
-1. Duplicate the [`demo_template`](./app/demo_template) folder
+1. Create a new demo folder, containing at least a `__init__.py`, `routes.py` and `tasks.py` files
 2. Add relevant variables in [`.env.template`](.env.template) and generate the corresponding [`.env`](.env) file
-3. Add the demo name (i.e. folder name) to the list `INSTALLED_APPS` in [`.env`](.env)
+3. If necessary, configure a new xaccel redirection in the [nginx configuration file](docker-confs/nginx.conf)
+4. Add the demo name (i.e. folder name) to the list `INSTALLED_APPS` in [`.env`](.env)
 
 ## Production
 
@@ -173,14 +174,13 @@ sudo systemctl enable spiped-dti.service
 
 Transfer key to front ([`spiped`](https://github.com/tarsnap/spiped) uses symmetric encryption with same keys on both servers)
 ```bash
-# from your local machine
-scp <gpu-host>:/etc/spiped/dti.key ~
-sudo chmod 644 ~/dti.key
-scp ~/dti.key <front-host>:.
-ssh <front-host>
-sudo mkdir /etc/spiped
-sudo cp dti.key /etc/spiped/
+# from your gpu machine
 sudo chmod 644 /etc/spiped/dti.key
+scp /etc/spiped/dti.key <front-host>:~
+ssh <front-host>
+sudo chmod 644 ~/dti.key
+sudo mkdir /etc/spiped
+sudo cp ~/dti.key /etc/spiped/
 ```
 
 Create service config file for spiped on front machine (`sudo vi /etc/systemd/system/spiped-connect.service`)
@@ -213,7 +213,7 @@ sudo systemctl enable spiped-connect.service
 
 Test connexion between worker and front
 ```bash
-curl --http0.9 195.221.193.143:8080/test # outputs the encrypted message
+curl --http0.9 <gpu-ip>:8080/test # outputs the encrypted message
 curl localhost:8001/test # outputs {"response":"ok"}
 ```
 

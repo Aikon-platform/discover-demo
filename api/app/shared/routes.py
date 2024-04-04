@@ -1,3 +1,5 @@
+import functools
+
 from flask import request, send_from_directory
 from slugify import slugify
 import uuid
@@ -6,9 +8,23 @@ from dramatiq.results import ResultMissing, ResultFailure
 import json
 import shutil
 
+from .utils import hash_str
 from .. import config
 
-from .utils.fileutils import xaccel_send_from_directory, is_too_old
+from .utils.fileutils import xaccel_send_from_directory, is_too_old, clear_dir
+
+
+def get_client_id(func):
+    @functools.wraps(func)
+    def decorator(*args, **kwargs):
+        client_ip = request.remote_addr
+        if request.method == "POST" and client_ip:
+            client_id = str(hash_str(client_ip))[:8]
+            return func(client_id, *args, **kwargs)
+        else:
+            return {"message": "Error when generating the client_id"}, 403
+
+    return decorator
 
 
 def start_task(request, task_fct):
@@ -22,7 +38,7 @@ def start_task(request, task_fct):
     parameters = json.loads(request.form.get("parameters", "{}"))
 
     task = task_fct.send(
-        clustering_id=experiment_id,
+        experiment_id=experiment_id,
         dataset_id=dataset_id,
         dataset_url=dataset_url,
         parameters=parameters,
@@ -92,42 +108,22 @@ def qsizes(broker):
         return {"error": "Cannot get queue sizes from broker"}
 
 
-def monitor(results_dir):
-    # Get total size of the results directory
+def monitor(results_dir, broker):
+    # Get the status of the app service
     total_size = 0
     for path in results_dir.glob("**/*"):
         total_size += path.stat().st_size
 
-    return {"total_size": total_size, **qsizes()}
+    return {"total_size": total_size, **qsizes(broker)}
 
 
 def clear(run_dir=None, data_dir=None, results_dir=None):
     """
     Clear the results directory
     """
-    output = {
-        "cleared_runs": 0,
-        "cleared_results": 0,
-        "cleared_datasets": 0,
+
+    return {
+        "cleared_runs": clear_dir(run_dir, file_to_check="trainer.log"),
+        "cleared_datasets": clear_dir(data_dir, file_to_check="ready.meta"),
+        "cleared_results": clear_dir(results_dir, path_to_clear="*.zip"),
     }
-
-    if run_dir is not None:
-        for path in run_dir.glob("*"):
-            # TODO factorize this for all directories
-            if is_too_old(path / "trainer.log"):
-                shutil.rmtree(path)
-                output["cleared_runs"] += 1
-
-    if data_dir is not None:
-        for path in data_dir.glob("*"):
-            if is_too_old(path / "ready.meta"):
-                shutil.rmtree(path)
-                output["cleared_datasets"] += 1
-
-    if results_dir is not None:
-        for path in results_dir.glob("*.zip"):
-            if is_too_old(path):
-                path.unlink()
-                output["cleared_results"] += 1
-
-    return output
