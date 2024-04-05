@@ -1,3 +1,3 @@
-import { MatchList } from "./components/MatchList";
+import { MatchViewer } from "./components/MatchViewer"
 
-export { MatchList }
+export { MatchViewer }

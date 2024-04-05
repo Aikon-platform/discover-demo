@@ -17,6 +17,7 @@ export interface WatermarksIndexRaw {
             page: number;
         }
     ]
+    flips: MatchTransformation[];
 }
 
 export interface WatermarkMatchRaw {
@@ -71,7 +72,7 @@ export interface QueryWatermark {
 export interface WatermarkMatch {
     watermark: Watermark;
     similarity: number;
-    transformation: MatchTransformation;
+    transformations: MatchTransformation[];
 }
 
 export interface WatermarkMatches {
@@ -80,13 +81,6 @@ export interface WatermarkMatches {
 }
 
 // PROPS
-
-export interface MatchListProps {
-    query: string;
-    matches: WatermarkOutputRaw;
-    source_index: WatermarksIndexRaw;
-    source_url: string;
-}
 
 export function unserializeWatermarkOutputs(query_image: string, raw: WatermarkOutputRaw, index: WatermarksIndexRaw, base_url: string): WatermarkMatches[] {
     console.log(raw);
@@ -123,7 +117,7 @@ export function unserializeWatermarkOutputs(query_image: string, raw: WatermarkO
                 return {
                     watermark: source_image,
                     similarity: match.similarity,
-                    transformation: raw.query_flips[match.best_query_flip]
+                    transformations: [raw.query_flips[match.best_query_flip], index.flips[match.best_source_flip]]
                 };
             })
         );

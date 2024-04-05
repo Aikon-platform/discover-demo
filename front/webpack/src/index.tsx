@@ -2,7 +2,7 @@ import { createRoot } from 'react-dom/client';
 import { ClusterApp } from "./ClusterApp/components/ClusterApp";
 import { TaskProgressTracker } from './ProgressTracker';
 import "./sass/style.scss";
-import { MatchList } from './WatermarkMatches';
+import { MatchViewer } from './WatermarkMatches';
 
 function initClusterViewer(
   target_root: HTMLElement,
@@ -50,7 +50,7 @@ function initWatermarkMatches(target_root: HTMLElement, query_image: string, mat
   */
   fetch(source_url + "index.json").then(response => response.json()).then(index => {
     createRoot(target_root).render(
-      <MatchList query={query_image} matches={matches} source_index={index} source_url={source_url} />
+      <MatchViewer query={query_image} matches={matches} source_index={index} source_url={source_url} />
     );
   });
 }

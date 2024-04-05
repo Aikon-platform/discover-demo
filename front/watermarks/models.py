@@ -88,8 +88,8 @@ class WatermarkProcessing(AbstractAPITask("watermarks")):
             if score >= min_score or k == 0
         ]
 
-    def get_bounding_boxes_as_xywh_pct(self):
-        # convert xyxy to xywh and filter out low scores
+    def get_bounding_boxes_for_display(self):
+        # convert xyxy to xywh, invert
         return [
             {
                 "x": box[0] * 100,
@@ -98,7 +98,7 @@ class WatermarkProcessing(AbstractAPITask("watermarks")):
                 "height": (box[3] - box[1]) * 100,
                 "score": score,
             }
-            for (box, score) in self.get_bounding_boxes()
+            for (box, score) in self.get_bounding_boxes()[::-1]
         ]
 
     def get_crops_urls(self, k=None):
@@ -115,6 +115,7 @@ class WatermarkProcessing(AbstractAPITask("watermarks")):
         if not boxes:
             return []
         image = Image.open(self.image)
+        image = ImageOps.exif_transpose(image)
         image_base_path = self.image.path.rsplit(".", 1)[0]
         crops = []
         for k, (box, score) in enumerate(boxes):

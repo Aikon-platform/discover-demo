@@ -37,7 +37,7 @@
                     <h2>
                         <a href="{{ task.get_absolute_url }}">
                             <span class="id-main">{{ task.name }}-{{ task.id|uuid_prefix }}</span>
-                            <span class="id-suffix">{{ task.id|uuid_suffix }}</span>
+                            <!--<span class="id-suffix">{{ task.id|uuid_suffix }}</span>-->
                         </a>
                     </h2>
                     {% if not filter and task.dataset %}

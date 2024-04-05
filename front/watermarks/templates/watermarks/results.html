@@ -17,18 +17,20 @@
 {% endif %}
 
 {% if object.detect %}
-<div class="centerwrap">
-<h3>Watermark detection</h3>
-{% if object.status == "SUCCESS" and not object.get_bounding_boxes %}
-    <p class="status">No watermarks detected</p>
-{% endif %}
-</div>
-<div class="watermark-viewer">
-    <div class="watermark">
-        <img src="{{ object.image.url }}" alt="Detected watermark">
-        {% for bbox in object.get_bounding_boxes_as_xywh_pct %}
-            <div class="bbox" style="left: {{ bbox.x }}%; top: {{ bbox.y }}%; width: {{ bbox.width }}%; height: {{ bbox.height }}%; opacity: {{ bbox.score }}"></div>
-        {% endfor %}
+<div class="centerwrap details-wrapper {{ object.compare_to|yesno:",detailed" }}">
+    <h3>Watermark detection {% if object.compare_to %}<a href="javascript:void(0)" onclick="this.parentNode.parentNode.classList.toggle('detailed')">Show/hide</a>{% endif %}</h3>
+    <div class="details-content">
+        {% if object.status == "SUCCESS" and not object.get_bounding_boxes %}
+            <p class="status">No watermarks detected</p>
+        {% endif %}
+        <div class="watermark-viewer">
+            <div class="watermark">
+                <img src="{{ object.image.url }}" alt="Detected watermark">
+                {% for bbox in object.get_bounding_boxes_for_display %}
+                    <div class="bbox" style="left: {{ bbox.x }}%; top: {{ bbox.y }}%; width: {{ bbox.width }}%; height: {{ bbox.height }}%; opacity: {{ bbox.score }}"><span class="score">{{ bbox.score|floatformat:2 }}</span></div>
+                {% endfor %}
+            </div>
+        </div>
     </div>
 </div>
 {% endif %}

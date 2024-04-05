@@ -120,6 +120,7 @@ def start_task():
             return r
 
     im = Image.open(request.files["image"])
+    im = ImageOps.exif_transpose(im).convert("RGB")
     sv_dir = WATERMARKS_DATA_FOLDER / "tmp_queries"
     sv_dir.mkdir(parents=True, exist_ok=True)
     im_file = sv_dir / f"{experiment_id}.jpg"

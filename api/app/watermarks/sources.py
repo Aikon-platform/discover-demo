@@ -28,7 +28,9 @@ class WatermarkSource:
     @property
     def features(self):
         if not hasattr(self, "_features"):
-            self._features = torch.load(self.features_file)["features"]
+            self._features = torch.load(
+                self.features_file, map_location=torch.device("cpu")
+            )["features"]
         return self._features
 
     @staticmethod

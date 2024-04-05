@@ -22,7 +22,7 @@ FEATURE_TRANSFORMS = lambda sz: transforms.Compose(
 
 DETECT_TRANSFORMS = transforms.Compose(
     [
-        transforms.Resize((1200, 1200)),
+        transforms.Resize((1400, 1000)),
         transforms.ToTensor(),
     ]
 )
@@ -71,8 +71,8 @@ def extract_features(
         transpositions = [None]
     tf = FEATURE_TRANSFORMS(resize_to)
 
-    for image in images:
-        for transp in transpositions:
+    for transp in transpositions:
+        for image in images:
             img = image.transpose(transp) if transp else image
             img = tf(img).to(device)
             imgs.append(img)
@@ -80,31 +80,30 @@ def extract_features(
     imgs = torch.stack(imgs)
     feats = model(imgs)
 
-    return feats.reshape(len(images), len(transpositions), -1)
+    return feats.reshape(len(transpositions), len(images), -1)
 
 
 @torch.no_grad()
 def get_closest_matches(
     queries: torch.Tensor, source: WatermarkSource, topk: int = 20, min_sim=0.3
 ) -> torch.Tensor:
-    n_queries, n_query_flips = queries.shape[:2]
-    n_compare, n_compare_flips, n_feats = source.features.shape
-    queries = torch.nn.functional.normalize(queries, dim=-1).to(
-        source.features.device, source.features.dtype
-    )
+    n_query_flips, n_queries = queries.shape[:2]
+    n_compare_flips, n_compare, n_feats = source.features.shape
+    queries = torch.nn.functional.normalize(queries, dim=-1)
     sim = torch.mm(
-        queries.reshape((-1, n_feats)), source.features.reshape((-1, n_feats)).T
+        queries.reshape((-1, n_feats)),
+        source.features.to(queries.device, queries.dtype).reshape((-1, n_feats)).T,
     )
-    sim = sim.reshape(n_queries, n_query_flips, n_compare, n_compare_flips)
-    best_qsim, best_qflip = sim.max(dim=1)
-    best_ssim, best_sflip = best_qsim.max(dim=2)
+    sim = sim.reshape(n_query_flips, n_queries, n_compare_flips, n_compare)
+    best_qsim, best_qflip = sim.max(dim=0)
+    best_ssim, best_sflip = best_qsim.max(dim=1)
     tops = best_ssim.topk(topk, dim=1)
     return [
         [
             {
                 "similarity": ssim.item(),
                 "best_source_flip": best_sflip[i, j].item(),
-                "best_query_flip": best_qflip[i, j, best_sflip[i, j]].item(),
+                "best_query_flip": best_qflip[i, best_sflip[i, j], j].item(),
                 "query_index": i,
                 "source_index": j.item(),
             }
@@ -159,7 +158,7 @@ def _pipeline(
                 )
                 crops.append(image.crop((x0, y0, x1, y1)).resize((resize, resize)))
 
-    if compare_to:
+    if compare_to and len(crops) > 0:
         feats = extract_features(
             MODELS["features"],
             crops,
