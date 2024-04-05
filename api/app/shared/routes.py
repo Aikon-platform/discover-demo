@@ -2,11 +2,8 @@ import functools
 
 from flask import request, send_from_directory
 from slugify import slugify
-import uuid
 from dramatiq_abort import abort
 from dramatiq.results import ResultMissing, ResultFailure
-import json
-import shutil
 
 from .utils import hash_str
 from .. import config
@@ -27,28 +24,16 @@ def get_client_id(func):
     return decorator
 
 
-def start_task(request, task_fct):
+def start_task(task_fct, experiment_id, task_kwargs):
     """
     Start a new task
     """
-    dataset_url = request.form["dataset_url"]  # Throw 400 if not exists
-    experiment_id = slugify(request.form.get("experiment_id", str(uuid.uuid4())))
-    dataset_id = slugify(request.form.get("dataset_id", str(uuid.uuid4())))
-    notify_url = request.form.get("notify_url", None)
-    parameters = json.loads(request.form.get("parameters", "{}"))
 
-    task = task_fct.send(
-        experiment_id=experiment_id,
-        dataset_id=dataset_id,
-        dataset_url=dataset_url,
-        parameters=parameters,
-        notify_url=notify_url,
-    )
+    task = task_fct.send(experiment_id=experiment_id, **task_kwargs)
 
     return {
         "tracking_id": task.message_id,
         "experiment_id": experiment_id,
-        "dataset_id": dataset_id,
     }
 
 

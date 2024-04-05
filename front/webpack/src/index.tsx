@@ -2,12 +2,13 @@ import { createRoot } from 'react-dom/client';
 import { ClusterApp } from "./ClusterApp/components/ClusterApp";
 import { TaskProgressTracker } from './ProgressTracker';
 import "./sass/style.scss";
+import { MatchViewer } from './WatermarkMatches';
 
 function initClusterViewer(
-  target_root: HTMLElement, 
+  target_root: HTMLElement,
   clustering_data: any,
   base_media_url: string,
-  editable?: boolean, 
+  editable?: boolean,
   editing?: boolean,
   formfield?: HTMLInputElement) {
   /*
@@ -22,7 +23,7 @@ function initClusterViewer(
   */
 
   createRoot(target_root).render(
-    <ClusterApp clustering_data={clustering_data} base_url={base_media_url} 
+    <ClusterApp clustering_data={clustering_data} base_url={base_media_url}
                 editable={editable} editing={editing} formfield={formfield} />
   );
 }
@@ -40,7 +41,22 @@ function initProgressTracker(target_root: HTMLElement, tracking_url: string) {
   );
 }
 
+function initWatermarkMatches(target_root: HTMLElement, query_image: string, matches: any, source_url: string) {
+  /*
+  Main entry point for the watermark matches app.
+
+  target_root: the root element to render the app in
+  matches: the matches to render
+  */
+  fetch(source_url + "index.json").then(response => response.json()).then(index => {
+    createRoot(target_root).render(
+      <MatchViewer query={query_image} matches={matches} source_index={index} source_url={source_url} />
+    );
+  });
+}
+
 export {
   initClusterViewer,
-  initProgressTracker
+  initProgressTracker,
+  initWatermarkMatches
 };

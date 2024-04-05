@@ -13,8 +13,9 @@ from .lib.src.utils.image import convert_to_img
 
 from ..shared.utils.logging import TLogger, LoggerHelper
 
-KMEANS_CONFIG_FILE = Path(__file__).parent / "templates" / "kmeans-conf.yml"
-SPRITES_CONFIG_FILE = Path(__file__).parent / "templates" / "sprites-conf.yml"
+TEMPLATES_DIR = Path(__file__).parent / "templates"
+KMEANS_CONFIG_FILE = TEMPLATES_DIR / "kmeans-conf.yml"
+SPRITES_CONFIG_FILE = TEMPLATES_DIR / "sprites-conf.yml"
 
 
 class LoggingTrainerMixin:
@@ -113,7 +114,7 @@ class LoggingTrainerMixin:
         cluster_by_path.to_json(self.run_dir / "cluster_by_path.json", orient="index")
 
         # Render jinja template
-        env = Environment(loader=FileSystemLoader("app/templates"))
+        env = Environment(loader=FileSystemLoader(TEMPLATES_DIR))
         template = env.get_template("result-template.html")
         output_from_parsed_template = template.render(
             clusters=range(self.n_prototypes),

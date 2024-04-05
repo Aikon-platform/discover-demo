@@ -14,11 +14,11 @@
     {% endif %}
 
     <h1>{{ task_name }} <span class="id-main">{{ object.name }}-{{ object.id|uuid_prefix }}</span><span class="id-suffix">{{ object.id|uuid_suffix }}</span></h1>
-    <p>Requested by {{ object.requested_by }} on dataset
+    <p>Requested by {{ object.requested_by }} {% if object.dataset %}on dataset
         <a href="{% url app_name|add:':list_perdataset' object.dataset.pk %}">
             <span class="id-main">{{ object.dataset.name }}-{{ object.dataset.id|uuid_prefix }}</span>
             <span class="id-suffix">{{ object.dataset.id|uuid_suffix }}</span>
-        </a>
+        </a>{% endif %}
     </p>
     <p>
         {% if not object.is_finished %}
@@ -27,40 +27,46 @@
                 <span>Cancel</span>
             </a>
         {% endif %}
+        {% if object.dataset %}
         <a class="btn is-outline" href="{{ object.dataset.zip_file.url }}">
             <span class="iconify" data-icon="mdi:folder-download"></span> <span>Download dataset</span>
         </a>
+        {% endif %}
         {% if object.is_finished %}
             <a href="{% url app_name|add:':delete' object.pk %}" class="btn">
                 <span class="iconify" data-icon="mdi:delete"></span>
                 <span>Delete this experiment</span>
             </a>
+            {% if object.dataset %}
             <a href="{% url app_name|add:':restart' object.id %}" class="btn">
                 <span class="iconify" data-icon="mdi:clock-start"></span>
                 <span>Start new {{ task_name }} with same dataset</span>
             </a>
+            {% endif %}
         {% endif %}
     </p>
-    <pre>Parameters : {{ object.parameters }}</pre>
-
-    {% if object.is_finished %}
-
+    {% if object.parameters %}<pre>Parameters : {{ object.parameters }}</pre>{% endif %}
+</div>
+{% if object.is_finished %}
+    <div class="centerwrap">
         <p>Status: <span class="status status-{{ object.status }}">{{ object.status }}</span></p>
 
         {% if object.full_log %}<pre>{{ object.full_log }}</pre>{% endif %}
+    </div>
 
-        {% block results %}
-            {% include app_name|add:'/results.html' %}
-        {% endblock %}
+    {% block results %}
+        {% include app_name|add:'/results.html' %}
+    {% endblock %}
 
-    {% else %}
-        <div id="tracking">
-            <p>Status: {{ object.status }}</p>
-        </div>
+{% else %}
+<div class="centerwrap">
+    <div id="tracking">
+        <p>Status: {{ object.status }}</p>
+    </div>
 
-        <script type="text/javascript">
-            DemoTools.initProgressTracker(document.getElementById("tracking"), "{% url app_name|add:':progress' object.id %}");
-        </script>
-    {% endif %}
+    <script type="text/javascript">
+        DemoTools.initProgressTracker(document.getElementById("tracking"), "{% url app_name|add:':progress' object.id %}");
+    </script>
 </div>
+{% endif %}
 {% endblock %}

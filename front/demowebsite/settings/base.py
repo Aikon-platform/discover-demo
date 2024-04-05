@@ -18,6 +18,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "django_dramatiq",
     "shared",
+    "tasking",
     "datasets",
     "dticlustering",
     "similarity",

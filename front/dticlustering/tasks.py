@@ -49,6 +49,6 @@ def collect_results(experiment_id: str, result_url: str):
                     zipObj.write(f, f.relative_to(dticlustering.result_full_path))
 
         # mark the dticlustering as finished
-        dticlustering.finish_clustering()
+        dticlustering.terminate_task()
     except:
-        dticlustering.finish_clustering(status="ERROR", error=traceback.format_exc())
+        dticlustering.terminate_task(status="ERROR", error=traceback.format_exc())

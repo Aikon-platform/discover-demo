@@ -1,4 +1,5 @@
 {% if object.expanded_results %}
+<div class="centerwrap">
     <h2>Results</h2>
     <h3>Manually edited clusterings:</h3>
     <ul class="cl-saved-list">
@@ -36,13 +37,14 @@
             </a>
         {% endif %}
     </p>
+</div>
 
-    <div id="result" class="cluster-viewer"></div>
+<div id="result" class="cluster-viewer"></div>
 
-    {{ object.expanded_results|json_script:"result_data" }}
+{{ object.expanded_results|json_script:"result_data" }}
 
-    <script type="text/javascript">
-        let result_data = JSON.parse(document.getElementById("result_data").textContent);
-        DemoTools.initClusterViewer(document.getElementById("result"), result_data, "{{ object.result_media_url|escapejs }}/");
-    </script>
+<script type="text/javascript">
+    let result_data = JSON.parse(document.getElementById("result_data").textContent);
+    DemoTools.initClusterViewer(document.getElementById("result"), result_data, "{{ object.result_media_url|escapejs }}/");
+</script>
 {% endif %}

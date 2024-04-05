@@ -6,7 +6,7 @@ from zipfile import ZipFile
 from PIL import Image
 
 from .. import config
-from .const import DATASETS_PATH, DTI_RESULTS_PATH
+from .const import DATASETS_PATH, DTI_RESULTS_PATH, DTI_QUEUE
 from .training import (
     run_kmeans_training,
     run_sprites_training,
@@ -14,7 +14,9 @@ from .training import (
 from ..shared.utils.logging import notifying, TLogger, LoggerHelper
 
 
-@dramatiq.actor(time_limit=1000 * 60 * 60, max_retries=0, store_results=True)
+@dramatiq.actor(
+    time_limit=1000 * 60 * 60, max_retries=0, store_results=True, queue_name=DTI_QUEUE
+)
 @notifying
 def train_dti(
     experiment_id: str,
