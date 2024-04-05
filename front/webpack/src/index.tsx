@@ -3,6 +3,8 @@ import { ClusterApp } from "./ClusterApp/components/ClusterApp";
 import { TaskProgressTracker } from './ProgressTracker';
 import "./sass/style.scss";
 import { MatchViewer } from './WatermarkMatches';
+import { unserializeSingleWatermarkMatches, unserializeWatermarkSimilarity } from './WatermarkMatches/types';
+import { WatermarkSimBrowser } from './WatermarkMatches/components/SimBrowser';
 
 function initClusterViewer(
   target_root: HTMLElement,
@@ -49,14 +51,33 @@ function initWatermarkMatches(target_root: HTMLElement, query_image: string, mat
   matches: the matches to render
   */
   fetch(source_url + "index.json").then(response => response.json()).then(index => {
+    const all_matches = unserializeSingleWatermarkMatches(query_image, matches, index, source_url);
     createRoot(target_root).render(
-      <MatchViewer query={query_image} matches={matches} source_index={index} source_url={source_url} />
+      <MatchViewer all_matches={all_matches} />
     );
+  });
+}
+
+function initWatermarkSimBrowser(target_root: HTMLElement, source_url: string) {
+  /*
+  Main entry point for the watermark similarity browser app.
+
+  target_root: the root element to render the app in
+  source_url: the url to fetch the matches from
+  */
+  fetch(source_url + "similarity.json").then(response => response.json()).then(matches => {
+    fetch(source_url + "index.json").then(response => response.json()).then(index => {
+      const all_matches = unserializeWatermarkSimilarity(matches, index, source_url);
+      createRoot(target_root).render(
+        <WatermarkSimBrowser matches={all_matches} index={index} />
+      );
+    });
   });
 }
 
 export {
   initClusterViewer,
   initProgressTracker,
-  initWatermarkMatches
+  initWatermarkMatches,
+  initWatermarkSimBrowser
 };

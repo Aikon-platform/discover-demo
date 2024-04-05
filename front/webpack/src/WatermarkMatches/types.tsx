@@ -28,7 +28,7 @@ export interface WatermarkMatchRaw {
     source_index: number;
 }
 
-type MatchTransformation = null | "rot90" | "rot180" | "rot270" | "hflip" | "vflip";
+export type MatchTransformation = null | "rot90" | "rot180" | "rot270" | "hflip" | "vflip";
 
 export interface WatermarkDetectionsRaw {
     boxes: [number, number, number, number][];
@@ -52,11 +52,18 @@ export interface WatermarkSource {
 }
 
 export interface Watermark {
-    id: number;
     name: string;
-    source: WatermarkSource;
     image_url: string;
-    page: number;
+    source?: WatermarkSource;
+    id?: number;
+    page?: number;
+    link?: string;
+}
+
+export interface WatermarksIndex {
+    sources: WatermarkSource[];
+    images: Watermark[];
+    flips: MatchTransformation[];
 }
 
 // QUERY TYPES
@@ -76,54 +83,106 @@ export interface WatermarkMatch {
 }
 
 export interface WatermarkMatches {
-    query: QueryWatermark;
+    query: Watermark;
     matches: WatermarkMatch[];
+    matches_by_source: WatermarkMatch[][];
 }
 
 // PROPS
 
-export function unserializeWatermarkOutputs(query_image: string, raw: WatermarkOutputRaw, index: WatermarksIndexRaw, base_url: string): WatermarkMatches[] {
-    console.log(raw);
-    const query = {
-        source_url: query_image
-    };
-    const queries: QueryWatermark[] = [];
-    if (raw.detection) {
-        for (let i = 0; i < raw.detection.boxes.length; i++) {
-            queries.push({
-                source_url: query_image,
-                bbox: raw.detection.boxes[i],
-                crop_id: i
-            });
-        }
-    } else {
-        queries.push(query);
-    }
+export function urlForQuery(source_url: string, crop_id: number|undefined) {
+    if (crop_id !== undefined)
+        return source_url.replace(/\.[^.]*$/, `+${crop_id}.jpg`);
+    return source_url;
+}
 
+export function pageUrlForImage(image: Watermark) {
+    if (!image.source) {
+        return image.image_url;
+    }
+    if (!image.page) {
+        return image.source.url;
+    }
+    return image.source.page_url.replace("{page}", image.page.toString());
+}
+
+export function unserializeWatermarkIndex(index: WatermarksIndexRaw, base_url: string): WatermarksIndex {
     const source_documents = Object.fromEntries(
         Object.entries(index.sources).map(([id, source]) => [id, { id: id, ...source }])
     );
-    const source_images = index.images.map((image, i) => (
-        {id: i, source: source_documents[image.source], name: image.name,
-            page: image.page, image_url: base_url + image.source + "/" + image.name
+    const source_images: Watermark[] = index.images.map((image, i) => (
+        {
+            id: i,
+            source: source_documents[image.source],
+            name: image.name,
+            page: image.page,
+            image_url: base_url + image.source + "/" + image.name
         }));
+    source_images.forEach(image => {
+        image.link = pageUrlForImage(image);
+    });
 
+    return {
+        sources: Object.values(source_documents),
+        images: source_images,
+        flips: index.flips
+    };
+}
+
+export function unserializeSingleWatermarkMatches(query_image: string, raw_matches: WatermarkOutputRaw, raw_index: WatermarksIndexRaw, base_url: string): WatermarkMatches[] {
+    const index = unserializeWatermarkIndex(raw_index, base_url);
+    const queries: Watermark[] = [];
+    if (raw_matches.detection) {
+        for (let i = 0; i < raw_matches.detection.boxes.length; i++) {
+            queries.push({
+                image_url: urlForQuery(query_image, i),
+                name: `Query ${i+1}`,
+            });
+        }
+    } else {
+        queries.push({
+            image_url: query_image,
+            name: "Query",
+        });
+    }
+    return unserializeWatermarkMatches(queries, raw_matches, index);
+}
+
+export function unserializeWatermarkSimilarity(raw_matches: WatermarkOutputRaw, raw_index: WatermarksIndexRaw, base_url: string): WatermarkMatches[] {
+    const index = unserializeWatermarkIndex(raw_index, base_url);
+    return unserializeWatermarkMatches(index.images, raw_matches, index);
+}
+
+export function unserializeWatermarkMatches(queries: Watermark[], raw_matches: WatermarkOutputRaw, index: WatermarksIndex): WatermarkMatches[] {
     const matches: WatermarkMatches[] = [];
-    for (let i = 0; i < raw.matches.length; i++) {
+    for (let i = 0; i < raw_matches.matches.length; i++) {
         const query = queries[i];
         const matches_for_query = (
-            raw.matches[i].map(match => {
-                const source_image = source_images[match.source_index];
+            raw_matches.matches[i].map(match => {
+                const source_image = index.images[match.source_index];
                 return {
                     watermark: source_image,
                     similarity: match.similarity,
-                    transformations: [raw.query_flips[match.best_query_flip], index.flips[match.best_source_flip]]
+                    transformations: [raw_matches.query_flips[match.best_query_flip], index.flips[match.best_source_flip]]
                 };
             })
         );
+
+        const grouped_by_source: {[key: string]: WatermarkMatch[]} = {};
+        const groups: WatermarkMatch[][] = [];
+        matches_for_query.forEach(match => {
+            if (!grouped_by_source[match.watermark.source!.id]) {
+                const newgroup: WatermarkMatch[] = []
+                grouped_by_source[match.watermark.source!.id] = newgroup;
+                groups.push(newgroup);
+            }
+            grouped_by_source[match.watermark.source!.id].push(match);
+        });
+
         matches.push({
             query,
-            matches: matches_for_query
+            matches: matches_for_query,
+            matches_by_source: groups
         });
     }
     return matches;

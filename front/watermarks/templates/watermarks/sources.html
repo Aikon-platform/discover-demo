@@ -13,10 +13,16 @@
             {% for source in sources %}
                 <div class="box">
                     <h2 class="is-size-4 has-text-link">{{ source.name }} <span class="uid is-size-7">{{ source.uid }}</span></h2>
-                    <p>{{ source.size }} images</p>
+                    <p>{{ source.size }} images. <a href="{% url "watermarks:source-sim" source.pk %}">Browse similarity</a></p>
                     <p>{{ source.description }}</p>
-                    <p>Status: {{ source.active|yesno:"Active,Deprecated" }}.</p>
-                </div>
+                    <form action="{% url "watermarks:source-action" source.pk %}" method="post">
+                    <p>Status: {{ source.active|yesno:"Active,Deprecated" }}.
+                        {% csrf_token %}
+                        <input type="submit" name="sync" value="Update from API" class="button is-link">
+                        {% if source.active %}<input type="submit" name="deprecate" value="Deprecate" class="button is-danger is-outlined">{% endif %}
+                    </p>
+                    </form>
+            </div>
             {% endfor %}
 
             <h2>Available sources from the API</h2>

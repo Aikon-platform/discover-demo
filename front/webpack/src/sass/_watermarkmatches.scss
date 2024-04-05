@@ -44,6 +44,12 @@
         display: flex;
         justify-content: center;
         gap: 0.5em;
+        margin: 0.5em;
+        padding: 0.5em;
+        border-radius: 2*$border-radius;
+        &.highlit {
+            border: 2px solid $main-color;
+        }
         .match-group, .match-query, .match-expanded {
             border: 8px solid lighten($faded-color, 5%);
             padding: 0.5em;
@@ -84,8 +90,8 @@
             height: 100%;
             max-width: 200px;
             flex-basis: 200px;
-            min-width: 120px;
-            min-height: 120px;
+            min-width: 180px;
+            min-height: 180px;
 
             .match-tools {
                 position: absolute;

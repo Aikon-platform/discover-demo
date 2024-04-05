@@ -1,43 +1,36 @@
 import React from "react";
 import { WatermarkMatches, WatermarkMatch } from "../types";
-import { Match } from "./Match";
-import { urlForQuery } from "../utils";
+import { Watermark } from "./Watermark";
 import { MatchGroup } from "./MatchGroup";
-import { MagnifyingContext } from "./MatchViewer";
 
 interface MatchRowProps {
     matches: WatermarkMatches;
     group_by_source: boolean;
+    highlit?: boolean;
 }
 
-export function MatchRow({matches, group_by_source}: MatchRowProps) {
+export function MatchRow({matches, group_by_source, highlit}: MatchRowProps) {
     /*
     Component to render a single watermark match.
     */
-    const groups: WatermarkMatch[][] = [];
-    if (group_by_source) {
-        const grouped_by_source: {[key: string]: WatermarkMatch[]} = {};
-        matches.matches.forEach(match => {
-            if (!grouped_by_source[match.watermark.source.id]) {
-                const newgroup: WatermarkMatch[] = []
-                grouped_by_source[match.watermark.source.id] = newgroup;
-                groups.push(newgroup);
-            }
-            grouped_by_source[match.watermark.source.id].push(match);
-        });
-    } else {
-        matches.matches.forEach(match => {
-            groups.push([match]);
-        });
-    }
     const [showAll, toggleShowAll] = React.useReducer((showAll) => !showAll, false);
-    const magnifier = React.useContext(MagnifyingContext);
+    const groups = group_by_source ? matches.matches_by_source : [matches.matches];
+    const scrollRef = React.useRef<HTMLDivElement>(null);
+
+    if (highlit) {
+        setTimeout(
+            () => scrollRef.current?.scrollIntoView({behavior: "smooth", block: "center"}),
+            100
+        );
+    }
 
     return (
-        <div className="match-row columns is-2">
+        <div className={"match-row columns is-2 " + (highlit?"highlit":"")} ref={scrollRef}>
             <div className="column match-query is-2">
-                <h4>Query</h4>
-                <img src={urlForQuery(matches.query)} alt="Query" onClick={() => magnifier.magnify(urlForQuery(matches.query))} />
+                <h4>{matches.query.name}</h4>
+                <div className="columns is-multiline match-items is-centered">
+                    <Watermark watermark={matches.query} />
+                </div>
                 {groups.length > 5 && <p><a href="javascript:void(0)" onClick={toggleShowAll}>{showAll ? "Show only 5 best" : `Show all ${groups.length} results`}</a></p>}
             </div>
             <div className="column columns match-results is-10">

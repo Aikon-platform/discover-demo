@@ -18,4 +18,10 @@ urlpatterns = [
     path("sources/", views.SourcesManageView.as_view(), name="monitor"),
     path("sources/", views.SourcesManageView.as_view(), name="source-manage"),
     path("sources/add/", views.SourcesAddView.as_view(), name="source-add"),
+    path("sources/<int:pk>/sim", views.SourcesSimView.as_view(), name="source-sim"),
+    path(
+        "sources/<int:pk>/change",
+        views.SourcesActionView.as_view(),
+        name="source-action",
+    ),
 ]
