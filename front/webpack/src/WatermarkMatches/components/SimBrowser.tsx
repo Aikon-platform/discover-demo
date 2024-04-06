@@ -24,11 +24,9 @@ export function WatermarkSimBrowser({ matches, index }: SimBrowserProps) {
     const PAGINATE_BY = 30;
     const total_pages = Math.ceil(matches.length/PAGINATE_BY);
 
-    const showMatches = (watermark: Watermark) => {
+    const matchesHref = (watermark: Watermark) => {
         const watermark_index = matches.findIndex(match => match.query === watermark);
-        if (watermark_index >= 0) {
-            window.location.hash = `#match-${watermark_index}`;
-        }
+        return `#match-${watermark_index}`;
     }
     const hashchange = () => {
         const loc = window.location.hash;
@@ -54,11 +52,13 @@ export function WatermarkSimBrowser({ matches, index }: SimBrowserProps) {
     }
 
     return (
-        <MagnifyingContext.Provider value={{magnify: setMagnifying, showMatches}}>
+        <MagnifyingContext.Provider value={{magnify: setMagnifying, matchesHref}}>
             <div className="viewer-options">
-                <p>
-                    <input type="checkbox" name="group-by-source" id="group-by-source" defaultChecked onChange={toggleGroupBySource} />
-                    <label htmlFor="group-by-source">Group by source document</label>
+                <p className="field">
+                    <label className="checkbox">
+                        <input type="checkbox" className="checkbox mr-2" name="group-by-source" id="group-by-source" defaultChecked onChange={toggleGroupBySource} />
+                        Group by source document
+                    </label>
                 </p>
                 <Pagination page={page} setPage={toPage} total_pages={total_pages} />
             </div>
@@ -68,6 +68,8 @@ export function WatermarkSimBrowser({ matches, index }: SimBrowserProps) {
                 <MatchRow key={idx} matches={matches} group_by_source={group_by_source} highlit={highlit==matches.query} />
             ))}
             </div>
+            <div className="mt-4"></div>
+            <Pagination page={page} setPage={toPage} total_pages={total_pages} />
             {magnifying && <Magnifier magnifying={magnifying} />}
         </MagnifyingContext.Provider>
     );

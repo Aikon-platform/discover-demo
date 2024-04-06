@@ -38,26 +38,36 @@
 
 .watermark-matches {
     .viewer-options {
+        padding-top: 1em;
         margin: 1em 0;
+        position: sticky;
+        top: 0;
+        z-index: 100;
+        background-color: white;
     }
+
     .match-row {
         display: flex;
-        justify-content: center;
         gap: 0.5em;
         margin: 0.5em;
         padding: 0.5em;
         border-radius: 2*$border-radius;
+
         &.highlit {
             border: 2px solid $main-color;
+            .match-query .match-focus {
+                display: none;
+            }
         }
+
         .match-group, .match-query, .match-expanded {
             border: 8px solid lighten($faded-color, 5%);
             padding: 0.5em;
             border-radius: 4*$border-radius;
 
             h4 {
-                height: 2.5em;
-                max-height: 2.5em;
+                height: 2.4em;
+                max-height: 2.4em;
                 overflow: hidden;
                 text-overflow: ellipsis;
             }
@@ -66,7 +76,6 @@
             position: relative;
             display: flex;
             flex-wrap: wrap;
-            justify-content: center;
             gap: 0.2em;
             .match-group {
                 max-width: 200px;
@@ -125,6 +134,8 @@
 
         .match-query {
             border-color: $main-color;
+            max-width: 200px;
+            flex-grow: 0.2;
         }
     }
 

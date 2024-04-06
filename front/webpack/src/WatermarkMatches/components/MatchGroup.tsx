@@ -20,7 +20,7 @@ export function MatchGroup({ matches, grouped }: { matches: WatermarkMatch[], gr
                     (expanded || idx==0) && <Watermark key={idx} {...match} />
                 ))}
             </div>
-            {matches.length > 1 && <IconBtn icon="mdi:animation-plus" className="expand-link" onClick={toggleExpand} label={expanded ? "Collapse" : `+${matches.length -1}`}/>}
+            {matches.length > 1 && <IconBtn icon={expanded ? "mdi:close" : "mdi:animation-plus"} onClick={toggleExpand} label={expanded ? "Collapse" : `+${matches.length -1}`}/>}
             </div>
         </div>
     );

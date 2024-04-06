@@ -4,8 +4,9 @@ import { MatchRow } from "./MatchRow";
 import { IconBtn } from "../../utils/IconBtn";
 
 export interface MagnifyingContext {
+    // Context to manage focusing on a Watermark
     magnify?: (watermark: Watermark | null) => void;
-    showMatches?: (watermark: Watermark) => void;
+    matchesHref?: (watermark: Watermark) => string;
 }
 
 export const MagnifyingContext = React.createContext<MagnifyingContext>({});
@@ -20,9 +21,11 @@ export function MatchViewer({ all_matches }: { all_matches: WatermarkMatches[] }
     return (
         <MagnifyingContext.Provider value={{magnify: setMagnifying}}>
             <div className="viewer-options">
-                <p>
-                    <input type="checkbox" name="group-by-source" id="group-by-source" defaultChecked onChange={toggleGroupBySource} />
-                    <label htmlFor="group-by-source">Group by source document</label>
+                <p className="field">
+                    <label className="checkbox">
+                        <input type="checkbox" className="checkbox mr-2" name="group-by-source" id="group-by-source" defaultChecked onChange={toggleGroupBySource} />
+                        Group by source document
+                    </label>
                 </p>
             </div>
             <div className="viewer-table">
@@ -36,12 +39,18 @@ export function MatchViewer({ all_matches }: { all_matches: WatermarkMatches[] }
 }
 
 export function Magnifier({magnifying}: {magnifying: Watermark}) {
+    /*
+    Component to render a magnified view of a watermark.
+    */
     const setMagnifying = React.useContext(MagnifyingContext).magnify!;
+
     return (
         <div className="magnifier" onClick={() => setMagnifying(null)} >
             <IconBtn icon="mdi:close"/>
             <img src={magnifying.image_url} alt={magnifying.name} />
-            <h4>{magnifying.name} {magnifying.source && `(${magnifying.source.name})`}</h4>
+            <h4 className="mt-2">{magnifying.source?.name || magnifying.name}</h4>
+            <p>{magnifying.source && magnifying.name}</p>
+            {magnifying.link && <p><a href={magnifying.link} target="_blank">See in context</a></p>}
         </div>
     )
 }

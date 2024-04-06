@@ -25,7 +25,7 @@ export function Watermark({watermark, similarity, transformations}: WatermarkPro
                 {magnifyier.magnify && <a href="javascript:void(0)" className="match-magnify" title="Magnify" onClick={() => magnifyier.magnify!(watermark)}>
                     <Icon icon="mdi:arrow-expand" />
                 </a>}
-                {magnifyier.showMatches && <a href="javascript:void(0)" className="match-magnify" title="Show matches" onClick={() => magnifyier.showMatches!(watermark)}>
+                {magnifyier.matchesHref && <a href={magnifyier.matchesHref(watermark)} className="match-focus" title="Show matches">
                     <Icon icon="mdi:image-search" />
                 </a>}
             </div>

@@ -18,7 +18,7 @@
 
 {% if object.detect %}
 <div class="centerwrap details-wrapper {{ object.compare_to|yesno:",detailed" }}">
-    <h3>Watermark detection {% if object.compare_to %}<a href="javascript:void(0)" onclick="this.parentNode.parentNode.classList.toggle('detailed')">Show/hide</a>{% endif %}</h3>
+    <h3>Watermark detection {% if object.compare_to %}<a href="javascript:void(0)" class="button is-light is-link" style="vertical-align:middle" onclick="this.parentNode.parentNode.classList.toggle('detailed')">Show/hide</a>{% endif %}</h3>
     <div class="details-content">
         {% if object.status == "SUCCESS" and not object.get_bounding_boxes %}
             <p class="status">No watermarks detected</p>
@@ -49,7 +49,7 @@
 </script>
 {% endif %}
 
-<div class="centerwrap">
+<div class="centerwrap mt-4">
     <h2 class="is-title is-size-3 pb-3 has-text-link-soft mt-0">Process a new image</h2>
     <form method="post" enctype="multipart/form-data" action="{% url 'watermarks:start' %}">
         {% csrf_token %}

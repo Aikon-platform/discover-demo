@@ -2,9 +2,8 @@ import { createRoot } from 'react-dom/client';
 import { ClusterApp } from "./ClusterApp/components/ClusterApp";
 import { TaskProgressTracker } from './ProgressTracker';
 import "./sass/style.scss";
-import { MatchViewer } from './WatermarkMatches';
+import { MatchViewer, WatermarkSimBrowser } from './WatermarkMatches';
 import { unserializeSingleWatermarkMatches, unserializeWatermarkSimilarity } from './WatermarkMatches/types';
-import { WatermarkSimBrowser } from './WatermarkMatches/components/SimBrowser';
 
 function initClusterViewer(
   target_root: HTMLElement,
@@ -48,7 +47,9 @@ function initWatermarkMatches(target_root: HTMLElement, query_image: string, mat
   Main entry point for the watermark matches app.
 
   target_root: the root element to render the app in
+  query_image: the image url used as a query
   matches: the matches to render
+  source_url: the url of the folder of the index files (index.json, images)
   */
   fetch(source_url + "index.json").then(response => response.json()).then(index => {
     const all_matches = unserializeSingleWatermarkMatches(query_image, matches, index, source_url);
@@ -63,7 +64,7 @@ function initWatermarkSimBrowser(target_root: HTMLElement, source_url: string) {
   Main entry point for the watermark similarity browser app.
 
   target_root: the root element to render the app in
-  source_url: the url to fetch the matches from
+  source_url: the url to fetch the images and index from
   */
   fetch(source_url + "similarity.json").then(response => response.json()).then(matches => {
     fetch(source_url + "index.json").then(response => response.json()).then(index => {
