@@ -6,7 +6,6 @@ register = template.Library()
 
 @register.filter("field_type")
 def field_type(obj):
-    print(obj.field.widget.__class__.__name__)
     return obj.field.widget.__class__.__name__
 
 

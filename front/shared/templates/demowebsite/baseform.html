@@ -44,16 +44,17 @@
                 {% endif %}
             </div>
         {% elif field|field_type == "ClearableFileInput" or field|field_type == "FileInput" %}
+            <label for="{{ field.id_for_label }}" class="label {% if field.field.required %}required{% endif %}">{{ field.label }}</label>
             <div class="file has-name is-fullwidth" id="{{ field.id_for_label }}-wrapper">
                 <label for="{{ field.id_for_label }}" class="file-label {% if field.field.required %}required{% endif %}">
-                    {{ field|add_class:"file-input" }}
                     <span class="file-cta">
                         <span class="file-icon">
                             <span class="iconify" data-icon="mdi:upload"></span>
                         </span>
-                        <span class="file-label">{{ field.label }}</span>
+                        <span class="file-label">Select a file...</span>
                     </span>
                     <span class="file-name">No file selected</span>
+                    {{ field|add_class:"file-input" }}
                 </label>
             </div>
 
