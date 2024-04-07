@@ -1,7 +1,8 @@
 from typing import Any
 from django.views.generic import CreateView, DetailView, View, ListView
 from django.views.generic.detail import SingleObjectMixin
-from django.contrib.auth.mixins import LoginRequiredMixin
+from django.conf import settings
+from django.contrib.auth.mixins import AccessMixin
 from django.http import JsonResponse
 from django.shortcuts import redirect
 from django.urls import reverse
@@ -9,8 +10,21 @@ from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 import json
 
+LOGIN_REQUIRED = getattr(settings, "LOGIN_REQUIRED", True)
 
-class TaskStartView(LoginRequiredMixin, CreateView):
+
+class LoginRequiredIfConfProtectedMixin(AccessMixin):
+    """
+    Mixin for views that require login if LOGIN_REQUIRED is True
+    """
+
+    def dispatch(self, request, *args, **kwargs):
+        if self.request.user.is_authenticated or not LOGIN_REQUIRED:
+            return super().dispatch(request, *args, **kwargs)
+        return self.handle_no_permission()
+
+
+class TaskStartView(LoginRequiredIfConfProtectedMixin, CreateView):
     template_name = "tasking/start.html"
 
     def get_form_kwargs(self):
@@ -30,7 +44,7 @@ class TaskStartView(LoginRequiredMixin, CreateView):
         return self.object.get_absolute_url()
 
 
-class TaskStatusView(LoginRequiredMixin, DetailView):
+class TaskStatusView(LoginRequiredIfConfProtectedMixin, DetailView):
     """
     Clustering status and results
     """
@@ -44,7 +58,7 @@ class TaskStatusView(LoginRequiredMixin, DetailView):
         return context
 
 
-class TaskProgressView(LoginRequiredMixin, SingleObjectMixin, View):
+class TaskProgressView(LoginRequiredIfConfProtectedMixin, SingleObjectMixin, View):
     """
     Task progress (AJAX)
     """
@@ -61,7 +75,7 @@ class TaskProgressView(LoginRequiredMixin, SingleObjectMixin, View):
         )
 
 
-class TaskCancelView(LoginRequiredMixin, DetailView):
+class TaskCancelView(LoginRequiredIfConfProtectedMixin, DetailView):
     """
     Cancel a task
     """
@@ -112,7 +126,7 @@ class TaskWatcherView(SingleObjectMixin, View):
         )
 
 
-class TaskDeleteView(LoginRequiredMixin, DetailView):
+class TaskDeleteView(LoginRequiredIfConfProtectedMixin, DetailView):
     """
     Delete a clustering
     """
@@ -138,7 +152,7 @@ class TaskDeleteView(LoginRequiredMixin, DetailView):
         return reverse(f"{self.model.django_app_name}:list")
 
 
-class TaskListView(LoginRequiredMixin, ListView):
+class TaskListView(LoginRequiredIfConfProtectedMixin, ListView):
     """
     List of all clusterings
     """
