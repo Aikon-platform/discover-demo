@@ -77,8 +77,12 @@ venv.bak/
 # Specific for this project
 front/media/
 front/data/
+api/media/
 api/data/
 api/runs/
+
+*/tmp/
+
 
 # Webpack builds
 node_modules/
