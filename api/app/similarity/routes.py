@@ -1,13 +1,10 @@
-from .const import FEAT_NET, FEAT_SET, FEAT_LAYER
-from ..shared.routes import get_client_id
-
-from flask import request, send_from_directory
+from flask import request, send_from_directory, Blueprint
 from slugify import slugify
 import uuid
 
 from ..main import app
 from .tasks import compute_similarity
-from ..shared import routes
+from ..shared import routes as shared_routes
 from ..shared.utils.fileutils import delete_path
 from .const import (
     IMG_PATH,
@@ -15,10 +12,15 @@ from .const import (
     SIM_RESULTS_PATH,
     SIM_XACCEL_PREFIX,
 )
+from .lib.const import FEAT_NET, FEAT_SET, FEAT_LAYER
 
 
-@app.route("/run_similarity", methods=["POST"])
-@get_client_id
+blueprint = Blueprint("similarity", __name__, url_prefix="/similarity")
+
+
+@blueprint.route("start", methods=["POST"])
+@shared_routes.get_client_id
+@shared_routes.error_wrapper
 def start_similarity(client_id):
     """
     documents = {
@@ -53,54 +55,51 @@ def start_similarity(client_id):
     # which url to send back the similarity results and updates on the task
     notify_url = request.get_json().get("callback", None)
 
-    task = compute_similarity.send(
-        experiment_id=experiment_id,
-        dataset=dataset,
-        parameters=parameters,
-        notify_url=notify_url,
+    return shared_routes.start_task(
+        compute_similarity,
+        experiment_id,
+        {
+            "dataset": dataset,
+            "parameters": parameters,
+            "notify_url": notify_url,
+        },
     )
 
-    return {
-        "message": f"Similarity task triggered for {list(dataset.keys())}!",
-        "tracking_id": task.message_id,
-        "experiment_id": experiment_id,
-    }
 
-
-@app.route("/similarity/<tracking_id>/cancel", methods=["POST"])
+@blueprint.route("<tracking_id>/cancel", methods=["POST"])
 def cancel_similarity(tracking_id: str):
-    return routes.cancel_task(tracking_id)
+    return shared_routes.cancel_task(tracking_id)
 
 
-@app.route("/similarity/<tracking_id>/status", methods=["GET"])
+@blueprint.route("<tracking_id>/status", methods=["GET"])
 def status_similarity(tracking_id: str):
-    return routes.status(tracking_id, compute_similarity)
+    return shared_routes.status(tracking_id, compute_similarity)
 
 
-@app.route("/similarity/<doc_pair>/result", methods=["GET"])
+@blueprint.route("task/<doc_pair>/result", methods=["GET"])
 def result_similarity(doc_pair: str):
     """
     Sends the similarity results file for a given document pair
     """
-    return routes.result(
+    return shared_routes.result(
         SIM_RESULTS_PATH, SIM_XACCEL_PREFIX, f"{slugify(doc_pair)}.npy"
     )
 
 
-@app.route("/similarity/qsizes", methods=["GET"])
+@blueprint.route("qsizes", methods=["GET"])
 def qsizes_similarity():
     """
     List the queues of the broker and the number of tasks in each queue
     """
-    return routes.qsizes(compute_similarity.broker)
+    return shared_routes.qsizes(compute_similarity.broker)
 
 
-@app.route("/similarity/monitor", methods=["GET"])
+@blueprint.route("monitor", methods=["GET"])
 def monitor_similarity():
-    return routes.monitor(SIM_RESULTS_PATH, compute_similarity.broker)
+    return shared_routes.monitor(SIM_RESULTS_PATH, compute_similarity.broker)
 
 
-@app.route("/similarity/monitor/clear/<doc_id>/", methods=["POST"])
+@blueprint.route("monitor/clear/<doc_id>/", methods=["POST"])
 def clear_doc(doc_id: str):
     """
     Clear all images, features and scores related to a given document

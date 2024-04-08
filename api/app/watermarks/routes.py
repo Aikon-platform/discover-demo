@@ -10,8 +10,6 @@ from flask import (
 )
 from slugify import slugify
 from PIL import Image, ImageOps
-import traceback
-from functools import wraps
 import json
 import uuid
 
@@ -30,17 +28,6 @@ MODELS = {}
 DEVICE = "cpu"
 
 blueprint = Blueprint("watermarks", __name__, url_prefix="/watermarks")
-
-
-def error_wrapper(func):
-    @wraps(func)
-    def wrapped(*args, **kwargs):
-        try:
-            return func(*args, **kwargs)
-        except Exception as e:
-            return jsonify({"error": str(e), "traceback": traceback.format_exc()})
-
-    return wrapped
 
 
 @blueprint.route("sources", methods=["GET"])
@@ -83,7 +70,7 @@ def index(source):
 
 
 @blueprint.route("start", methods=["POST"])
-@error_wrapper
+@shared_routes.error_wrapper
 def start_task():
     source = request.form.get("compare_to", None)
     detect = request.form.get("detect", "true").lower() == "true"
