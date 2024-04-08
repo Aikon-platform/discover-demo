@@ -11,7 +11,7 @@ from pathlib import Path
 from PIL import Image
 
 # from .similarity import log_failed_img
-from ..const import IMG_PATH, MODEL_PATH, MAX_SIZE
+from ..const import IMG_PATH, MODEL_PATH, MAX_SIZE, LIB_PATH
 from ...shared.utils.logging import console
 
 model_urls = {
@@ -104,14 +104,14 @@ def download_img(img_url, doc_id, img_name):
 
     except requests.exceptions.RequestException as e:
         shutil.copyfile(
-            f"{IMG_PATH}/placeholder.jpg",
+            f"{LIB_PATH}/media/placeholder.jpg",
             f"{doc_dir}/{img_name}",
         )
         # log_failed_img(img_name, img_url)
         console(f"[download_img] {img_url} is not a valid img file", e=e)
     except Exception as e:
         shutil.copyfile(
-            f"{IMG_PATH}/placeholder.jpg",
+            f"{LIB_PATH}/media/placeholder.jpg",
             f"{doc_dir}/{img_name}",
         )
         # log_failed_img(img_name, img_url)

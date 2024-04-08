@@ -1,4 +1,4 @@
-from .const import FEAT_NET
+from .const import FEAT_NET, FEAT_SET, FEAT_LAYER
 from ..shared.routes import get_client_id
 
 from flask import request, send_from_directory
@@ -45,7 +45,9 @@ def start_similarity(client_id):
     dataset = request.get_json().get("documents", {})
     parameters = {
         # which feature extraction backbone to use
-        "model": request.get_json().get("model", FEAT_NET),
+        "feat_net": request.get_json().get("model", FEAT_NET),
+        "feat_set": request.get_json().get("feat_set", FEAT_SET),
+        "feat_layer": request.get_json().get("feat_layer", FEAT_LAYER),
         "client_id": client_id,
     }
     # which url to send back the similarity results and updates on the task

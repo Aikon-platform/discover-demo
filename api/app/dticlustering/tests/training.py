@@ -2,7 +2,7 @@ import unittest
 from pathlib import Path
 import shutil
 
-from api.app.dticlustering.lib.src.utils import path
+from ..lib.src.utils import path
 
 
 class TestTraining(unittest.TestCase):
@@ -26,7 +26,7 @@ class TestTraining(unittest.TestCase):
         shutil.rmtree(self.TMP_PATH)
 
     def test_run_kmeans_training(self):
-        from api.app.dticlustering import training
+        from .. import training
 
         clustering_id = "test_kmeans"
         dataset_id = "example"
@@ -39,7 +39,7 @@ class TestTraining(unittest.TestCase):
         )
 
     def test_run_sprites_training(self):
-        from api.app.dticlustering import training
+        from .. import training
 
         clustering_id = "test_clustering_id"
         dataset_id = "example"

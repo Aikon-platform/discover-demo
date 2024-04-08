@@ -1,4 +1,3 @@
-from environ import Env
 from pathlib import Path
 from ..shared.utils.fileutils import create_dirs_if_not, create_file_if_not
 from ..config.base import ENV, BASE_DIR

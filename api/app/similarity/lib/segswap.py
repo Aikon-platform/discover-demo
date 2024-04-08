@@ -84,9 +84,9 @@ def resize(img: Image, img_size=MAX_SIZE, stride=SEG_STRIDE):
 
     new_w = int(round(w / ratio / stride)) * stride
     new_h = int(round(h / ratio / stride)) * stride
-    return img.resize(
-        (MAX_SIZE, MAX_SIZE), resample=2
-    )  # img.resize((new_w, new_h), resample=2)
+
+    # return img.resize((new_w, new_h), resample=2)
+    return img.resize((MAX_SIZE, MAX_SIZE), resample=2)
 
 
 def score_local_feat_match(feat1, x1, y1, feat2, x2, y2, weight_feat):
@@ -203,7 +203,8 @@ def compute_score(
         )
 
 
-def save_mask(sim_imgs, img_dir, m2_final):
+def save_mask(q_img, sim_imgs, img_dir, m2_final):
+    # NOT USED
     arr2 = np.array([np.array(I2) for I2 in sim_imgs])
     m2_up = F.interpolate(
         torch.from_numpy(m2_final.astype(np.float32)),
@@ -214,11 +215,9 @@ def save_mask(sim_imgs, img_dir, m2_final):
     m2_up = m2_up.astype(np.uint8).reshape(SEG_TOPK, arr2.shape[1], arr2.shape[2], 1)
     arr2_mask = np.concatenate((arr2, m2_up), axis=3)
 
-    # new_images = [Image.fromarray(img) for img in arr2_mask]
-    # for i in range(len(new_images)):
-    #     new_images[i].save(
-    #         f"{img_dir}/{q_img].split('.')[0]}_masked_{i}.png"
-    #     )
+    new_images = [Image.fromarray(img) for img in arr2_mask]
+    for i in range(len(new_images)):
+        new_images[i].save(f"{img_dir}/{q_img.split('.')[0]}_masked_{i}.png")
 
 
 class PositionEncodingSine2D(nn.Module):

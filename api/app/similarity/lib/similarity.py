@@ -31,18 +31,18 @@ from ...shared.utils import get_device
 from ...shared.utils.logging import LoggingTaskMixin, console
 
 
-def get_doc_feat(doc_id):
+def get_doc_feat(doc_id, feat_net=FEAT_NET, feat_set=FEAT_SET, feat_layer=FEAT_LAYER):
+    device = get_device()
     img_dataset = IllusDataset(
         img_dirs=IMG_PATH / doc_id,
         transform=["resize", "normalize"],
-        device=get_device(),
+        device=device,
     )
 
-    device = get_device()
     data_loader = DataLoader(img_dataset, batch_size=128, shuffle=False)
 
     features = (
-        extract_features(data_loader, device, FEAT_LAYER, FEAT_SET, FEAT_NET, doc_id)
+        extract_features(data_loader, doc_id, device, feat_net, feat_set, feat_layer)
         .cpu()
         .numpy()
     )
@@ -80,9 +80,9 @@ def doc_sim_pairs(sim_scores, query_doc, sim_doc, is_doc_1=True):
     return sim_pairs
 
 
-def compute_cos_pairs(doc_pair):
-    doc1_feat, doc1_imgs = get_doc_feat(doc_pair[0])
-    doc2_feat, doc2_imgs = get_doc_feat(doc_pair[1])
+def compute_cos_pairs(doc1, doc2):
+    doc1_feat, doc1_imgs = doc1
+    doc2_feat, doc2_imgs = doc2
 
     sim = cosine_similarity(
         doc1_feat, doc2_feat
@@ -93,14 +93,15 @@ def compute_cos_pairs(doc_pair):
     """
     # If we don't assume that all the best matching images of doc2 in doc1
     # are already contained in best matching images of doc1 in doc2
+    # (might be the case if an image is never ranked as a COS_TOPK best match)
     sim_pairs += doc_sim_pairs(sim, doc2_imgs, doc1_imgs, False)
 
     # Remove duplicates pairs with list(set())
     cos_pairs = np.array(list(set(sim_pairs)))
     """
 
-    # cos_pairs = [[(img1doc1, img1doc2), (img1doc1, img2doc2), ...]  # best matching images for img1doc1
-    #             [(img2doc1, img4doc2), (img2doc1, img8doc2), ...]] # best matching images for img2doc1
+    # cos_pairs = [[(img1doc1, img1doc2), (img1doc1, img2doc2), ...] # COS_TOPK best matching images for img1doc1
+    #             [(img2doc1, img4doc2), (img2doc1, img8doc2), ...]] # COS_TOPK best matching images for img2doc1
     return cos_pairs
 
 
@@ -180,13 +181,15 @@ class ComputeSimilarity:
         dataset: dict,
         parameters: Optional[dict] = None,
         notify_url: Optional[str] = None,
-        *args,
-        **kwargs,
     ):
         self.dataset = dataset
         self.notify_url = notify_url
         self.client_id = parameters.get("client_id") if parameters else "default"
-        self.model = parameters.get("model", FEAT_NET) if parameters else FEAT_NET
+        self.feat_net = parameters.get("feat_net", FEAT_NET) if parameters else FEAT_NET
+        self.feat_set = parameters.get("feat_set", FEAT_SET) if parameters else FEAT_SET
+        self.feat_layer = (
+            parameters.get("feat_layer", FEAT_LAYER) if parameters else FEAT_LAYER
+        )
         self.doc_ids = []
         self.computed_pairs = []
 
@@ -194,6 +197,7 @@ class ComputeSimilarity:
         pass
 
     def check_dataset(self):
+        # TODO add more checks
         if len(list(self.dataset.keys())) == 0:
             return False
         return True
@@ -233,7 +237,7 @@ class LoggedComputeSimilarity(LoggingTaskMixin, ComputeSimilarity):
             return
 
         self.print_and_log(
-            f"[task.similarity] Similarity task triggered for {list(self.dataset.keys())} with {self.model}!"
+            f"[task.similarity] Similarity task triggered for {list(self.dataset.keys())} with {self.feat_net}!"
         )
 
         self.download_dataset()
@@ -286,7 +290,7 @@ class LoggedComputeSimilarity(LoggingTaskMixin, ComputeSimilarity):
         pair_name = "-".join(sorted(doc_pair))
         score_file = SCORES_PATH / f"{pair_name}.npy"
         if not os.path.exists(score_file):
-            self.print_and_log(f"COMPUTING SIMILARITY FOR {doc_pair} 🖇️")
+            self.print_and_log(f"COMPUTING SIMILARITY FOR {doc_pair}")
             success = self.compute_pairs(doc_pair, score_file)
             if success:
                 self.computed_pairs.append(pair_name)
@@ -296,15 +300,26 @@ class LoggedComputeSimilarity(LoggingTaskMixin, ComputeSimilarity):
 
     def compute_pairs(self, doc_pair, score_file):
         try:
-            self.print_and_log(f"Computing cosine scores for {doc_pair} 🖇️")
-            cos_pairs = compute_cos_pairs(doc_pair)
+            doc1 = get_doc_feat(
+                doc_pair[0], self.feat_net, self.feat_set, self.feat_layer
+            )
+            doc2 = get_doc_feat(
+                doc_pair[1], self.feat_net, self.feat_set, self.feat_layer
+            )
         except Exception as e:
-            self.print_and_log(f"Error when computing cosine similarity", e)
+            self.print_and_log(f"Error when extracting features", e=e)
+            return False
+
+        try:
+            self.print_and_log(f"Computing cosine scores for {doc_pair}")
+            cos_pairs = compute_cos_pairs(doc1, doc2)
+        except Exception as e:
+            self.print_and_log(f"Error when computing cosine similarity", e=e)
             return False
         try:
-            self.print_and_log(f"Computing segswap scores for {doc_pair} 🖇️")
+            self.print_and_log(f"Computing segswap scores for {doc_pair}")
             segswap_similarity(cos_pairs, output_file=score_file)
         except Exception as e:
-            self.print_and_log(f"Error when computing segswap scores", e)
+            self.print_and_log(f"Error when computing segswap scores", e=e)
             return False
         return True
