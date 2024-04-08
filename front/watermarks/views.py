@@ -104,3 +104,32 @@ class SourcesAddView(
         source = WatermarksSource.from_api(request.POST["uid"])
         source.download_images()
         return redirect(reverse_lazy("watermarks:source-manage"))
+
+
+class SourcesActionView(
+    PermissionRequiredMixin, LoginRequiredMixin, SingleObjectMixin, View
+):
+    """
+    Action on a source
+    """
+
+    permission_required = "watermarks.monitor_watermarks"
+    model = WatermarksSource
+
+    def post(self, request, *args, **kwargs):
+        if "sync" in request.POST:
+            self.get_object().download_images()
+        elif "deprecate" in request.POST:
+            obj = self.get_object()
+            obj.active = False
+            obj.save()
+        return redirect(reverse_lazy("watermarks:source-manage"))
+
+
+class SourcesSimView(DetailView):
+    """
+    Browse the similarity matrix of a source
+    """
+
+    model = WatermarksSource
+    template_name = "watermarks/source_sim.html"

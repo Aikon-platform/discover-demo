@@ -10,6 +10,11 @@ def field_type(obj):
 
 
 @register.filter
+def add_class(field, class_name):
+    return field.as_widget(attrs={"class": class_name})
+
+
+@register.filter
 def add_str(arg1, arg2):
     return str(arg1) + str(arg2)
 

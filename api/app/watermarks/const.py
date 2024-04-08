@@ -17,4 +17,4 @@ MODEL_PATHS = {
 }
 
 DEVICE = "cpu"
-WATERMARKS_QUEUE = "queue1"
+WATERMARKS_QUEUE = "queue1"  # see docker-confs/supervisord.conf

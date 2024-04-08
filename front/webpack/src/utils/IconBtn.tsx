@@ -7,8 +7,8 @@ import React from "react";
 
 export function IconBtn(props: { className?:string; icon: string; label?:string; onClick?: (e: React.MouseEvent) => void; disabled?: boolean; }) {
   return (
-    <a className={props.className + (props.disabled ? " disabled" : "") + " btn"} href="javascript:void(0)" onClick={props.onClick}>
-      <Icon icon={props.icon} />
+    <a className={(props.className || "is-link is-light mr-2") + (props.disabled ? " disabled" : "") + " button"} href="javascript:void(0)" onClick={props.onClick}>
+      <Icon icon={props.icon} className="icon"/>
       {props.label && <span>{props.label}</span>}
     </a>
   );
