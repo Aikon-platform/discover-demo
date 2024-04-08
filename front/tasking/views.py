@@ -35,6 +35,7 @@ class TaskStartView(LoginRequiredIfConfProtectedMixin, CreateView):
     def get_context_data(self, **kwargs) -> dict[str, Any]:
         context = super().get_context_data(**kwargs)
         context["task_name"] = getattr(self, "task_name", self.model._meta.verbose_name)
+        context["app_name"] = self.model.django_app_name
         return context
 
     def get_success_url(self):

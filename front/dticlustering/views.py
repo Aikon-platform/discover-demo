@@ -38,6 +38,7 @@ class DTIClusteringMixin:
     model = DTIClustering
     form_class = DTIClusteringForm
     task_name = "DTI Clustering"
+    app_name = "dticlustering"
 
 
 class DTIClusteringStart(DTIClusteringMixin, TaskStartView):
@@ -59,7 +60,7 @@ class DTIClusteringStartFrom(DTIClusteringStart):
 
     def get_context_data(self, **kwargs) -> dict[str, Any]:
         context = super().get_context_data(**kwargs)
-        context["task_name"] = "DTI Clustering"
+        context["task_name"] = self.task_name
         context["from_task"] = self.from_dti
         return context
 
