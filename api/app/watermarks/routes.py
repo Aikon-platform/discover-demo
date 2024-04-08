@@ -9,19 +9,14 @@ from flask import (
     Blueprint,
 )
 from slugify import slugify
-from pathlib import Path
 from PIL import Image, ImageOps
-from torchvision import transforms
-import torch
 import traceback
-from typing import List
 from functools import wraps
 import json
 import uuid
 
 from ..shared.utils.fileutils import xaccel_send_from_directory
 from ..shared import routes as shared_routes
-from ..main import app
 from .. import config
 from .const import (
     WATERMARKS_SOURCES_FOLDER,
@@ -53,18 +48,15 @@ def sources():
     return jsonify(WatermarkSource.list_available())
 
 
-@blueprint.route("sources/<source>/images.zip", methods=["GET"])
-def images(source):
-    source = WatermarkSource(source)
-
+def send_result(source, filename):
     if not source.data_folder.exists():
         r = jsonify({"error": f"Source {source.uid} not found"})
         r.status_code = 404
         return r
 
-    f = source.data_folder / "images.zip"
+    f = source.data_folder / filename
     if not f.exists():
-        r = jsonify({"error": f"Source {source.uid} images not found"})
+        r = jsonify({"error": f"Source {filename} {source.uid} not found"})
         r.status_code = 404
         return r
 
@@ -76,31 +68,18 @@ def images(source):
     return xaccel_send_from_directory(
         WATERMARKS_SOURCES_FOLDER, WATERMARKS_XACCEL_PREFIX, str(f)
     )
+
+
+@blueprint.route("sources/<source>/images.zip", methods=["GET"])
+def images(source):
+    source = WatermarkSource(source)
+    return send_result(source, "images.zip")
 
 
 @blueprint.route("sources/<source>/index.json", methods=["GET"])
 def index(source):
     source = WatermarkSource(source)
-
-    if not source.data_folder.exists():
-        r = jsonify({"error": f"Source {source.uid} not found"})
-        r.status_code = 404
-        return r
-
-    f = source.data_folder / "index.json"
-    if not f.exists():
-        r = jsonify({"error": f"Source {source.uid} images not found"})
-        r.status_code = 404
-        return r
-
-    f = f.relative_to(WATERMARKS_SOURCES_FOLDER)
-
-    if not config.USE_NGINX_XACCEL:
-        return send_from_directory(WATERMARKS_SOURCES_FOLDER, str(f))
-
-    return xaccel_send_from_directory(
-        WATERMARKS_SOURCES_FOLDER, WATERMARKS_XACCEL_PREFIX, str(f)
-    )
+    return send_result(source, "index.json")
 
 
 @blueprint.route("start", methods=["POST"])
