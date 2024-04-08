@@ -6,9 +6,7 @@ from .lib.similarity import LoggedComputeSimilarity
 from ..shared.utils.logging import notifying, TLogger, LoggerHelper
 
 
-@dramatiq.actor(
-    time_limit=1000 * 60 * 60, max_retries=0, store_results=True, queue_name=SIM_QUEUE
-)
+@dramatiq.actor(time_limit=1000 * 60 * 60, max_retries=0, queue_name=SIM_QUEUE)
 @notifying
 def compute_similarity(
     experiment_id: str,

@@ -9,6 +9,7 @@ DEMO_DIR = BASE_DIR / "app" / DEMO_NAME
 WATERMARKS_DATA_FOLDER = API_DATA_FOLDER / DEMO_NAME
 
 WATERMARKS_SOURCES_FOLDER = WATERMARKS_DATA_FOLDER / "sources"
+# where results are exposed by nginx (must match docker-confs/nginx.conf)
 WATERMARKS_XACCEL_PREFIX = "/watermarks/sources"
 
 MODEL_PATHS = {
