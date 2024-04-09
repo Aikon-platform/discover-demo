@@ -1,7 +1,6 @@
 from pathlib import Path
 from ..shared.utils.fileutils import create_dirs_if_not, create_file_if_not
-from ..config.base import ENV, BASE_DIR
-
+from ..config.base import ENV, BASE_DIR, XACCEL_PREFIX, API_DATA_FOLDER
 
 DEMO_NAME = "similarity"
 
@@ -11,8 +10,8 @@ LIB_PATH = DEMO_DIR / "lib"
 
 SIM_QUEUE = "queue2"  # see docker-confs/supervisord.conf
 
-SIM_DATA_FOLDER = Path(ENV("API_DATA_FOLDER", default=f"{DEMO_DIR}/data")) / DEMO_NAME
-SIM_XACCEL_PREFIX = Path(ENV("SIM_XACCEL_PREFIX", default="/media/similarity-results"))
+SIM_DATA_FOLDER = API_DATA_FOLDER / DEMO_NAME
+SIM_XACCEL_PREFIX = f"{XACCEL_PREFIX}/{DEMO_NAME}"
 SIM_RESULTS_PATH = SIM_DATA_FOLDER / "results"
 
 IMG_PATH = SIM_DATA_FOLDER / "documents"
