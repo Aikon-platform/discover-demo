@@ -178,7 +178,7 @@ class WatermarksSource(models.Model):
 
     @property
     def source_url(self):
-        return f"{WATERMARKS_API_URL}/media/watermarks"
+        return f"{WATERMARKS_API_URL}/watermarks/sources"
 
     def download_images(self):
         """
