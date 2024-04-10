@@ -46,7 +46,7 @@ echoTitle(){
 
 echoTitle "REQUIREMENTS INSTALL"
 
-colorEcho yellow "\nOS packages ..."
+colorEcho yellow "\nSystem packages ..."
 sudo apt-get install redis-server python3.10 python3.10-venv python3.10-dev curl
 
 colorEcho yellow "\nAPI virtual env ..."
@@ -59,8 +59,6 @@ python3.10 -m venv front/venv
 front/venv/bin/pip install -r front/requirements.txt
 
 echoTitle "SET UP ENVIRONMENT VARIABLES"
-API_ENV="$SCRIPT_DIR"/api/.env
-FRONT_ENV="$SCRIPT_DIR"/front/.env
 
 generate_random_string() {
     echo "$(openssl rand -base64 32 | tr -d '/\n')"
@@ -70,6 +68,8 @@ prompt_user() {
     env_var=$(colorEcho 'red' "$1")
     default_val="$2"
     current_val="$3"
+    desc="$4"
+
     if [ "$2" != "$3" ]; then
         default="Press enter for $(colorEcho 'cyan' "$default_val")"
     elif [ -n "$current_val" ]; then
@@ -77,7 +77,7 @@ prompt_user() {
         default_val=$current_val
     fi
 
-    read -p "$env_var"$'\n'"$default: " value
+    read -p "$env_var $desc"$'\n'"$default: " value
     echo "${value:-$default_val}"
 }
 
@@ -88,36 +88,62 @@ get_env_value() {
     echo "$value"
 }
 
+get_os() {
+    unameOut="$(uname -s)"
+    case "${unameOut}" in
+        Linux*)     os=Linux;;
+        Darwin*)    os=Mac;;
+        CYGWIN*)    os=Cygwin;;
+        MINGW*)     os=MinGw;;
+        MSYS_NT*)   os=Git;;
+        *)          os="UNKNOWN:${unameOut}"
+    esac
+    echo "${os}"
+}
+
 update_env() {
     env_file=$1
-    params=($(awk -F= '/^[^#]/ {print $1}' "$env_file"))
-    for param in "${params[@]}"; do
-        current_val=$(get_env_value "$param" "$env_file")
-        case $param in
-            *PASSWORD*)
-                default_val="$(generate_random_string)"
-                ;;
-            *SECRET*)
-                default_val="$(generate_random_string)"
-                ;;
-            *)
-                default_val="$current_val"
-                ;;
-        esac
+    IFS=$'\n' read -d '' -r -a lines < "$env_file"  # Read file into array
+    for line in "${lines[@]}"; do
+        if [[ $line =~ ^[^#]*= ]]; then
+            param=$(echo "$line" | cut -d'=' -f1)
+            current_val=$(get_env_value "$param" "$env_file")
 
-        new_value=$(prompt_user "$param" "$default_val" "$current_val")
-        sed -i '' -e "s~^$param=.*~$param=\"$new_value\"~" "$env_file"
+            # Extract description from previous line if it exists
+            desc=""
+            if [[ $prev_line =~ ^# ]]; then
+                desc=$(echo "$prev_line" | sed 's/^#\s*//')
+            fi
+
+            case $param in
+                *PASSWORD*)
+                    default_val="$(generate_random_string)"
+                    ;;
+                *SECRET*)
+                    default_val="$(generate_random_string)"
+                    ;;
+                *)
+                    default_val="$current_val"
+                    ;;
+            esac
+
+            new_value=$(prompt_user "$param" "$default_val" "$current_val" "$desc")
+            sed -i -e "s~^$param=.*~$param=\"$new_value\"~" "$env_file"
+        fi
+        prev_line="$line"
     done
 }
 
+API_ENV="$SCRIPT_DIR"/api/.env
+FRONT_ENV="$SCRIPT_DIR"/front/.env
+DEV_ENV="$SCRIPT_DIR"/.env.dev
+
 cp "$API_ENV".template "$API_ENV"
 cp "$FRONT_ENV".template "$FRONT_ENV"
+cp "$DEV_ENV".template "$DEV_ENV"
 
 colorEcho yellow "\nSetting $API_ENV ..."
 update_env "$API_ENV"
-
-colorEcho yellow "\nSetting $FRONT_ENV file ..."
-update_env "$FRONT_ENV"
 
 . "$API_ENV"
 
@@ -129,10 +155,7 @@ fi
 
 set_redis() {
     redis_psw="$1"
-    REDIS_CONF=/etc/redis/redis.conf
-    if [ ! -f "$REDIS_CONF" ]; then
-        REDIS_CONF=/usr/local/etc/redis.conf # MacOs
-    fi
+    REDIS_CONF=$(redis-cli INFO | grep config_file | awk -F: '{print $2}' | tr -d '[:space:]')
     colorEcho yellow "\n\nModifying Redis configuration file $REDIS_CONF ..."
 
     # use the same redis password for api and front
@@ -146,6 +169,9 @@ set_redis() {
 }
 # NOTE uncomment to use Redis password
 # set_redis $REDIS_PASSWORD
+
+colorEcho yellow "\nSetting $FRONT_ENV file ..."
+update_env "$FRONT_ENV"
 
 echoTitle "DOWNLOADING DTI SUBMODULE"
 git submodule init

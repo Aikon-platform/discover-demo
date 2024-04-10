@@ -76,18 +76,18 @@ You can then start webpack compiler from the webpack folder:
 npm run start
 ```
 
-It's better to commit production static files. To generate them, run:
+It's better to commit production static files. To generate them (js & css), run:
 
 ```bash
+# in front/webpack
 npm run production
 ```
 
-**Note:** If you only need to update css, you can simply set up any sass compiler, to take as input `webpack/src/sass/style.scss` and output `shared/static/css/style.css`, it might be much quicker.
+**Note:** If you only need to update css:
 
 ```bash
-# For example
-npm install -g sass
-sass webpack/src/sass/style.scss shared/static/css/style.css
+# in front/webpack
+npm run scss
 ```
 
 ## Production
@@ -189,7 +189,7 @@ service dramatiq start
 
 ### Link with API
 
-The front-end has to connect to the API server. You need to define `DTI_API_URL` to do so.
+The front-end has to connect to the API server. You need to define `API_URL` to do so.
 
 #### Secure connection
 

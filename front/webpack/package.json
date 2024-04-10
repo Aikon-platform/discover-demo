@@ -6,7 +6,8 @@
   "scripts": {
     "build": "webpack --config webpack.dev.js",
     "start": "webpack --config webpack.dev.js --watch",
-    "production": "webpack --config webpack.prod.js"
+    "production": "webpack --config webpack.prod.js",
+    "scss": "sass --load-path=node_modules src/sass/style.scss ../shared/static/css/style.css"
   },
   "author": "Robin Champenois",
   "license": "ISC",
@@ -19,8 +20,9 @@
     "@types/node": "^20.8.9",
     "@types/react-dom": "^18.2.14",
     "css-loader": "^6.8.1",
-    "sass": "^1.69.5",
+    "sass": "^1.72.0",
     "sass-loader": "^13.3.2",
+    "bulma": "^1.0.0",
     "style-loader": "^3.3.3",
     "ts-loader": "^9.5.0",
     "ts-node": "^10.9.1",

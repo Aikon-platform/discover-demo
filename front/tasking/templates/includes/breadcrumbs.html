@@ -1,0 +1,8 @@
+{% if request.user.is_authenticated %}
+    <p class="breadcrumbs">
+        <a class="button is-text" href="{% url app_name|add:':list' %}">
+            <span class="iconify" data-icon="mdi:arrow-left"></span>
+            All {{ task_name }} experiments
+        </a>
+    </p>
+{% endif %}

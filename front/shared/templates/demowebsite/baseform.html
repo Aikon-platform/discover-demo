@@ -3,27 +3,28 @@
 {% csrf_token %}
 
 {{ form.media }}
-
 {{ form.non_field_errors }}
 {% for field in form %}
     {{ field.errors }}
     {% if field|field_type == "HiddenInput" %}
-            {{ field }}
+        {{ field }}
     {% else %}
     <div class="field">
         {% if field|field_type == "CheckboxInput" %}
-            <div class="label">
-                <label {% if field.field.required %}class="required"{% endif %}></label>
+            <div>
+                <label class="{% if field.field.required %}required{% endif %}"></label>
             </div>
-            <div class="">
-                {{ field }}
-                <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+            <div class="control">
+                <label for="{{ field.id_for_label }}" class="label">
+                    {{ field|add_class:"checkbox" }}
+                    {{ field.label }}
+                </label>
                 {% if field.help_text %}
                     <div class="help">{{ field.help_text }}</div>
                 {% endif %}
             </div>
         {% elif field|field_type == "Textarea" or field|field_type == "CheckboxSelectMultiple" or field|field_type == "RadioSelect" %}
-            <div class="label">
+            <div>
                 <label for="{{ field.id_for_label }}" class="label {% if field.field.required %}required{% endif %}">{{ field.label }}</label>
                 {% if field.help_text %}
                     <div class="help">{{ field.help_text }}</div>
@@ -42,10 +43,39 @@
                     <div class="help">{{ field.help_text }}</div>
                 {% endif %}
             </div>
+        {% elif field|field_type == "ClearableFileInput" or field|field_type == "FileInput" %}
+            <label for="{{ field.id_for_label }}" class="label {% if field.field.required %}required{% endif %}">{{ field.label }}</label>
+            <div class="file has-name is-fullwidth" id="{{ field.id_for_label }}-wrapper">
+                <label for="{{ field.id_for_label }}" class="file-label {% if field.field.required %}required{% endif %}">
+                    <span class="file-cta">
+                        <span class="file-icon">
+                            <span class="iconify" data-icon="mdi:upload"></span>
+                        </span>
+                        <span class="file-label">Select a file...</span>
+                    </span>
+                    <span class="file-name">No file selected</span>
+                    {{ field|add_class:"file-input" }}
+                </label>
+            </div>
+
+            <script>
+                const fileInput = document.querySelector("#{{ field.id_for_label|escapejs }}-wrapper input[type=file]");
+                fileInput.onchange = () => {
+                if (fileInput.files.length > 0) {
+                    const fileName = document.querySelector("#{{ field.id_for_label|escapejs }}-wrapper .file-name");
+                    fileName.textContent = fileInput.files[0].name;
+                }
+                };
+            </script>
+            <div>
+                {% if field.help_text %}
+                    <div class="help">{{ field.help_text }}</div>
+                {% endif %}
+            </div>
         {% else %}
             <label for="{{ field.id_for_label }}" class="label {% if field.field.required %}required{% endif %}">{{ field.label }}</label>
             <div>
-                {{ field }}
+                {{ field|add_class:"input" }}
                 {% if field.help_text %}
                     <div class="help">{{ field.help_text }}</div>
                 {% endif %}

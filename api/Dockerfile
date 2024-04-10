@@ -44,7 +44,8 @@ RUN source venv/bin/activate && pip install --upgrade pip && pip install -r requ
 
 # Install components
 COPY --chown=${USER} ./ ./api/
-COPY --chown=${USER} .env.prod ./api/.env
+COPY --chown=${USER} ./api/.env.prod ./api/.env
+
 COPY /docker-confs/nginx.conf /etc/nginx/conf.d/demowebsite.conf
 
 EXPOSE 8001

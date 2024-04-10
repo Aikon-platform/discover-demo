@@ -52,43 +52,68 @@ And the server:
 ./venv/bin/flask --app app.main run --debug
 ```
 
+### Adding new demo
+
+1. Create a new demo folder, containing at least a `__init__.py`, `routes.py` and `tasks.py` files
+2. Add relevant variables in [`.env.template`](.env.template) and generate the corresponding [`.env`](.env) file
+3. If necessary, configure a new xaccel redirection in the [nginx configuration file](docker-confs/nginx.conf)
+4. Add the demo name (i.e. folder name) to the list `INSTALLED_APPS` in [`.env`](.env)
+
 ## Production
 
 ### Deploy
 
 Requirements:
 - Docker
-- Python 3.10
+- [nvidia-container-toolkit](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html)
+- Python >=3.10
+
+Create a user (replace `<docker-user>` by the name you want) to run the Docker
+```bash
+sudo useradd -m <docker-user>
+sudo passwd <docker-user>
+sudo usermod -aG sudo <docker-user>
+sudo -iu <docker-user> # Connect as user
+
+sudo usermod -aG docker $USER # add user to docker group
+su - ${USER} # Reload session for the action to take effect
+
+id -u <docker-user> # Get uuid => DEMO_UID
+```
+
+Configure SSH connexion to GitHub for user:
+- Generate key with `ssh-keygen`
+- Copy key `cat ~/.ssh/id_ed25519.pub`
+- [Add SSH key](https://github.com/settings/ssh/new) to your GitHub account
 
 Clone and init submodule
-
-```shell
+```bash
 git clone git@github.com:Evarin/DTI-demo.git
-cd api/
+cd DTI-demo/api/
 
 git submodule init
 git submodule update
 ```
 
-Install docker and the [nvidia-container-toolkit](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html) following NVIDIA's instructions (this will be needed for the docker to use the GPU).
-
 Copy the file `.env` to a file `.env.prod`. Change it to `TARGET=prod`, and indicate the appropriate credentials.
 
-```shell
+```bash
 cp .env.template .env.prod
-sed -i '' -e "s~^TARGET=.*~TARGET=\"prod\"~" .env.prod
+sed -i -e 's/^TARGET=.*/TARGET="prod"/' .env.prod
 ```
 
-Add the user to Docker group
+Create a folder (`DATA_FOLDER`) to store results of experiments and set its permissions:
 ```bash
-sudo usermod -aG docker $USER
-su - ${USER} # Reload session for the action to take effect
+mkdir </path/to/results/> # e.g. /media/<docker-user>/
+sudo chmod o+X </path>
+sudo chmod o+X </path/to>
+sudo chmod -R u+rwX </path/to/results/>
 ```
 
 In [`docker.sh`](docker.sh), modify the variables depending on your setup:
-- `DATA_FOLDER`: absolute path to directory where results are stored (`sudo chmod 777 <data-folder>`)
-- `DEMO_UID`: Universally Unique Identifier of the user that execute Dockerfile (`id -u <username>`)
-- `DEVICE_NB`: GPU number
+- `DATA_FOLDER`: absolute path to directory where results are stored
+- `DEMO_UID`: Universally Unique Identifier of the `<docker-user>` (`id -u <username>`)
+- `DEVICE_NB`: GPU number to be used by container (get available GPU with `nvidia-smi`)
 
 
 Build the docker using the premade script:
@@ -101,6 +126,7 @@ It should have started the docker, check it is the case with:
 - `docker logs demowebsiteapi --tail 50`: show last 50 log messages
 - `docker ps`: show running docker containers
 - `curl 127.0.0.1:8001/test`: show if container receives requests
+- `docker exec demowebsiteapi /bin/nvidia-smi`: checks that docker communicates with nvidia
 
 The API is now accessible locally at `http://localhost:8001`.
 
@@ -119,6 +145,7 @@ sudo chmod 644 /etc/spiped/dti.key
 
 Create service config file for spiped (`sudo vi /etc/systemd/system/spiped-dti.service`)
 Get `<docker-ip>` with `docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' demowebsiteapi` or use `127.0.0.1`
+The Docker port (here `8001`) must match the `API_PORT` defined in [`api/.env`](./.env.template)
 
 ```bash
 [Unit]
@@ -128,7 +155,7 @@ After=network-online.target
 StartLimitIntervalSec=300
 
 [Service]
-# Redirects [<docker-ip>]:8001 to [0.0.0.0]:8080 and encrypts it with dti.key on the way
+# Redirects <docker-ip>:8001 to 0.0.0.0:8080 and encrypts it with dti.key on the way
 ExecStart=/usr/bin/spiped -F -d -s [0.0.0.0]:8080 -t [<docker-ip>]:8001 -k /etc/spiped/dti.key
 Restart=on-failure
 
@@ -147,18 +174,19 @@ sudo systemctl enable spiped-dti.service
 
 Transfer key to front ([`spiped`](https://github.com/tarsnap/spiped) uses symmetric encryption with same keys on both servers)
 ```bash
-# from your local machine
-scp <gpu-host>:/etc/spiped/dti.key ~
-sudo chmod 644 ~/dti.key
-scp ~/dti.key <front-host>:.
-ssh <front-host>
-sudo mkdir /etc/spiped
-sudo cp dti.key /etc/spiped/
+# from your gpu machine
 sudo chmod 644 /etc/spiped/dti.key
+scp /etc/spiped/dti.key <front-host>:~
+ssh <front-host>
+sudo chmod 644 ~/dti.key
+sudo mkdir /etc/spiped
+sudo cp ~/dti.key /etc/spiped/
 ```
 
 Create service config file for spiped on front machine (`sudo vi /etc/systemd/system/spiped-connect.service`)
-Get `<gpu-ip>` with `hostname -I` on the machine where is deployed the API
+Get `<gpu-ip>` with `hostname -I` on the machine where is deployed the API.
+
+⚠️ Note to match the output IP (`127.0.0.1:8001` in this example) to the `API_URL` in [`front/.env`](../front/.env)
 
 ```bash
 [Unit]
@@ -168,7 +196,7 @@ After=network-online.target
 StartLimitIntervalSec=300
 
 [Service]
-# Redirects [<gpu-ip>]:8080 output to [0.0.0.0]:8080 and decrypts it with dti.key on the way
+# Redirects <gpu-ip>:8080 output to 127.0.0.1:8001 and decrypts it with dti.key on the way
 ExecStart=/usr/bin/spiped -F -e -s [127.0.0.1]:8001 -t [<gpu-ip>]:8080 -k /etc/spiped/dti.key
 Restart=Always
 
@@ -185,7 +213,7 @@ sudo systemctl enable spiped-connect.service
 
 Test connexion between worker and front
 ```bash
-curl --http0.9 195.221.193.143:8080/test # outputs the encrypted message
+curl --http0.9 <gpu-ip>:8080/test # outputs the encrypted message
 curl localhost:8001/test # outputs {"response":"ok"}
 ```
 

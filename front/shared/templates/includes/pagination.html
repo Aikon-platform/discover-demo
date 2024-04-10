@@ -1,0 +1,25 @@
+{% load shared_tags %}
+
+{% if page_obj %}
+    <nav class="pagination" role="navigation" aria-label="pagination">
+        <a class="pagination-link" {% if page_obj.has_previous %}href="{% url_get_replace request "page" page_obj.previous_page_number %}"{% else %} disabled{% endif %}>Previous</a>
+        <a class="pagination-next" {% if page_obj.has_next %}href="{% url_get_replace request "page" page_obj.next_page_number %}"{% else %} disabled{% endif %}>Next page</a>
+        <ul class="pagination-list">
+            {% if page_obj.has_previous %}
+                <li><a class="pagination-link" href="{% url_get_replace request "page" 1 %}">1</a></li>
+                {% if page_obj.previous_page_number > 1 %}
+                    <li><span class="pagination-ellipsis">&hellip;</span></li>
+                    <li><a class="pagination-link" href="{% url_get_replace request "page" page_obj.previous_page_number %}">{{ page_obj.previous_page_number }}</a></li>
+                {% endif %}
+            {% endif %}
+                <li><a class="pagination-link is-current">{{ page_obj.number }}</a></li>
+            {% if page_obj.has_next %}
+                {% if page_obj.next_page_number < page_obj.paginator.num_pages %}
+                    <li><a class="pagination-link" href="{% url_get_replace request "page" page_obj.next_page_number %}">{{ page_obj.next_page_number }}</a></li>
+                    <li><span class="pagination-ellipsis">&hellip;</span></li>
+                {% endif %}
+                <li><a class="pagination-link" href="{% url_get_replace request "page" page_obj.paginator.num_pages %}">{{ page_obj.paginator.num_pages }}</a></li>
+            {% endif %}
+        </ul>
+    </nav>
+{% endif %}

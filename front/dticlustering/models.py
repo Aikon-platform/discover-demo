@@ -19,48 +19,28 @@ from typing import Dict, Any
 from datasets.models import ZippedDataset
 from requests import RequestException
 
+from tasking.models import AbstractAPITask, API_URL, BASE_URL
+
 User = get_user_model()
 
-DTI_API_URL = getattr(settings, "DTI_API_URL", "http://localhost:5000")
+API_URL = getattr(settings, "API_URL", "http://localhost:5000")
 BASE_URL = getattr(settings, "BASE_URL", "http://localhost:8000")
 
 
-class DTIClustering(models.Model):
+class DTIClustering(AbstractAPITask("dti")):
     """
     Main model for a clustering query and result
     """
 
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    name = models.CharField(
-        max_length=64,
-        default="dti",
-        blank=True,
-        verbose_name="Clustering name",
-        help_text="An optional name to identify this clustering",
-    )
-
-    notify_email = models.BooleanField(
-        default=False,
-        verbose_name="Notify by email",
-        blank=True,
-        help_text="Send an email when the clustering is finished",
-    )
-
-    status = models.CharField(max_length=20, default="PENDING", editable=False)
-    is_finished = models.BooleanField(default=False, editable=False)
-    requested_on = models.DateTimeField(auto_now_add=True, editable=False)
-    requested_by = models.ForeignKey(
-        User, null=True, on_delete=models.SET_NULL, editable=False
-    )
-
-    # The clustering tracking id
-    api_tracking_id = models.UUIDField(null=True, editable=False)
+    api_endpoint_prefix = "clustering"
+    django_app_name = "dticlustering"
 
     # The clustering parameters
     dataset = models.ForeignKey(ZippedDataset, null=True, on_delete=models.SET_NULL)
     parameters = models.JSONField(null=True)
 
     class Meta:
+        verbose_name = "DTI Clustering"
         ordering = ["-requested_on"]
         permissions = [
             ("monitor_dticlustering", "Can monitor DTI Clustering"),
@@ -68,42 +48,6 @@ class DTIClustering(models.Model):
 
     def get_absolute_url(self):
         return reverse("dticlustering:status", kwargs={"pk": self.pk})
-
-    # Util URLs and Paths
-    @property
-    def result_media_path(self) -> str:
-        """
-        Path to the result folder, relative to MEDIA_ROOT
-        """
-        return f"dticlustering/{self.id}/result"
-
-    @property
-    def result_full_path(self) -> Path:
-        """
-        Full path to the result folder
-        """
-        return Path(settings.MEDIA_ROOT) / self.result_media_path
-
-    @property
-    def log_file_path(self) -> Path:
-        """
-        Full path to the log file
-        """
-        return self.result_full_path / "log.txt"
-
-    @property
-    def result_media_url(self) -> str:
-        """
-        URL to the result folder, including MEDIA_URL
-        """
-        return f"{settings.MEDIA_URL}{self.result_media_path}"
-
-    @property
-    def result_zip_url(self) -> str:
-        """
-        URL to the result zip file
-        """
-        return f"{self.result_media_url}/results.zip"
 
     @property
     def result_zip_exists(self) -> bool:
@@ -119,199 +63,68 @@ class DTIClustering(models.Model):
         """
         return f"{self.result_media_url}/summary.zip"
 
-    @cached_property
-    def full_log(self):
-        """
-        Returns the full log file content
-        """
-        if not self.log_file_path.exists():
-            return None
-        with open(self.log_file_path, "r") as f:
-            return f.read()
-
-    def write_log(self, text: str):
-        """
-        Writes text to the log file
-        """
-        self.log_file_path.parent.mkdir(parents=True, exist_ok=True)
-        with open(self.log_file_path, "a") as f:
-            f.write(text)
-
-    def get_token(self):
-        """
-        Returns a unique token to secure in the notification callback URL
-        """
-        return uuid.uuid5(
-            uuid.NAMESPACE_URL, settings.SECRET_KEY[:10] + str(self.id)
-        ).hex
-
-    def start_clustering(self):
-        """
-        Queries the API to start the task
-        """
-        try:
-            api_query = requests.post(
-                f"{DTI_API_URL}/clustering/start",
-                data={
-                    "dataset_url": f"{settings.BASE_URL}{self.dataset.zip_file.url}",
-                    "dataset_id": str(self.dataset.id),
-                    "clustering_id": str(self.id),
-                    "parameters": json.dumps(self.parameters),
-                    "notify_url": f"{settings.BASE_URL}{reverse('dticlustering:notify', kwargs={'pk': self.pk})}?token={self.get_token()}",
-                },
-            )
-        except (ConnectionError, RequestException):
-            self.write_log("Connection error when starting task")
-            self.status = "ERROR"
-            self.is_finished = True
-            self.save()
-            # Send error email to website admins
-            mail_admins(
-                f"[discover-demo] Offline API",
-                f"Error starting DTI Clustering task {self.name}. The API server is offline.",
-                fail_silently=True,
-            )
-            return
-
-        try:
-            api_result = api_query.json()
-            self.api_tracking_id = api_result["tracking_id"]
-        except:
-            self.write_log(f"Error starting clustering: {api_query.text}")
-            self.status = "ERROR"
-            self.is_finished = True
-
-        self.save()
-
-    def cancel_clustering(self):
-        """
-        Queries the API to cancel the task
-        """
-        try:
-            api_query = requests.post(
-                f"{DTI_API_URL}/clustering/{self.api_tracking_id}/cancel",
-            )
-        except (ConnectionError, RequestException):
-            self.write_log("Connection error when cancelling task")
-            self.save()
-            return
-
-        try:
-            print(api_query.text)
-            self.status = "CANCELLED"
-            self.is_finished = True
-        except:
-            self.write_log(f"Error cancelling clustering: {api_query.text}")
-            self.status = "ERROR"
-            self.is_finished = True
-        self.save()
-
-    def receive_notification(self, data: dict):
-        """
-        Called by the API when tasks events happen
-        """
-        event = data["event"]
-        if event == "STARTED":
-            self.status = "PROGRESS"
-            self.save()
-            return
-        elif event == "SUCCESS":
-            self.status = "FETCHING RESULTS"
-            self.save()
-            # start collecting results
-            from .tasks import collect_results
-
-            collect_results.send(str(self.pk), data["output"]["result_url"])
-        elif event == "ERROR":
-            self.finish_clustering("ERROR", data["error"])
-
-    def finish_clustering(self, status="SUCCESS", error=None, notify=True):
-        """
-        Called when the task is finished
-        """
-        self.status = status
-        if error:
-            self.write_log(error)
-        self.is_finished = True
-        self.save()
-
-        if notify and self.notify_email:
-            try:
-                send_mail(
-                    f"[discover-demo] DTI Clustering {self.status}",
-                    f"Your DTI Clustering task {self.name} has finished with status {self.status}.\n\nYou can access the results at : {BASE_URL}{self.get_absolute_url()}",
-                    settings.DEFAULT_FROM_EMAIL,
-                    [self.requested_by.email],
-                    fail_silently=False,
-                )
-            except:
-                self.write_log(f"Error sending email: {traceback.format_exc()}")
-
-    def get_progress(self):
-        """
-        Queries the API to get the task progress
-        """
-        try:
-            api_query = requests.get(
-                f"{DTI_API_URL}/clustering/{self.api_tracking_id}/status",
-            )
-        except (ConnectionError, RequestException):
-            return {
-                "status": "UNKNOWN",
-                "error": "Connection error when getting task progress from the worker",
-            }
-
-        try:
-            return {"status": self.status, **api_query.json()}
-        except:
-            self.write_log(f"Error when reading clustering progress: {api_query.text}")
-            return {
-                "status": "UNKNOWN",
-            }
-
-    @staticmethod
-    def get_api_monitoring():
-        """
-        Returns a dict with the monitoring data
-        """
-        try:
-            api_query = requests.get(
-                f"{DTI_API_URL}/clustering/monitor",
-            )
-        except (ConnectionError, RequestException):
-            return {
-                "error": "Connection error when getting monitoring data from the worker"
-            }
-
-        try:
-            return api_query.json()
-        except:
-            return {"error": "Error when reading monitoring data"}
-
-    @staticmethod
-    def get_frontend_monitoring():
-        """
-        Returns a dict with the monitoring data
-        """
-        total_size = 0
-        for f in Path(settings.MEDIA_ROOT).glob("**/*"):
-            if f.is_file():
-                total_size += f.stat().st_size
-        n_datasets = ZippedDataset.objects.count()
-        n_clusterings = DTIClustering.objects.count()
-
+    def get_task_kwargs(self):
         return {
-            "total_size": total_size,
-            "n_datasets": n_datasets,
-            "n_clusterings": n_clusterings,
+            "dataset_url": f"{settings.BASE_URL}{self.dataset.zip_file.url}",
+            "dataset_id": str(self.dataset.id),
+            "parameters": json.dumps(self.parameters),
         }
 
-    @staticmethod
-    def clear_old_clusterings(days_before: int = 30) -> Dict[str, int]:
+    def on_task_success(self, data):
+        self.status = "FETCHING RESULTS"  # TODO if FETCHING but no results, retry to download result file
+        self.save()
+
+        # start collecting results
+        # from .tasks import collect_results
+        # collect_results.send(str(self.pk), data["output"]["result_url"])
+        self.retrieve_results(data["output"]["result_url"])
+
+    def retrieve_results(self, result_url: str):
+        # TODO find why the task is not starting
+        from zipfile import ZipFile
+
+        try:
+            # download the results from the API
+            res = requests.get(result_url, stream=True)
+            res.raise_for_status()
+            self.result_full_path.mkdir(parents=True, exist_ok=True)
+            zip_result_file = self.result_full_path / "results.zip"
+
+            with open(zip_result_file, "wb") as f:
+                for chunk in res.iter_content(chunk_size=8192):
+                    f.write(chunk)
+
+            # unzip the results
+            with ZipFile(zip_result_file, "r") as zip_obj:
+                zip_obj.extractall(self.result_full_path)
+
+            # create a summary.zip file, with cherry-picked content
+            summary_zip = self.result_full_path / "summary.zip"
+            cherrypick = [
+                "*.csv",
+                "clusters.html",
+                "clusters/**/*_raw.*",
+                "backgrounds/*",
+                "masked_prototypes/*",
+                "prototypes/*",
+            ]
+
+            with ZipFile(summary_zip, "w") as zipObj:
+                for cp in cherrypick:
+                    for f in self.result_full_path.glob(cp):
+                        zipObj.write(f, f.relative_to(self.result_full_path))
+
+            # mark the self as finished
+            self.terminate_task()
+        except Exception:
+            self.terminate_task(status="ERROR", error=traceback.format_exc())
+
+    @classmethod
+    def clear_old_tasks(cls, days_before: int = 30) -> Dict[str, int]:
         """
-        Clears all clusterings older than days_before days
+        Clear old clusterings
         """
-        old_clusterings = DTIClustering.objects.filter(
+        old_clusterings = cls.objects.filter(
             requested_on__lte=timezone.now() - timezone.timedelta(days=days_before)
         )
 
@@ -338,30 +151,30 @@ class DTIClustering(models.Model):
 
         return cleared_data
 
-    @staticmethod
-    def clear_api_old_clusterings(days_before: int = 30) -> Dict[str, Any]:
+    @classmethod
+    def get_frontend_monitoring(cls):
         """
-        Clears all clusterings older than days_before days from the API server
+        Returns a dict with the monitoring data
         """
-        try:
-            api_query = requests.post(
-                f"{DTI_API_URL}/clustering/monitor/clear",
-                data={
-                    "days_before": days_before,
-                },
-            )
-        except (ConnectionError, RequestException):
-            return {
-                "error": "Connection error when clearing old clusterings from the worker"
-            }
+        total_size = 0
+        for f in Path(settings.MEDIA_ROOT).glob("**/*"):
+            if f.is_file():
+                total_size += f.stat().st_size
+        n_datasets = ZippedDataset.objects.count()
+        n_clusterings = DTIClustering.objects.count()
 
-        try:
-            return api_query.json()
-        except:
-            return {
-                "error": "Error when output from API server",
-                "output": api_query.text,
-            }
+        return {
+            "total_size": total_size,
+            "n_datasets": n_datasets,
+            "n_experiments": n_clusterings,
+        }
+
+    @classmethod
+    def clear_old_clusterings(cls, days_before: int = 30) -> Dict[str, int]:
+        """
+        Clear old clusterings
+        """
+        return cls.clear_old_tasks(days_before)
 
     @cached_property
     def expanded_results(self):
@@ -499,7 +312,8 @@ class SavedClustering(models.Model):
 
     def get_absolute_url(self) -> str:
         return reverse(
-            "dticlustering:saved", kwargs={"pk": self.pk, "from_pk": self.from_dti_id}
+            "dticlustering:saved",
+            kwargs={"pk": self.pk, "from_pk": self.from_dti_id},  # self.from_dti_id}
         )
 
     def format_as_csv(self) -> str:

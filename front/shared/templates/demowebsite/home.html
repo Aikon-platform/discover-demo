@@ -1,12 +1,18 @@
 {% extends "demowebsite/base.html" %}
+{% load static %}
 
 {% block title %}Research demos{% endblock %}
 
 {% block content %}
-<div class="centerwrap">
-    <h1>Research demos</h1>
-    <div class="demo-list">
-        <div class="card"><a href="{% url 'dticlustering:list' %}">DTI Clustering</a></div>
+    <div class="centerwrap container p-5" id="demo-list">
+        <h1 class="is-title is-size-2 py-3 is-link">Research demos</h1>
+
+        <div class="columns is-vcentered">
+
+            {% include "includes/demo-card.html" with demo="dticlustering" demo_title="DTI clustering" demo_subtitle="Group images dataset on content" %}
+            {#{% include "includes/demo-card.html" with demo="watermarks" demo_title="Watermark detection" demo_subtitle="Detect a historical watermark in a page" %}#}
+            {#{% include "includes/demo-card.html" with demo="similarity" demo_title="Similarity retrieval" demo_subtitle="Find most similar images" %}#}
+
+        </div>
     </div>
-</div>
 {% endblock %}

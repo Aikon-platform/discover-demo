@@ -19,7 +19,7 @@ To install the API and Front application following the instructions in [api/READ
 bash setup.sh
 ```
 
-To start everything in one killable process, run (after installing each part like advised in the subfolders):
+Copy the `.env.dev.template` files to `.env.dev`, o start everything in one killable process, run (after installing each part like advised in the subfolders):
 
 ```bash
 bash run.sh

@@ -2,12 +2,14 @@ import { createRoot } from 'react-dom/client';
 import { ClusterApp } from "./ClusterApp/components/ClusterApp";
 import { TaskProgressTracker } from './ProgressTracker';
 import "./sass/style.scss";
+import { MatchViewer, WatermarkSimBrowser } from './WatermarkMatches';
+import { unserializeSingleWatermarkMatches, unserializeWatermarkSimilarity } from './WatermarkMatches/types';
 
 function initClusterViewer(
-  target_root: HTMLElement, 
+  target_root: HTMLElement,
   clustering_data: any,
   base_media_url: string,
-  editable?: boolean, 
+  editable?: boolean,
   editing?: boolean,
   formfield?: HTMLInputElement) {
   /*
@@ -22,7 +24,7 @@ function initClusterViewer(
   */
 
   createRoot(target_root).render(
-    <ClusterApp clustering_data={clustering_data} base_url={base_media_url} 
+    <ClusterApp clustering_data={clustering_data} base_url={base_media_url}
                 editable={editable} editing={editing} formfield={formfield} />
   );
 }
@@ -40,7 +42,43 @@ function initProgressTracker(target_root: HTMLElement, tracking_url: string) {
   );
 }
 
+function initWatermarkMatches(target_root: HTMLElement, query_image: string, matches: any, source_url: string) {
+  /*
+  Main entry point for the watermark matches app.
+
+  target_root: the root element to render the app in
+  query_image: the image url used as a query
+  matches: the matches to render
+  source_url: the url of the folder of the index files (index.json, images)
+  */
+  fetch(source_url + "index.json").then(response => response.json()).then(index => {
+    const all_matches = unserializeSingleWatermarkMatches(query_image, matches, index, source_url);
+    createRoot(target_root).render(
+      <MatchViewer all_matches={all_matches} />
+    );
+  });
+}
+
+function initWatermarkSimBrowser(target_root: HTMLElement, source_url: string) {
+  /*
+  Main entry point for the watermark similarity browser app.
+
+  target_root: the root element to render the app in
+  source_url: the url to fetch the images and index from
+  */
+  fetch(source_url + "similarity.json").then(response => response.json()).then(raw_matches => {
+    fetch(source_url + "index.json").then(response => response.json()).then(raw_index => {
+      const {matches, index} = unserializeWatermarkSimilarity(raw_matches, raw_index, source_url);
+      createRoot(target_root).render(
+        <WatermarkSimBrowser matches={matches} index={index} />
+      );
+    });
+  });
+}
+
 export {
   initClusterViewer,
-  initProgressTracker
+  initProgressTracker,
+  initWatermarkMatches,
+  initWatermarkSimBrowser
 };

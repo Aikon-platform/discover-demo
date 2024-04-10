@@ -1,39 +1,82 @@
 {% load static shared_tags %}
 <!doctype html>
-<html lang="en">
+<html lang="en" data-theme="light">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{% block title %}{% endblock %}</title>
-    <link rel="stylesheet" href="{% static "css/style.css" %}?v1.0">
-     <link rel="icon" type="image/png" href="{% static "img/favicon.png" %}"/>
+    <link rel="stylesheet" href="{% static "css/style.css" %}">
+    <link rel="icon" type="image/png" href="{% static "img/favicon.png" %}"/>
     {% block extra_head %}{% endblock %}
 </head>
 <body>
-    <div class="wrapper">
-        <header>
-            <div class="centerwrap">
-                <div class="title menu">
-                    <a href="{% url 'home' %}">Discover Demo</a>
-                    {% can_admin_accounts request.user as is_admin %}
-                    {% if is_admin %}
-                        <a href="{% url "accounts_admin" %}" title="Admin accounts"><span class="iconify" data-icon="mdi:shield-crown"></span> <span>Admin</span></a>
-                    {% endif %}
-                </div>
+<nav class="navbar" role="navigation" aria-label="main navigation" data-theme="dark">
+    <div class="navbar-brand ml-3">
+        <a class="navbar-item" href="{% url 'home' %}">
+            <img id="nav-icon" src="{% static "img/favicon.png" %}" alt="Icon">
+        </a>
 
-                <div class="menu">
-                    <a href="{% url 'dticlustering:list' %}">DTI clusterings</a>
-                    {% if request.user.is_authenticated %}
-                        <a href="{% url 'account' %}" title="Profile"><span class="iconify" data-icon="mdi:account"></span> {{ user.username }}</a>
-                        <a href="{% url 'logout' %}" title="Log out"><span class="iconify" data-icon="mdi:logout"></span></a>
-                    {% else %}
-                        <a href="{% url 'login' %}">Login</a>
-                    {% endif %}
+        <a role="button" class="navbar-burger" aria-label="menu" aria-expanded="false" data-target="navbar-content">
+            <span aria-hidden="true"></span>
+            <span aria-hidden="true"></span>
+            <span aria-hidden="true"></span>
+            <span aria-hidden="true"></span>
+        </a>
+    </div>
+
+    <div id="navbar-content" class="navbar-menu">
+        <div class="navbar-start">
+            <a id="nav-title" href="{% url 'home' %}" class="navbar-item nav-link px-2 mt-1">
+                Discover Demo
+            </a>
+
+            {% can_admin_accounts request.user as is_admin %}
+            {% if is_admin %}
+                <a href="{% url "accounts_admin" %}" title="Admin accounts" class="navbar-item">
+                    <span class="iconify mr-1" data-icon="mdi:shield"></span> <span>Admin</span>
+                </a>
+            {% endif %}
+
+            <div class="navbar-item has-dropdown is-hoverable">
+                <a class="navbar-link">
+                    Demos
+                </a>
+
+                <div class="navbar-dropdown">
+                    <a href="{% url 'dticlustering:list' %}" class="navbar-item">
+                        DTI clustering
+                    </a>
+                    {#<a href="{% url 'watermarks:list' %}" class="navbar-item">Watermark detection</a>#}
+                    {# <hr class="navbar-divider"> #}
+                    {# <a class="navbar-item">Report an issue</a> #}
                 </div>
             </div>
-        </header>
-        <div class="content">
+        </div>
 
-            {% if messages %}
+        <div class="navbar-end mr-3">
+            <div class="navbar-item">
+                {% if request.user.is_authenticated %}
+                    <div class="buttons">
+                        <a class="button is-link" href="{% url 'account' %}" title="Profile">
+                            {{ user.username }}
+                        </a>
+                        <a class="button is-link is-outlined" href="{% url 'logout' %}" title="Log out">
+                            Log out
+                        </a>
+                    </div>
+                {% else %}
+                    <div class="buttons">
+                        <a class="button is-link is-outlined" href="{% url 'login' %}">Log in</a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</nav>
+
+<div class="wrapper container" style="min-height: 80vh">
+    <div class="content">
+        {% if messages %}
             <div class="centerwrap">
                 <ul class="messages">
                     {% for message in messages %}
@@ -41,12 +84,43 @@
                     {% endfor %}
                 </ul>
             </div>
-            {% endif %}
-            {% block content %}{% endblock %}
-        </div>
-        <footer></footer>
+        {% endif %}
+        {% block content %}{% endblock %}
     </div>
-    {% block extra_js %}{% endblock %}
-    <script src="https://code.iconify.design/3/3.1.1/iconify.min.js"></script>
+</div>
+
+<footer class="footer mt-6 pb-5 pt-5" data-theme="light">
+    <div class="columns is-centered" style="padding: 0 20vw">
+        <a class="column is-2" href="https://imagine-lab.enpc.fr/">
+            <figure class="image is-96x96 is-center p-4">
+                <img src="{% static 'img/enpc.png' %}" alt="Laboratoire imagine - École des Ponts ParisTech logo">
+            </figure>
+        </a>
+        <a class="column is-2" href="https://erc.europa.eu/">
+            <figure class="image is-96x96 is-center mt-2">
+                <img src="{% static 'img/erc.png' %}" alt="European Research Council logo">
+            </figure>
+        </a>
+        <a class="column is-2" href="https://www.ins2i.cnrs.fr/fr/cnrsinfo/erc-des-ia-pour-faciliter-lanalyse-de-donnees-historiques-et-dimages-satellites">
+            <figure class="image is-96x96 is-center p-2">
+                <img src="{% static 'img/cnrs.png' %}" alt="CNRS logo">
+            </figure>
+        </a>
+        <a class="column is-2" href="https://siteigm.univ-mlv.fr/">
+            <figure class="image is-96x96 is-center p-2">
+                <img src="{% static 'img/ligm.png' %}" alt="Laboratoire Informatique Gaspard Monge logo">
+            </figure>
+        </a>
+    </div>
+
+    <div class="columns is-centered">
+        <div class="column is-8 has-text-centered">
+            <hr class="mt-2">
+            <strong>Discover Project</strong> is a project hosted at École des Ponts ParisTech | Imagine Lab
+        </div>
+    </div>
+</footer>
+{% block extra_js %}{% endblock %}
+<script src="https://code.iconify.design/3/3.1.1/iconify.min.js"></script>
 </body>
 </html>

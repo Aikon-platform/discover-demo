@@ -1,0 +1,61 @@
+{% load static %}
+{% if object.status != "SUCCESS" %}
+<div class="centerwrap">
+    <details>
+        <summary>Full log</summary>
+        <pre>
+{% if object.annotations.items %}
+{% for k, v in object.annotations.items %}
+{{ k }}: {{ v }}
+{% endfor %}
+{% else %}
+{{ object.annotations }}
+{% endif %}{% if object.full_log %}{{ object.full_log }}{% endif %}
+        </pre>
+    </details>
+</div>
+{% endif %}
+
+{% if object.detect %}
+<div class="centerwrap details-wrapper {{ object.compare_to|yesno:",detailed" }}">
+    <h3>Watermark detection {% if object.compare_to %}<a href="javascript:void(0)" class="button is-light is-link" style="vertical-align:middle" onclick="this.parentNode.parentNode.classList.toggle('detailed')">Show/hide</a>{% endif %}</h3>
+    <div class="details-content">
+        {% if object.status == "SUCCESS" and not object.get_bounding_boxes %}
+            <p class="status">No watermarks detected</p>
+        {% endif %}
+        <div class="watermark-viewer">
+            <div class="watermark">
+                <img src="{{ object.image.url }}" alt="Detected watermark">
+                {% for bbox in object.get_bounding_boxes_for_display %}
+                    <div class="bbox" style="left: {{ bbox.x }}%; top: {{ bbox.y }}%; width: {{ bbox.width }}%; height: {{ bbox.height }}%; opacity: {{ bbox.score }}"><span class="score">{{ bbox.score|floatformat:2 }}</span></div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{% if object.compare_to %}
+<h3>Watermark matching</h3>
+<p>On source {{ object.compare_to.name }} ({{ object.compare_to.uid }})</p>
+<div id="matches" class="watermark-matches"></div>
+
+{{ object.annotations|json_script:"annotations"}}
+<script type="text/javascript">
+    const annotations = JSON.parse(document.getElementById("annotations").textContent);
+    DemoTools.initWatermarkMatches(
+        document.getElementById("matches"), "{{ object.image.url|escapejs }}",
+        annotations, "{{ object.compare_to.data_folder_url|escapejs}}/");
+</script>
+{% endif %}
+
+<div class="centerwrap mt-4">
+    <h2 class="is-title is-size-3 pb-3 has-text-link-soft mt-0">Process a new image</h2>
+    <form method="post" enctype="multipart/form-data" action="{% url 'watermarks:start' %}">
+        {% csrf_token %}
+        {% include "demowebsite/baseform.html" %}
+        <button type="submit" class="button is-link">Submit</button>
+    </form>
+</div>
+
+</div>

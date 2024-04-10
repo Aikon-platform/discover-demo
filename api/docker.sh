@@ -1,9 +1,17 @@
 #!/bin/bash
 
-# MODIFY THOSE VARIABLES TO MATCH YOUR SYSTEM
-DATA_FOLDER="/media/dyonisos/data/dtidemo/"
-DEMO_UID=1019
-DEVICE_NB=3
+###############################
+# VALUES TO BE USED BY DOCKER #
+#    modify those values to   #
+#      match your system      #
+###############################
+
+# Machine path where docker will store its /data/ folder (API_DATA_FOLDER)
+DATA_FOLDER=/media/discoverdemo/
+# GPU device number to be used by docker
+DEVICE_NB=2
+# User ID to be used by docker
+DEMO_UID=1000
 
 CONTAINER_NAME="demowebsiteapi"
 
