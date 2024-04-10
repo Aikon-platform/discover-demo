@@ -26,7 +26,7 @@
         {% endfor %}
     </div>
     <div class="col">
-        <p class="status status-{{ task.status }}">{{ task.status }}</p>
+        <span class="tag status status-{{ task.status }}">{{ task.status }}</span>
     </div>
     <p class="user"><span class="iconify" data-icon="mdi:account"></span> {{ task.requested_by.username }}</p>
     <p class="date">{{ task.requested_on|date:"Y-m-d H:i" }}</p>

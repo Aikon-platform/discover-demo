@@ -6,11 +6,7 @@
     <div class="centerwrap">
         <h1 class="is-title is-size-2 py-3">Monitoring dashboard</h1>
 
-        <p>
-            <a href="{% url app_name|add:':list' %}" class="btn is-outline">
-                <span class="iconify" data-icon="mdi:list-box"></span> <span>&lt; all {{ task_name }} experiments</span>
-            </a>
-        </p>
+        {% include "includes/breadcrumbs.html" %}
 
         <h2>API status</h2>
         {% if api.error %}

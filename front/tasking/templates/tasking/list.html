@@ -6,11 +6,7 @@
 {% block content %}
 <div class="centerwrap">
     {% if filter %}
-        <p class="breadcrumbs">
-            <a class="button is-link is-outlined" href="{% url app_name|add:':list' %}">
-                &lt; all {{ task_name }} experiments
-            </a>
-        </p>
+        {% include "includes/breadcrumbs.html" %}
         <h1 class="is-title is-size-2 py-3">{{ filter }}</h1>
     {% else %}
         <h1 class="is-title is-size-2 py-3">All {{ task_name }} experiments</h1>

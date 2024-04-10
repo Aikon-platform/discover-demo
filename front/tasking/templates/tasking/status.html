@@ -7,11 +7,8 @@
 <script type="text/javascript" src="{% static "js/build.js" %}"></script>
 
 <div class="centerwrap">
-    {% if request.user.is_authenticated %}
-        <p class="breadcrumbs">
-            <a href="{% url app_name|add:':list' %}">&lt; all {{ task_name }} experiments</a>
-        </p>
-    {% endif %}
+
+    {% include "includes/breadcrumbs.html" %}
 
     <h1>
         {{ task_name }}
