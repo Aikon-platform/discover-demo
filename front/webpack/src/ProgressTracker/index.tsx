@@ -49,10 +49,8 @@ export function TaskProgressTracker (props: {tracking_url: string}) {
     if (status === null)
         return <div className="tck-progress">Loading...</div>;
 
-    const classStatus = `tag status status-${status.status} mb-3`;
-
     return (<div className="tck-progress">
-        <span className={classStatus}>{status.status}</span>
+        <span className={`mb-3 tag status status-${status.status}`}>{status.status}</span>
         {status.log?.progress &&
         <div className="tck-bar-list">
             {status.log.progress.map((progress, i) =>

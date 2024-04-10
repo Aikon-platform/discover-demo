@@ -15,8 +15,12 @@ body {
     padding: 0;
 }
 
-h1, h2 {
-    color: $head-color !important;
+h1 {
+    color: $main-color !important;
+}
+
+h2 {
+    color: $dark-color !important;
 }
 
 a {
@@ -320,7 +324,9 @@ ul.messages {
             padding: 0.3em 0.5em;
         }
         .task-ref {
-            color: $dark-grey !important;
+            a {
+                color: $dark-color !important;
+            }
         }
     }
 }

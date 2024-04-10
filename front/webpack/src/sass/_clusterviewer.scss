@@ -21,6 +21,8 @@ $toolbar-height: 60px;
     .cl-cluster-list {
         padding: 1em;
         width: 100%;
+        background-color: $light-grey;
+        //border-radius: 10px;
 
         .cl-cluster {
             position: relative;
@@ -224,7 +226,7 @@ $toolbar-height: 60px;
             display: flex;
             align-items: center;
             justify-content: center;
-            
+
             & > * {
                 font-size: 1.5em;
             }

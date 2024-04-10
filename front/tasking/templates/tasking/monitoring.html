@@ -1,10 +1,10 @@
 {% extends "demowebsite/base.html" %}
 
-{% block title %}Monitoring DTI{% endblock %}
+{% block title %}Monitoring {{ task_name }}{% endblock %}
 
 {% block content %}
     <div class="centerwrap">
-        <h1 class="is-title is-size-2 py-3">Monitoring dashboard</h1>
+        <h1 class="is-title is-size-2 py-3 is-link">Monitoring dashboard</h1>
 
         {% include "includes/breadcrumbs.html" %}
 
@@ -26,7 +26,7 @@
             <form action="{% url app_name|add:':monitor_clear_api' %}" method="post">
                 {% csrf_token %}
                 <p>
-                    <button type="submit" class="btn">
+                    <button type="submit" class="button is-light">
                         <span class="iconify" data-icon="mdi:broom"></span>
                         <span>Clear old tasks from API server</span>
                     </button>
@@ -35,12 +35,12 @@
         {% endif %}
 
         <h2>Front-end status</h2>
-        <p>{{ frontend.n_clusterings }} {{ task_name }} tasks requested, using {{ frontend.n_datasets }} datasets.</p>
+        <p>{{ frontend.n_experiments }} {{ task_name }} tasks requested, using {{ frontend.n_datasets }} datasets.</p>
         <p>Total disk usage for datasets and results: <b>{{ frontend.total_size|filesizeformat }}</b></p>
         <form action="{% url app_name|add:':monitor_clear_front' %}" method="post">
             {% csrf_token %}
             <p>
-                <button type="submit" class="btn">
+                <button type="submit" class="button is-light">
                     <span class="iconify" data-icon="mdi:broom"></span>
                     <span>Clear old tasks from frontend server</span>
                 </button>

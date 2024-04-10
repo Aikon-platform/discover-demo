@@ -21,7 +21,7 @@ export function MiniClusterElement(props: { info: ClusterInfo; selected: boolean
   const cluster = props.info;
 
   return (
-    <div className={"cl-cluster" + (props.selected ? " cl-selected" : "")} onClick={props.onClick}>
+    <div className={"cl-cluster box" + (props.selected ? " cl-selected" : "")} onClick={props.onClick}>
       <div className="cl-props">
         <div className="cl-propcontent">
           <h3>{cluster.name}</h3>
@@ -79,13 +79,13 @@ export function ClusterElement(props: ClusterProps) {
   }, [expanded, props.editing]);
 
   // sub components
-  const btnMore = (cluster.images.length > n_shown && 
+  const btnMore = (cluster.images.length > n_shown &&
     <a className="cl-more" href="javascript:void(0)" onClick={() => {setExpanded(!expanded); scrollIntoView();}}>
       {expanded ? "–" : "+"}{cluster.images.length - n_shown}
     </a>
   );
 
-  const btnExpand = (cluster.images.length > n_shown && 
+  const btnExpand = (cluster.images.length > n_shown &&
     (expanded ?
       <p><IconBtn icon="mdi:chevron-up" label="Collapse" onClick={() => {setExpanded(false); scrollIntoView();}} /></p> :
       <p><IconBtn icon="mdi:chevron-down" label="Expand" onClick={() => {setExpanded(true)}} /></p>)
@@ -99,32 +99,32 @@ export function ClusterElement(props: ClusterProps) {
         <div className="cl-propcontent">
           <div className="cl-propinfo">
             <p className="cl-cluster-title">
-            {(renaming && props.editing) ? 
+            {(renaming && props.editing) ?
                 (<form onSubmit={onRenameSubmit}>
-                  <input type="text" ref={nameInput} defaultValue={cluster.name} autoFocus></input> 
+                  <input type="text" ref={nameInput} defaultValue={cluster.name} autoFocus></input>
                   <a href="javascript:void(0)" onClick={onRenameSubmit} className="btn"><Icon icon="mdi:check-bold" /></a>
                 </form>) :
                 (<React.Fragment>
-                  <span>{cluster.name}</span> 
+                  <span>{cluster.name}</span>
                   {props.editing && <a href="javascript:void(0)" className="btn is-edit" onClick={() => {toggleEdition(true); setRenaming(true)}} title="Rename"><Icon icon="mdi:edit" /></a>}
                 </React.Fragment>)
             }
             </p>
-            
+
             <p>{cluster.id >= 0 && <React.Fragment>Cluster #{cluster.id}, {cluster.images.length} images</React.Fragment>}</p>
 
 
-            {editable ? 
+            {editable ?
             <p>
               {props.editing ?
               <React.Fragment>
                 <IconBtn icon="mdi:merge" label="Merge with..." onClick={askForMerge}/>
-                <IconBtn icon="mdi:check-bold" label="End edition" onClick={() => toggleEdition(false)} /> 
+                <IconBtn icon="mdi:check-bold" label="End edition" onClick={() => toggleEdition(false)} />
               </React.Fragment>:
                 <IconBtn icon="mdi:edit" label="Edit cluster" onClick={() => toggleEdition(true)} />}
             </p> : btnExpand}
           </div>
-          {cluster.proto_url && 
+          {cluster.proto_url &&
           <div className="cl-protoinfo">
           <p>{transformed ?
               <IconBtn icon="mdi:image" className="is-outline" label="Show images" onClick={() => {setTransformed(false)}} /> :
@@ -144,7 +144,7 @@ export function ClusterElement(props: ClusterProps) {
           <BasicImageList images={cluster.images} transformed={transformed} limit={expanded ? undefined : n_shown} expander={btnMore}/>
           }
       </div>
-      {editable && !props.editing && 
+      {editable && !props.editing &&
       <a className="cl-overlay cl-hoveroptions" href="javascript:void(0)" onClick={() => toggleEdition(true)}>
         <IconBtn icon="mdi:edit" label="Edit cluster" />
         <IconBtn icon="mdi:merge" label="Merge with..." onClick={(e) => {e.stopPropagation(); askForMerge()}}/>
