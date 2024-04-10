@@ -24,19 +24,23 @@ class LoginRequiredIfConfProtectedMixin(AccessMixin):
         return self.handle_no_permission()
 
 
-class TaskStartView(LoginRequiredIfConfProtectedMixin, CreateView):
-    template_name = "tasking/start.html"
-
-    def get_form_kwargs(self):
-        kwargs = super().get_form_kwargs()
-        kwargs["user"] = self.request.user
-        return kwargs
-
+class TaskMixin:
     def get_context_data(self, **kwargs) -> dict[str, Any]:
         context = super().get_context_data(**kwargs)
         context["task_name"] = getattr(self, "task_name", self.model._meta.verbose_name)
         context["app_name"] = self.model.django_app_name
         return context
+
+
+class TaskStartView(LoginRequiredIfConfProtectedMixin, TaskMixin, CreateView):
+    template_name = "tasking/start.html"
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs["user"] = (
+            self.request.user if self.request.user.is_authenticated else None
+        )
+        return kwargs
 
     def get_success_url(self):
         # Start task
@@ -45,21 +49,17 @@ class TaskStartView(LoginRequiredIfConfProtectedMixin, CreateView):
         return self.object.get_absolute_url()
 
 
-class TaskStatusView(LoginRequiredIfConfProtectedMixin, DetailView):
+class TaskStatusView(LoginRequiredIfConfProtectedMixin, TaskMixin, DetailView):
     """
     Clustering status and results
     """
 
     template_name = "tasking/status.html"
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context["app_name"] = self.model.django_app_name
-        context["task_name"] = getattr(self, "task_name", self.model._meta.verbose_name)
-        return context
 
-
-class TaskProgressView(LoginRequiredIfConfProtectedMixin, SingleObjectMixin, View):
+class TaskProgressView(
+    LoginRequiredIfConfProtectedMixin, TaskMixin, SingleObjectMixin, View
+):
     """
     Task progress (AJAX)
     """
@@ -76,18 +76,13 @@ class TaskProgressView(LoginRequiredIfConfProtectedMixin, SingleObjectMixin, Vie
         )
 
 
-class TaskCancelView(LoginRequiredIfConfProtectedMixin, DetailView):
+class TaskCancelView(LoginRequiredIfConfProtectedMixin, TaskMixin, DetailView):
     """
     Cancel a task
     """
 
     template_name = "tasking/cancel.html"
     context_object_name = "task"
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context["task_name"] = getattr(self, "task_name", self.model._meta.verbose_name)
-        return context
 
     def post(self, *args, **kwargs):
         if not hasattr(self, "object"):
@@ -127,18 +122,13 @@ class TaskWatcherView(SingleObjectMixin, View):
         )
 
 
-class TaskDeleteView(LoginRequiredIfConfProtectedMixin, DetailView):
+class TaskDeleteView(LoginRequiredIfConfProtectedMixin, TaskMixin, DetailView):
     """
     Delete a clustering
     """
 
     template_name = "tasking/delete.html"
     context_object_name = "task"
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context["task_name"] = getattr(self, "task_name", self.model._meta.verbose_name)
-        return context
 
     def post(self, *args, **kwargs):
         if not hasattr(self, "object"):
@@ -153,7 +143,7 @@ class TaskDeleteView(LoginRequiredIfConfProtectedMixin, DetailView):
         return reverse(f"{self.model.django_app_name}:list")
 
 
-class TaskListView(LoginRequiredIfConfProtectedMixin, ListView):
+class TaskListView(LoginRequiredIfConfProtectedMixin, TaskMixin, ListView):
     """
     List of all clusterings
     """
@@ -175,9 +165,3 @@ class TaskListView(LoginRequiredIfConfProtectedMixin, ListView):
         if not self.request.user.has_perm(self.permission_see_all):
             qset = qset.filter(requested_by=self.request.user)
         return qset
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context["app_name"] = self.model.django_app_name
-        context["task_name"] = getattr(self, "task_name", self.model._meta.verbose_name)
-        return context
