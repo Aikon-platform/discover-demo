@@ -5,10 +5,11 @@
 {% block content %}
 <div class="centerwrap">
     <h1 class="is-title is-size-2 py-3">Cancel {{ task_name }}</h1>
-    <p>Are you sure you want to cancel the {{ task_name }} task #{{ object.id }}?</p>
-    <form action="" method="post" enctype="multipart/form-data">
+    <p>Are you sure you want to cancel the <span class="strong">{{ task_name }} task #{{ object.id }}</span>?</p>
+    <form class="columns pt-5" action="" method="post" enctype="multipart/form-data">
         {% csrf_token %}
-        <input type="submit" value="Cancel {{ task_name }}"> - <a href="{{ object.get_absolute_url }}">Take me back</a>
+        <input class="column is-2 button is-link is-light" type="submit" value="Cancel">
+        <a class="button is-ghost column is-2" href="{{ object.get_absolute_url }}">Take me back</a>
     </form>
 </div>
 {% endblock %}

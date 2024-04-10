@@ -1,5 +1,4 @@
-{% load static %}
-{% load shared_tags %}
+{% load static shared_tags %}
 
 {% with demo|add_str:":start" as demo_url %}
     <a class="column is-one-third" href="{% url demo_url %}" data-theme="dark">

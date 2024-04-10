@@ -5,14 +5,14 @@
         <h2 class="task-ref">
             <a href="{{ task.get_absolute_url }}">
                 <span class="id-main">{{ task.name }}</span>
-                <span class="id-suffix">{{ task.id|uuid_prefix }}{{ task.id|uuid_suffix }}</span>
+                <span class="id-suffix">{{ task.id }}</span>
             </a>
         </h2>
         {% if not filter and task.dataset %}
             <p>└ dataset
                 <a href="{% url app_name|add:':list_perdataset' task.dataset.pk %}">
                     <span class="id-main">{{ task.dataset.name }}</span>
-                    <span class="id-suffix">{{ task.dataset.id|uuid_prefix }}{{ task.dataset.id|uuid_suffix }}</span>
+                    <span class="id-suffix">{{ task.dataset.id }}</span>
                 </a>
             </p>
         {% endif %}
@@ -20,7 +20,7 @@
             <p>└ manual clustering
                 <a href="{{ task.get_absolute_url }}">
                     <span class="id-main">{{ task.name }}</span>
-                    <span class="id-suffix">{{ task.id|uuid_prefix }}{{ task.id|uuid_suffix }}</span>
+                    <span class="id-suffix">{{ task.id }}</span>
                 </a>
             </p>
         {% endfor %}
