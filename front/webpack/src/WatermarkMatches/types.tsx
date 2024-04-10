@@ -148,9 +148,9 @@ export function unserializeSingleWatermarkMatches(query_image: string, raw_match
     return unserializeWatermarkMatches(queries, raw_matches, index);
 }
 
-export function unserializeWatermarkSimilarity(raw_matches: WatermarkOutputRaw, raw_index: WatermarksIndexRaw, base_url: string): WatermarkMatches[] {
+export function unserializeWatermarkSimilarity(raw_matches: WatermarkOutputRaw, raw_index: WatermarksIndexRaw, base_url: string): {matches: WatermarkMatches[], index: WatermarksIndex} {
     const index = unserializeWatermarkIndex(raw_index, base_url);
-    return unserializeWatermarkMatches(index.images, raw_matches, index);
+    return {matches: unserializeWatermarkMatches(index.images, raw_matches, index), index};
 }
 
 export function unserializeWatermarkMatches(queries: Watermark[], raw_matches: WatermarkOutputRaw, index: WatermarksIndex): WatermarkMatches[] {
@@ -185,5 +185,5 @@ export function unserializeWatermarkMatches(queries: Watermark[], raw_matches: W
             matches_by_source: groups
         });
     }
-    return matches;
+    return matches.sort((a, b) => b.matches[0].similarity - a.matches[0].similarity);
 }
