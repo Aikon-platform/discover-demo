@@ -66,11 +66,11 @@ function initWatermarkSimBrowser(target_root: HTMLElement, source_url: string) {
   target_root: the root element to render the app in
   source_url: the url to fetch the images and index from
   */
-  fetch(source_url + "similarity.json").then(response => response.json()).then(matches => {
-    fetch(source_url + "index.json").then(response => response.json()).then(index => {
-      const all_matches = unserializeWatermarkSimilarity(matches, index, source_url);
+  fetch(source_url + "similarity.json").then(response => response.json()).then(raw_matches => {
+    fetch(source_url + "index.json").then(response => response.json()).then(raw_index => {
+      const {matches, index} = unserializeWatermarkSimilarity(raw_matches, raw_index, source_url);
       createRoot(target_root).render(
-        <WatermarkSimBrowser matches={all_matches} index={index} />
+        <WatermarkSimBrowser matches={matches} index={index} />
       );
     });
   });
