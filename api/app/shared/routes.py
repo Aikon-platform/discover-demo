@@ -9,7 +9,7 @@ import traceback
 from .utils import hash_str
 from .. import config
 
-from .utils.fileutils import xaccel_send_from_directory, is_too_old, clear_dir
+from .utils.fileutils import xaccel_send_from_directory
 
 
 def error_wrapper(func):
@@ -65,6 +65,7 @@ def status(tracking_id: str, task_fct):
     try:
         log = task_fct.message().copy(message_id=tracking_id).get_result()
     except ResultMissing:
+        # TODO check in what cases this happen (only after task execution?)
         log = None
     except ResultFailure as e:
         log = {

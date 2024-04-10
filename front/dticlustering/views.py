@@ -166,7 +166,7 @@ class SavedClusteringDelete(LoginRequiredMixin, DeleteView):
     """
 
     model = SavedClustering
-    template_name = "demowebsite/delete.html"
+    template_name = "tasking/delete.html"
 
     def get_context_data(self, **kwargs) -> dict[str, Any]:
         context = super().get_context_data(**kwargs)
@@ -213,7 +213,7 @@ class MonitoringView(PermissionRequiredMixin, LoginRequiredMixin, TemplateView):
     Monitoring view
     """
 
-    template_name = "demowebsite/monitoring.html"
+    template_name = "tasking/monitoring.html"
     permission_required = "dticlustering.monitor_dticlustering"
 
     def get_context_data(self, **kwargs) -> dict[str, Any]:

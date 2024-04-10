@@ -11,5 +11,5 @@ All dramatiq tasks related to the DTI clustering
 
 
 @dramatiq.actor
-def collect_results(dticlustering_id: str, result_url: str):
+def collect_results(experiment_id: str, result_url: str):
     pass
