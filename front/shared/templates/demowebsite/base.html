@@ -1,17 +1,16 @@
 {% load static shared_tags %}
 <!doctype html>
-<html lang="en">
+<html lang="en" data-theme="light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{% block title %}{% endblock %}</title>
-    <link rel="stylesheet" href="{% static "css/style.css" %}?v1.0">
+    <link rel="stylesheet" href="{% static "css/style.css" %}">
     <link rel="icon" type="image/png" href="{% static "img/favicon.png" %}"/>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@1.0.0/css/bulma.min.css">
     {% block extra_head %}{% endblock %}
 </head>
 <body>
-<nav class="navbar" role="navigation" aria-label="main navigation">
+<nav class="navbar" role="navigation" aria-label="main navigation" data-theme="dark">
     <div class="navbar-brand ml-3">
         <a class="navbar-item" href="{% url 'home' %}">
             <img id="nav-icon" src="{% static "img/favicon.png" %}" alt="Icon">
@@ -90,7 +89,7 @@
     </div>
 </div>
 
-<footer class="footer">
+<footer class="footer" data-theme="dark">
     {# <div class="content columns"> TODO PUT INSTITUTIONS LOGOS </div> #}
 </footer>
 {% block extra_js %}{% endblock %}

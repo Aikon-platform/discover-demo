@@ -5,14 +5,14 @@
 {% endblock %}
 
 {% block content %}
-    <div class="centerwrap container columns px-4 py-5 has-text-dark">
+    <div class="centerwrap container columns px-4 py-5">
         <div class="column is-8 is-offset-2">
-            <h1 class="is-title is-size-2 py-3 has-text-link">Watermark sources</h1>
+            <h1 class="is-title is-size-2 py-3">Watermark sources</h1>
 
             <h2>Registered sources</h2>
             {% for source in sources %}
                 <div class="box">
-                    <h2 class="is-size-4 has-text-link">{{ source.name }} <span class="uid is-size-7">{{ source.uid }}</span></h2>
+                    <h2 class="is-size-4">{{ source.name }} <span class="uid is-size-7">{{ source.uid }}</span></h2>
                     <p>{{ source.size }} images. <a href="{% url "watermarks:source-sim" source.pk %}">Browse similarity</a></p>
                     <p>{{ source.description }}</p>
                     <form action="{% url "watermarks:source-action" source.pk %}" method="post">
@@ -33,7 +33,7 @@
             {% else %}
             {% for source in extra_sources %}
                 <div class="box">
-                    <h2 class="is-size-4 has-text-link">{{ source.metadata.name }} <span class="uid is-size-7">{{ source.uid }}</span></h2>
+                    <h2 class="is-size-4">{{ source.metadata.name }} <span class="uid is-size-7">{{ source.uid }}</span></h2>
                     <p>{{ source.metadata.size }} images</p>
                     <p>{{ source.metadata.description }}</p>
                     <form action="{% url "watermarks:source-add" %}" method="post">

@@ -1,3 +1,7 @@
+@use "bulma/sass" with (
+    $scheme-main: hsl(233, 100%, 63%),
+);
+
 @import "_variables";
 
 *, *::before, *::after {
@@ -12,7 +16,7 @@ body {
 }
 
 h1, h2 {
-    color: $head-color;
+    color: $head-color !important;
 }
 
 a {
@@ -26,7 +30,6 @@ a {
     flex-direction: column;
     align-items: center;
 }
-
 
 #nav-icon {
     max-height: 30px;
@@ -45,10 +48,17 @@ a {
     width: 100%;
 }
 
+.strong {
+    color: var(--bulma-text-strong);
+    font-size: var(--bulma-size-normal);
+    font-weight: var(--bulma-weight-semibold);
+}
+
 .centerwrap {
     max-width: 900px;
     width: 100%;
     margin: 1% auto;
+    padding-top: 2em;
 }
 
 pre {
@@ -161,6 +171,7 @@ pre {
 
 .iconify {
     width: 1em;
+    margin-right: 5px;
     min-width: 1em;
     height: 1em;
     min-height: 1em;
@@ -172,9 +183,6 @@ input[type="submit"], input[type="file"], button, .btn {
     text-align: center;
     font: 16px $headfont;
     font-weight: 500;
-    //background-color: $head-color;
-    //color: #fff;
-    // border: 6px double #fff;
     border: none;
     padding: 0.6em 0.6em;
     border-radius: $border-radius;
@@ -186,10 +194,6 @@ input[type="submit"], input[type="file"], button, .btn {
     align-items: center;
     justify-content: space-evenly;
     text-decoration: none;
-
-    //&:hover {
-    //    background-color: darken($head-color, 10%);
-    //}
 
     .iconify {
         margin: 0em;
@@ -270,9 +274,9 @@ ul.messages {
     }
 }
 
-// DTI: List of tasks
+// List of tasks
 
-.dti-list {
+.task-list {
     display: block;
     max-width: 700px;
     margin: 0 auto;
@@ -315,6 +319,9 @@ ul.messages {
             background-color: inherit;
             padding: 0.3em 0.5em;
         }
+        .task-ref {
+            color: $dark-grey !important;
+        }
     }
 }
 
@@ -340,7 +347,7 @@ ul.messages {
 }
 
 .id-suffix {
-    font-size: 0.7em;
+    font-size: 0.6em;
     opacity: 0.5;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -354,37 +361,12 @@ ul.messages {
     display: flex;
     width: 100%;
     align-items: center;
-    opacity: 0.7;
-    padding: 0.1em;
-    border-top: 1px solid $main-color;
-    border-bottom: 1px solid $main-color;
-
-    a.pagination-link, a.pagination-next {
-        display: inline-block;
-        text-align: center;
-        padding: 0.4em 0.4em;
-        min-width: 1em;
-        //background-color: $bg-color;
-        transition: background-color 0.3s ease-in-out;
-        text-decoration: none;
-
-        &[href]:hover {
-            background-color: lighten($bg-color, 20%);
-        }
-        &:not([href]) {
-            opacity: 0.5;
-        }
-    }
 
     .pagination-list {
         flex: 1;
         display: flex;
         justify-content: right;
         margin: 0.3em 0;
-    }
-
-    li {
-        list-style-type: none;
     }
 }
 
@@ -394,48 +376,50 @@ ul.messages {
     border-collapse: collapse;
     width: 100%;
     margin: 0.5em 0;
-    border: 2px solid $main-color;
+    //border: 2px solid $main-color;
     overflow: hidden;
-    background-color: lighten($bg-color, 5%);
-
-    th, td {
-        padding: 0.5em 1em;
-        border-bottom: 1px solid $main-color;
-        border-right: 1px solid $main-color;
-        text-align: left;
-        vertical-align: top;
-        &:last-child {
-            border-right: none;
-        }
-    }
-    th {
-        background-color: lighten($main-color, 10%);
-        font-weight: bold;
-    }
-    tr {
-        &:hover {
-            background-color: lighten($bg-color, 10%);
-        }
-    }
-    tr:nth-child(even) {
-        background-color: lighten($bg-color, 5%);
-    }
-    tr:nth-child(odd) {
-        background-color: $bg-color;
-    }
-    tr:last-child td {
-        border-bottom: none;
-    }
+    //background-color: lighten($bg-color, 5%);
+    //
+    //th, td {
+    //    padding: 0.5em 1em;
+    //    //border-bottom: 1px solid $main-color;
+    //    //border-right: 1px solid $main-color;
+    //    text-align: left;
+    //    vertical-align: top;
+    //    &:last-child {
+    //        border-right: none;
+    //    }
+    //}
+    //th {
+    //    //background-color: lighten($main-color, 10%);
+    //    font-weight: bold;
+    //}
+    //tr {
+    //    &:hover {
+    //        background-color: lighten($bg-color, 10%);
+    //    }
+    //}
+    //tr:nth-child(even) {
+    //    background-color: lighten($bg-color, 5%);
+    //}
+    //tr:nth-child(odd) {
+    //    background-color: $bg-color;
+    //}
+    //tr:last-child td {
+    //    border-bottom: none;
+    //}
 }
 
 
 .clickable {
     transition: all 0.3s ease;
-    box-shadow: 0 0 8px rgba(0, 0, 0, 0.3) !important;
+    box-shadow: 0 0.5em 1em -0.125em hsla(var(--bulma-shadow-h), var(--bulma-shadow-s), var(--bulma-shadow-l), 0.3),
+                0 0px 0 1px hsla(var(--bulma-shadow-h), var(--bulma-shadow-s), var(--bulma-shadow-l), 0.02);
 }
 .clickable:hover {
     transform: translateY(2px);
-    box-shadow: 0 0 4px rgba(0, 0, 0, 0.6) !important;
+    box-shadow: 0 0.5em 0.4em -0.125em hsla(var(--bulma-shadow-h), var(--bulma-shadow-s), var(--bulma-shadow-l), 0.4),
+                0 0px 0 1px hsla(var(--bulma-shadow-h), var(--bulma-shadow-s), var(--bulma-shadow-l), 0.02);
 }
 
 

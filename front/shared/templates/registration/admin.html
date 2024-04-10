@@ -5,61 +5,65 @@
 
 {% block content %}
 <div class="centerwrap">
-<h1>Manage accounts</h1>
-<div class="">
-    {% if pending_list %}
-    <div class="">
-        <h3>{% trans "Pending accounts" %}</h3>
-        <p>{% trans "Validating an account triggers the sending of a welcome e-mail, containing a password creation link." %}</p>
-        <p>{% trans "Deleting an account cannot be canceled." %}</p>
-        <div class="block">
-            {% for user in pending_list %}
-                <div class="account">
-                    <span class="tag username">{{ user.username }}</span>
-                    <span class="nom">{{ user.get_full_name }}</span>
-                    <span class="tag email"><a href="mailto:{{ user.email }}">{{ user.email }}</a></span>
-                    <form class="action" action="{% url "accounts_validate" user.id %}" method="post">
-                        {% csrf_token %}
-                        <input type="submit" name="valider" value="{% trans "Validate" %}" class="button is-success">
-                        <a href="{% url "accounts_reject" user.id %}" class="button is-danger">{% trans "Delete" %}</a>
-                    </form>
-                </div>
-            {% empty %}
-                <p>
-                    <span>{% trans "No account pending" %}</span>
-                </p>
-            {% endfor %}
+    <h1>Manage accounts</h1>
+    <div class="mt-5">
+        {% if pending_list %}
+        <div class="">
+            <h3>{% trans "Pending accounts" %}</h3>
+            <p>{% trans "Validating an account triggers the sending of a welcome e-mail, containing a password creation link." %}</p>
+            <p>{% trans "Deleting an account cannot be canceled." %}</p>
+            <div class="block">
+                {% for user in pending_list %}
+                    <div class="account">
+                        <span class="tag username">{{ user.username }}</span>
+                        <span class="nom">{{ user.get_full_name }}</span>
+                        <span class="tag email"><a href="mailto:{{ user.email }}">{{ user.email }}</a></span>
+                        <form class="action" action="{% url "accounts_validate" user.id %}" method="post">
+                            {% csrf_token %}
+                            <input type="submit" name="validate" value="{% trans "Validate" %}" class="button is-success">
+                            <a href="{% url "accounts_reject" user.id %}" class="button is-danger">{% trans "Delete" %}</a>
+                        </form>
+                    </div>
+                {% empty %}
+                    <p>
+                        <span>{% trans "No account pending" %}</span>
+                    </p>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        <div class="is-primary is-full mt-4 is-relative">
+            <h3>{% trans "All accounts" %}</h3>
+            <table class="block table is-hoverable">
+                <thead>
+                    <tr>
+                        <th class="username">Username</th>
+                        <th class="nom">Name</th>
+                        <th class="email">E-mail</th>
+                        <th class="actions">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for user in user_list %}
+                        <tr>
+                            <td class="username">{{ user.username }}</td>
+                            <td class="nom">{{ user.get_full_name }}</td>
+                            <td class="email"><a href="mailto:{{ user.email }}">{{ user.email }}</a></td>
+                            <td class="actions">
+                                {% if request.user.is_staff %}
+                                <span class="action">
+                                    <a href="{% url "admin:auth_user_change" user.id %}" class="button is-link is-light">
+                                        {% trans "Admin" %}
+                                    </a>
+                                </span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
         </div>
     </div>
-    {% endif %}
-    
-    <div class="column box is-primary is-full m-4 is-relative">
-        <h3>{% trans "All accounts" %}</h3>
-        <table class="block table is-hoverable">
-            <thead>
-                <tr>
-                    <th class="username">Username</th>
-                    <th class="nom">Name</th>
-                    <th class="email">E-mail</th>
-                    <th class="actions">Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for user in user_list %}
-                    <tr>
-                        <td class="username">{{ user.username }}</td>
-                        <td class="nom">{{ user.get_full_name }}</td>
-                        <td class="email"><a href="mailto:{{ user.email }}">{{ user.email }}</a></td>
-                        <td class="actions">
-                            {% if request.user.is_staff %}
-                            <span class="action"><a href="{% url "admin:auth_user_change" user.id %}" class="button is-danger">{% trans "Admin" %}</a></span>
-                            {% endif %}
-                        </td>
-                    </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
-</div>
 </div>
 {% endblock %}

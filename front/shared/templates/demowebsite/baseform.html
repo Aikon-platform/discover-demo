@@ -9,13 +9,13 @@
     {% if field|field_type == "HiddenInput" %}
         {{ field }}
     {% else %}
-    <div class="field has-text-dark">
+    <div class="field">
         {% if field|field_type == "CheckboxInput" %}
             <div>
                 <label class="{% if field.field.required %}required{% endif %}"></label>
             </div>
             <div class="control">
-                <label for="{{ field.id_for_label }}" class="label ">
+                <label for="{{ field.id_for_label }}" class="label">
                     {{ field|add_class:"checkbox" }}
                     {{ field.label }}
                 </label>

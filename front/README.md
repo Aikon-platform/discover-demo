@@ -85,9 +85,8 @@ npm run production
 **Note:** If you only need to update css, you can simply set up any sass compiler, to take as input `webpack/src/sass/style.scss` and output `shared/static/css/style.css`, it might be much quicker.
 
 ```bash
-# For example
-npm install -g sass
-sass webpack/src/sass/style.scss shared/static/css/style.css
+# in front/webpack
+npm run scss
 ```
 
 ## Production
