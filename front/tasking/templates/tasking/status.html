@@ -44,7 +44,7 @@
                     <span>Start new {{ task_name }} with same dataset</span>
                 </a>
             {% endif %}
-            <a href="{% url app_name|add:':delete' object.pk %}" class="button is-ghost">
+            <a href="{% url app_name|add:':delete' object.pk %}" class="button is-light">
                 <span class="iconify" data-icon="mdi:delete"></span>
                 <span>Delete this experiment</span>
             </a>
