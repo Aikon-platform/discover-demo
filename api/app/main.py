@@ -16,6 +16,12 @@ app.config.from_object(config.FLASK_CONFIG)
 # Dramatiq setup
 broker = RedisBroker(url=config.BROKER_URL)
 
+# if os.getenv("TESTS") == "true":
+#     import os
+#     from dramatiq.brokers.stub import StubBroker
+#     broker = StubBroker()
+#     broker.emit_after("process_boot")
+
 event_backend = backends.RedisBackend(client=broker.client)
 abortable = Abortable(backend=event_backend)
 
