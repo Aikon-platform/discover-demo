@@ -17,7 +17,7 @@
 {% endif %}
 
 {% if object.detect %}
-<div class="centerwrap details-wrapper {{ object.compare_to|yesno:",detailed" }}">
+<div class="centerwrap details-wrapper detailed">
     <h3>Watermark detection {% if object.compare_to %}<a href="javascript:void(0)" class="button is-light is-link" style="vertical-align:middle" onclick="this.parentNode.parentNode.classList.toggle('detailed')">Show/hide</a>{% endif %}</h3>
     <div class="details-content">
         {% if object.status == "SUCCESS" and not object.get_bounding_boxes %}
