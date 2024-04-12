@@ -17,7 +17,9 @@
         </a>
 
         <a role="button" class="navbar-burger" aria-label="menu" aria-expanded="false" data-target="navbar-content">
-            <span aria-hidden="true"></span>
+{#            <span aria-hidden="true">#}
+{#                <a href="{% url 'dticlustering:list' %}">DTI clustering</a>#}
+{#            </span>#}
             <span aria-hidden="true"></span>
             <span aria-hidden="true"></span>
             <span aria-hidden="true"></span>
@@ -26,7 +28,7 @@
 
     <div id="navbar-content" class="navbar-menu">
         <div class="navbar-start">
-            <a id="nav-title" href="{% url 'home' %}" class="navbar-item nav-link px-2 mt-1">
+            <a id="nav-title" href="{% url 'home' %}" class="navbar-item nav-link px-2">
                 Discover Demo
             </a>
 
@@ -74,7 +76,7 @@
     </div>
 </nav>
 
-<div class="wrapper container" style="min-height: 80vh">
+<div class="wrapper container" style="min-height: 80vh; max-width: 90vw">
     <div class="content">
         {% if messages %}
             <div class="centerwrap">

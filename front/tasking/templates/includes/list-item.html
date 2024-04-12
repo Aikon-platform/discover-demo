@@ -1,33 +1,35 @@
 {% load shared_tags %}
 
-<div class="columns row">
-    <div class="column task-ref is-10">
-        <h2 class="task-ref">
-            <a href="{{ task.get_absolute_url }}">
-                <span class="id-main">{{ task.name }}</span>
-                <span class="id-suffix">{{ task.id }}</span>
-            </a>
-        </h2>
-        {% if not filter and task.dataset %}
-            <p>└ dataset
-                <a href="{% url app_name|add:':list_perdataset' task.dataset.pk %}">
-                    <span class="id-main">{{ task.dataset.name }}</span>
-                    <span class="id-suffix">{{ task.dataset.id }}</span>
-                </a>
-            </p>
-        {% endif %}
-        {% for saved_task in task.task.all %}
-            <p>└ manual clustering
+<div class="row columns">
+{#    <div class="columns is-center">#}
+        <div class="column task-ref is-10 p">
+            <h2 class="task-ref">
                 <a href="{{ task.get_absolute_url }}">
                     <span class="id-main">{{ task.name }}</span>
                     <span class="id-suffix">{{ task.id }}</span>
                 </a>
-            </p>
-        {% endfor %}
-    </div>
-    <div class="column is-2">
-        <span class="tag status status-{{ task.status }}">{{ task.status }}</span>
-    </div>
+            </h2>
+            {% if not filter and task.dataset %}
+                <p>└ dataset
+                    <a href="{% url app_name|add:':list_perdataset' task.dataset.pk %}">
+                        <span class="id-main">{{ task.dataset.name }}</span>
+                        <span class="id-suffix">{{ task.dataset.id }}</span>
+                    </a>
+                </p>
+            {% endif %}
+            {% for saved_task in task.task.all %}
+                <p>└ manual clustering
+                    <a href="{{ task.get_absolute_url }}">
+                        <span class="id-main">{{ task.name }}</span>
+                        <span class="id-suffix">{{ task.id }}</span>
+                    </a>
+                </p>
+            {% endfor %}
+        </div>
+        <div class="column is-2 p-0 is-left is-top">
+            <span class="tag status status-{{ task.status }}">{{ task.status }}</span>
+        </div>
+{#    </div>#}
     <p class="user"><span class="iconify" data-icon="mdi:account"></span> {{ task.requested_by.username }}</p>
     <p class="date">{{ task.requested_on|date:"Y-m-d H:i" }}</p>
 </div>
