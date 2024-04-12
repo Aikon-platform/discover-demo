@@ -4,11 +4,12 @@
 
 {% block content %}
 <div class="centerwrap">
-    <h1 class="is-title is-size-2 py-3 has-text-link">Delete {{ task_name }}</h1>
-    <p>Are you sure you want to delete the {{ task_name }} #{{ object.id }}?</p>
-    <form action="" method="post" enctype="multipart/form-data">
+    <h1 class="is-title is-size-2 py-3">Delete {{ task_name }}</h1>
+    <p>Are you sure you want to delete the <span class="strong">{{ task_name }} #{{ object.id }}</span>?</p>
+    <form class="columns pt-5" action="" method="post" enctype="multipart/form-data">
         {% csrf_token %}
-        <input type="submit" value="Delete"> - <a href="{{ object.get_absolute_url }}">Take me back</a>
+        <input class="column is-2 button is-link is-light" type="submit" value="Delete">
+        <a class="button is-ghost column is-2" href="{{ object.get_absolute_url }}">Take me back</a>
     </form>
 </div>
 {% endblock %}

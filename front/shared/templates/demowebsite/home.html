@@ -4,9 +4,8 @@
 {% block title %}Research demos{% endblock %}
 
 {% block content %}
-    <div class="centerwrap" id="demo-list">
-        <h1 class="is-title is-size-2 py-3 has-text-link">Research demos</h1>
-
+    <div class="centerwrap container p-5" id="demo-list">
+        <h1 class="is-title is-size-2 py-3 is-link">Research demos</h1>
         <div class="columns is-vcentered">
 
             {% include "includes/demo-card.html" with demo="dticlustering" demo_title="DTI clustering" demo_subtitle="Group images dataset on content" %}

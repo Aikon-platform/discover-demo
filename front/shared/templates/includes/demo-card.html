@@ -1,8 +1,7 @@
-{% load static %}
-{% load shared_tags %}
+{% load static shared_tags %}
 
 {% with demo|add_str:":start" as demo_url %}
-    <a class="column is-one-third" href="{% url demo_url %}">
+    <a class="column is-one-third" href="{% url demo_url %}" data-theme="dark">
         <div class="card clickable">
             <div class="card-image">
                 <figure class="image is-4by3">
@@ -12,7 +11,7 @@
             <div class="card-content">
                 <div class="media">
                     <div class="media-content" style="height: 95px">
-                        <p class="title is-4">{{ demo_title }}</p>
+                        <p class="title is-4 mb-2">{{ demo_title }}</p>
                         <p class="subtitle is-6">{{ demo_subtitle }}</p>
                     </div>
                 </div>

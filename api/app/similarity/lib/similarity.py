@@ -11,15 +11,14 @@ from torch.utils.data import DataLoader
 from sklearn.metrics.pairwise import cosine_similarity
 
 
-from ..const import (
-    SCORES_PATH,
+from ..const import SCORES_PATH, IMG_PATH
+from .const import (
     SEG_STRIDE,
     MAX_SIZE,
     COS_TOPK,
     FEAT_NET,
     FEAT_SET,
     FEAT_LAYER,
-    IMG_PATH,
 )
 from .dataset import IllusDataset
 from .features import extract_features

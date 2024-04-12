@@ -1,4 +1,4 @@
-from flask import request, send_from_directory
+from flask import request, send_from_directory, Blueprint
 from slugify import slugify
 import uuid
 from dramatiq_abort import abort
@@ -11,7 +11,8 @@ from .. import config
 
 from ..main import app
 from .tasks import train_dti
-from ..shared.utils.fileutils import xaccel_send_from_directory
+from ..shared.utils.fileutils import xaccel_send_from_directory, clear_dir
+from ..shared import routes as shared_routes
 from .const import (
     DTI_RESULTS_PATH,
     DATASETS_PATH,
@@ -21,7 +22,10 @@ from .const import (
 )
 
 
-@app.route("/clustering/start", methods=["POST"])
+blueprint = Blueprint("clustering", __name__, url_prefix="/clustering")
+
+
+@blueprint.route("start", methods=["POST"])
 def start_clustering():
     """
     Start a new DTI clustering task
@@ -46,132 +50,47 @@ def start_clustering():
     notify_url = request.form.get("notify_url", None)
     parameters = json.loads(request.form.get("parameters", "{}"))
 
-    task = train_dti.send(
-        experiment_id=experiment_id,
-        dataset_id=dataset_id,
-        dataset_url=dataset_url,
-        parameters=parameters,
-        notify_url=notify_url,
+    return shared_routes.start_task(
+        train_dti,
+        experiment_id,
+        {
+            "dataset_id": dataset_id,
+            "dataset_url": dataset_url,
+            "parameters": parameters,
+            "notify_url": notify_url,
+        },
     )
 
-    return {
-        "tracking_id": task.message_id,
-        "experiment_id": experiment_id,
-        "dataset_id": dataset_id,
-    }
 
-
-@app.route("/clustering/<tracking_id>/cancel", methods=["POST"])
+@blueprint.route("<tracking_id>/cancel", methods=["POST"])
 def cancel_clustering(tracking_id: str):
-    """
-    Cancel a DTI clustering task
-    """
-    abort(tracking_id)
-
-    return {"tracking_id": tracking_id}
+    return shared_routes.cancel_task(tracking_id)
 
 
-@app.route("/clustering/<tracking_id>/status", methods=["GET"])
-def status(tracking_id: str):
-    """
-    Get the status of a DTI clustering task
-    """
-    try:
-        log = train_dti.message().copy(message_id=tracking_id).get_result()
-    except ResultMissing:
-        log = None
-    except ResultFailure as e:
-        log = {
-            "status": "ERROR",
-            "infos": [f"Error: Actor raised {e.orig_exc_type} ({e.orig_exc_msg})"],
-        }
+@blueprint.route("<tracking_id>/status", methods=["GET"])
+def status_clustering(tracking_id: str):
+    return shared_routes.status(tracking_id, train_dti)
 
+
+@blueprint.route("<tracking_id>/result", methods=["GET"])
+def result_clustering(tracking_id: str):
+    return shared_routes.result(tracking_id, DTI_RESULTS_PATH, DTI_XACCEL_PREFIX)
+
+
+@blueprint.route("qsizes", methods=["GET"])
+def qsizes_clustering():
+    return shared_routes.qsizes(train_dti.broker)
+
+
+@blueprint.route("monitor", methods=["GET"])
+def monitor_clustering():
+    return shared_routes.monitor(DTI_DATA_FOLDER, train_dti.broker)
+
+
+@blueprint.route("monitor/clear", methods=["POST"])
+def clear_clustering():
     return {
-        "tracking_id": tracking_id,
-        "log": log,
+        "cleared_runs": clear_dir(RUNS_PATH, file_to_check="trainer.log"),
+        "cleared_datasets": clear_dir(DATASETS_PATH, file_to_check="ready.meta"),
+        "cleared_results": clear_dir(DTI_RESULTS_PATH, path_to_clear="*.zip"),
     }
-
-
-@app.route("/clustering/<tracking_id>/result", methods=["GET"])
-def result(tracking_id: str):
-    """
-    Get the result of a DTI clustering task
-    """
-    if not config.USE_NGINX_XACCEL:
-        return send_from_directory(DTI_RESULTS_PATH, f"{slugify(tracking_id)}.zip")
-
-    return xaccel_send_from_directory(
-        DTI_RESULTS_PATH, DTI_XACCEL_PREFIX, f"{slugify(tracking_id)}.zip"
-    )
-
-
-@app.route("/clustering/qsizes", methods=["GET"])
-def qsizes():
-    """
-    List the queues of the broker and the number of tasks in each queue
-    """
-    try:
-        return {
-            "queues": {
-                q: {"name": q, "size": train_dti.broker.do_qsize(q)}
-                for q in train_dti.broker.get_declared_queues()
-            }
-        }
-    except AttributeError:
-        return {"error": "Cannot get queue sizes from broker"}
-
-
-@app.route("/clustering/monitor", methods=["GET"])
-def monitor():
-    """
-    Get the status of the clustering service
-    """
-    # Get total size of the results directory
-    total_size = 0
-    for path in DTI_DATA_FOLDER.glob("**/*"):
-        total_size += path.stat().st_size
-
-    return {"total_size": total_size, **qsizes()}
-
-
-@app.route("/clustering/monitor/clear", methods=["POST"])
-def clear():
-    """
-    Clear the results directory
-    """
-
-    output = {
-        "cleared_runs": 0,
-        "cleared_results": 0,
-        "cleared_datasets": 0,
-    }
-
-    for path in RUNS_PATH.glob("*"):
-        logfile = path / "trainer.log"
-        # if logfile is older than 30 days, delete the run
-        if (
-            not logfile.exists()
-            or (datetime.now() - datetime.fromtimestamp(logfile.stat().st_mtime)).days
-            > 30
-        ):
-            shutil.rmtree(path)
-            output["cleared_runs"] += 1
-
-    for path in DATASETS_PATH.glob("*"):
-        metafile = path / "ready.meta"
-        # if metafile is older than 30 days, delete the dataset
-        if (
-            not metafile.exists()
-            or (datetime.now() - datetime.fromtimestamp(metafile.stat().st_mtime)).days
-            > 30
-        ):
-            shutil.rmtree(path)
-            output["cleared_datasets"] += 1
-
-    for path in DTI_RESULTS_PATH.glob("*.zip"):
-        # if path is older than 30 days, delete the result
-        if (datetime.now() - datetime.fromtimestamp(path.stat().st_mtime)).days > 30:
-            path.unlink()
-            output["cleared_results"] += 1
-
-    return output

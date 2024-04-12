@@ -8,7 +8,7 @@ import torchvision.models as models
 
 from PIL import Image
 
-from ..const import MAX_SIZE, SEG_STRIDE, SEG_TOPK
+from .const import MAX_SIZE, SEG_STRIDE, SEG_TOPK
 
 """
 MIT License

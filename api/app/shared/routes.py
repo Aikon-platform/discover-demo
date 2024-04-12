@@ -1,14 +1,26 @@
 import functools
 
-from flask import request, send_from_directory
+from flask import request, send_from_directory, jsonify
 from slugify import slugify
 from dramatiq_abort import abort
 from dramatiq.results import ResultMissing, ResultFailure
+import traceback
 
 from .utils import hash_str
 from .. import config
 
-from .utils.fileutils import xaccel_send_from_directory, is_too_old, clear_dir
+from .utils.fileutils import xaccel_send_from_directory
+
+
+def error_wrapper(func):
+    @functools.wraps(func)
+    def wrapped(*args, **kwargs):
+        try:
+            return func(*args, **kwargs)
+        except Exception as e:
+            return jsonify({"error": str(e), "traceback": traceback.format_exc()})
+
+    return wrapped
 
 
 def get_client_id(func):
@@ -53,6 +65,7 @@ def status(tracking_id: str, task_fct):
     try:
         log = task_fct.message().copy(message_id=tracking_id).get_result()
     except ResultMissing:
+        # TODO check in what cases this happen (only after task execution?)
         log = None
     except ResultFailure as e:
         log = {
@@ -100,15 +113,3 @@ def monitor(results_dir, broker):
         total_size += path.stat().st_size
 
     return {"total_size": total_size, **qsizes(broker)}
-
-
-def clear(run_dir=None, data_dir=None, results_dir=None):
-    """
-    Clear the results directory
-    """
-
-    return {
-        "cleared_runs": clear_dir(run_dir, file_to_check="trainer.log"),
-        "cleared_datasets": clear_dir(data_dir, file_to_check="ready.meta"),
-        "cleared_results": clear_dir(results_dir, path_to_clear="*.zip"),
-    }

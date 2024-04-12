@@ -5,13 +5,21 @@
 {% block content %}
 <div class="centerwrap">
     <h1>My profile</h1>
-    <p>Name: {{ user.get_full_name }}</p>
-    <p>Email: {{ user.email }}</p>
-    <p>Username: {{ user.username }}</p>
-    <p>Registered since: {{ user.date_joined }}</p>
     <p>
-        <a href="{% url 'password_change' %}" class="btn"><span class="iconify" data-icon="mdi:form-textbox-password"></span> <span>Change password</span></a>
-        <a href="{% url 'account_edit' %}" class="btn"><span class="iconify" data-icon="mdi:account-edit"></span> <span>Edit profile</span></a>
+        <span class="strong">Name</span>: {{ user.get_full_name }}
+    </p>
+    <p>
+        <span class="strong">Email</span>: {{ user.email }}
+    </p>
+    <p>
+        <span class="strong">Username</span>: {{ user.username }}
+    </p>
+    <p>
+        <span class="strong">Registered since</span>: {{ user.date_joined }}
+    </p>
+    <p>
+        <a href="{% url 'password_change' %}" class="button is-light"><span class="iconify" data-icon="mdi:form-textbox-password"></span> <span>Change password</span></a>
+        <a href="{% url 'account_edit' %}" class="button is-light"><span class="iconify" data-icon="mdi:account-edit"></span> <span>Edit profile</span></a>
     </p>
 </div>
 {% endblock %}

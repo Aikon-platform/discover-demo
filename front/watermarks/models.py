@@ -17,6 +17,7 @@ User = get_user_model()
 path_query_images = PathAndRename("watermarks/queries/")
 
 WATERMARKS_API_URL = getattr(settings, "API_URL", "http://localhost:5000")
+SOURCE_API_BASE_URL = f"{WATERMARKS_API_URL}/watermarks/sources"
 
 
 class WatermarkProcessing(AbstractAPITask("watermarks")):
@@ -180,9 +181,7 @@ class WatermarksSource(models.Model):
         """
         Download the images from the API
         """
-        response = requests.get(
-            f"{WATERMARKS_API_URL}/watermarks/sources/{self.uid}/images.zip"
-        )
+        response = requests.get(f"{SOURCE_API_BASE_URL}/{self.uid}/images.zip")
         response.raise_for_status()
 
         zip_file = self.data_folder_path / "images.zip"
@@ -193,9 +192,7 @@ class WatermarksSource(models.Model):
             z.extractall(self.data_folder_path)
         zip_file.unlink()
 
-        response = requests.get(
-            f"{WATERMARKS_API_URL}/watermarks/sources/{self.uid}/index.json"
-        )
+        response = requests.get(f"{SOURCE_API_BASE_URL}/{self.uid}/index.json")
         response.raise_for_status()
         index = response.json()
         with open(self.data_folder_path / "index.json", "w") as f:
@@ -221,11 +218,11 @@ class WatermarksSource(models.Model):
             size=data["size"],
         )
 
-    @staticmethod
-    def get_available_sources():
+    @classmethod
+    def get_available_sources(cls):
         """
         Get the available sources from the API
         """
-        response = requests.get(f"{WATERMARKS_API_URL}/watermarks/sources")
+        response = requests.get(SOURCE_API_BASE_URL)
         response.raise_for_status()
         return response.json()

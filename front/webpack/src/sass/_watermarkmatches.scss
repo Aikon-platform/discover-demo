@@ -140,25 +140,25 @@
     }
 
     .match-img {
-        &.rot90 {
+        &.rot270 {
             transform: rotate(270deg);
         }
         &.rot180 {
             transform: rotate(180deg);
         }
-        &.rot270 {
+        &.rot90 {
             transform: rotate(90deg);
         }
         &.hflip {
             transform: scaleX(-1);
         }
-        &.hflip.rot90 {
+        &.hflip.rot270 {
             transform: rotate(270deg) scaleX(-1);
         }
         &.hflip.rot180 {
             transform: rotate(180deg) scaleX(-1);
         }
-        &.hflip.rot270 {
+        &.hflip.rot90 {
             transform: rotate(90deg) scaleX(-1);
         }
     }

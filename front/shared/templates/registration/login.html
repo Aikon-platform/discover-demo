@@ -5,12 +5,14 @@
 {% block content %}
 <div class="centerwrap">
     <h1>Sign in</h1>
-    <form action="" method="post" enctype="multipart/form-data">
+    <form action="" method="post" enctype="multipart/form-data" class="">
         {% csrf_token %}
         {% include "demowebsite/baseform.html" %}
-        <p align="center"><input type="submit" value="Sign in"></p>
+        <p class="has-text-centered">
+            <input type="submit" value="Sign in">
+        </p>
     </form>
-    <p align="center">Don't have an account? <a href="{% url 'account_request' %}">Sign up</a></p>
-    <p align="center">Forgot password? <a href="{% url 'password_reset' %}">Reset password</a></p>
+    <p class="has-text-centered pt-2">Don't have an account? <a href="{% url 'account_request' %}">Sign up</a></p>
+    <p class="has-text-centered">Forgot password? <a href="{% url 'password_reset' %}">Reset password</a></p>
 </div>
 {% endblock %}

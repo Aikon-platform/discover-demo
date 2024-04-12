@@ -8,7 +8,8 @@ from collections import OrderedDict
 from sklearn.decomposition import PCA
 from sklearn.preprocessing import MinMaxScaler
 
-from ..const import FEATS_PATH, FEAT_LAYER, FEAT_SET, FEAT_NET
+from ..const import FEATS_PATH
+from .const import FEAT_LAYER, FEAT_SET, FEAT_NET
 from .utils import get_model_path
 from .vit import VisionTransformer
 from ...shared.utils.logging import console

@@ -11,7 +11,8 @@ from pathlib import Path
 from PIL import Image
 
 # from .similarity import log_failed_img
-from ..const import IMG_PATH, MODEL_PATH, MAX_SIZE, LIB_PATH
+from ..const import IMG_PATH, MODEL_PATH, LIB_PATH
+from .const import MAX_SIZE
 from ...shared.utils.logging import console
 
 model_urls = {

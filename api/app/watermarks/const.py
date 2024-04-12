@@ -1,5 +1,5 @@
 from pathlib import Path
-from ..config.base import ENV, BASE_DIR, API_DATA_FOLDER
+from ..config.base import ENV, BASE_DIR, API_DATA_FOLDER, XACCEL_PREFIX
 
 DEMO_NAME = "watermarks"
 
@@ -7,9 +7,8 @@ DEMO_NAME = "watermarks"
 DEMO_DIR = BASE_DIR / "app" / DEMO_NAME
 
 WATERMARKS_DATA_FOLDER = API_DATA_FOLDER / DEMO_NAME
-
 WATERMARKS_SOURCES_FOLDER = WATERMARKS_DATA_FOLDER / "sources"
-WATERMARKS_XACCEL_PREFIX = "/watermarks/sources"
+WATERMARKS_XACCEL_PREFIX = f"{XACCEL_PREFIX}/{DEMO_NAME}"
 
 MODEL_PATHS = {
     "detection": WATERMARKS_DATA_FOLDER / "models" / "detection.pth",

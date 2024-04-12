@@ -20,13 +20,6 @@ FEATURE_TRANSFORMS = lambda sz: transforms.Compose(
     ]
 )
 
-DETECT_TRANSFORMS = transforms.Compose(
-    [
-        transforms.Resize((1400, 1000)),
-        transforms.ToTensor(),
-    ]
-)
-
 MODELS = {}
 
 
@@ -42,8 +35,8 @@ def auto_load_models(models: List[str] = None):
 
 
 @torch.no_grad()
-def detect_watermarks(model: torch.nn.Module, img: Image.Image) -> Dict:
-    img = DETECT_TRANSFORMS(img)
+def _detect_watermarks(model: torch.nn.Module, img: Image.Image) -> Dict:
+    img = transforms.ToTensor()(img)
     h, w = img.shape[-2:]
     img = img.unsqueeze(0).to(next(model.parameters()).device)
 
@@ -56,6 +49,16 @@ def detect_watermarks(model: torch.nn.Module, img: Image.Image) -> Dict:
         ],
         "scores": preds[0]["scores"].cpu().numpy().tolist(),
     }
+
+
+def detect_watermarks(model: torch.nn.Module, img: Image.Image) -> Dict:
+    for size in [512, 800, 1400, 2000]:
+        im0 = img.copy()
+        im0.thumbnail((size, size))
+        boxes = _detect_watermarks(model, im0)
+        if len(boxes["boxes"]) > 0 and boxes["scores"][0] > 0.3:
+            return boxes
+    return boxes
 
 
 @torch.no_grad()

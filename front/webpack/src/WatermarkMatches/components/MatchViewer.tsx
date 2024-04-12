@@ -1,11 +1,16 @@
 import React, { useReducer } from "react";
-import { Watermark, WatermarkMatches, WatermarkOutputRaw, WatermarksIndexRaw, unserializeSingleWatermarkMatches } from "../types";
+import { MatchTransformation, Watermark, WatermarkMatches, WatermarkOutputRaw, WatermarksIndexRaw, unserializeSingleWatermarkMatches } from "../types";
 import { MatchRow } from "./MatchRow";
 import { IconBtn } from "../../utils/IconBtn";
 
+export interface MagnifyProps {
+    watermark?: Watermark;
+    transformations?: MatchTransformation[];
+}
+
 export interface MagnifyingContext {
     // Context to manage focusing on a Watermark
-    magnify?: (watermark: Watermark | null) => void;
+    magnify?: ({watermark, transformations}:MagnifyProps) => void;
     matchesHref?: (watermark: Watermark) => string;
 }
 
@@ -16,7 +21,7 @@ export function MatchViewer({ all_matches }: { all_matches: WatermarkMatches[] }
     Component to render a list of watermark matches.
     */
     const [group_by_source, toggleGroupBySource] = useReducer((group_by_source) => !group_by_source, true);
-    const [magnifying, setMagnifying] = React.useState<Watermark | null>(null);
+    const [magnifying, setMagnifying] = React.useState<MagnifyProps | null>(null);
 
     return (
         <MagnifyingContext.Provider value={{magnify: setMagnifying}}>
@@ -33,24 +38,24 @@ export function MatchViewer({ all_matches }: { all_matches: WatermarkMatches[] }
                 <MatchRow key={idx} matches={matches} group_by_source={group_by_source} />
             ))}
             </div>
-            {magnifying && <Magnifier magnifying={magnifying} />}
+            {magnifying && <Magnifier {...magnifying} />}
         </MagnifyingContext.Provider>
     );
 }
 
-export function Magnifier({magnifying}: {magnifying: Watermark}) {
+export function Magnifier({watermark, transformations}: MagnifyProps) {
     /*
     Component to render a magnified view of a watermark.
     */
     const setMagnifying = React.useContext(MagnifyingContext).magnify!;
 
-    return (
-        <div className="magnifier" onClick={() => setMagnifying(null)} >
+    return watermark && (
+        <div className="magnifier" onClick={() => setMagnifying({watermark:undefined})} >
             <IconBtn icon="mdi:close"/>
-            <img src={magnifying.image_url} alt={magnifying.name} />
-            <h4 className="mt-2">{magnifying.source?.name || magnifying.name}</h4>
-            <p>{magnifying.source && magnifying.name}</p>
-            {magnifying.link && <p><a href={magnifying.link} target="_blank">See in context</a></p>}
+            <img src={watermark.image_url} alt={watermark.name} className={"match-img "+(transformations ? transformations.join(" ") : "")} />
+            <h4 className="mt-2">{watermark.source?.name || watermark.name}</h4>
+            <p>{watermark.source && watermark.name}</p>
+            {watermark.link && <p><a href={watermark.link} target="_blank">See in context</a></p>}
         </div>
     )
 }

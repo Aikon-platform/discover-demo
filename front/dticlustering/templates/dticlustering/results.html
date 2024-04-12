@@ -1,7 +1,7 @@
-{% if object.expanded_results %}
+{% if object.expanded_results and object.result_zip_exists %}
 <div class="centerwrap">
     <h2>Results</h2>
-    <h3>Manually edited clusterings:</h3>
+    <h3>Manually edited clustering:</h3>
     <ul class="cl-saved-list">
         {% for clustering in object.saved_clustering.all %}
             <li>

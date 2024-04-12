@@ -71,12 +71,53 @@ class DTIClustering(AbstractAPITask("dti")):
         }
 
     def on_task_success(self, data):
-        self.status = "FETCHING RESULTS"
+        self.status = "FETCHING RESULTS"  # TODO if FETCHING but no results, retry to download result file
         self.save()
-        # start collecting results
-        from .tasks import collect_results
 
-        collect_results.send(str(self.pk), data["output"]["result_url"])
+        # start collecting results
+        # from .tasks import collect_results
+        # collect_results.send(str(self.pk), data["output"]["result_url"])
+        self.retrieve_results(data["output"]["result_url"])
+
+    def retrieve_results(self, result_url: str):
+        # TODO find why the task is not starting
+        from zipfile import ZipFile
+
+        try:
+            # download the results from the API
+            res = requests.get(result_url, stream=True)
+            res.raise_for_status()
+            self.result_full_path.mkdir(parents=True, exist_ok=True)
+            zip_result_file = self.result_full_path / "results.zip"
+
+            with open(zip_result_file, "wb") as f:
+                for chunk in res.iter_content(chunk_size=8192):
+                    f.write(chunk)
+
+            # unzip the results
+            with ZipFile(zip_result_file, "r") as zip_obj:
+                zip_obj.extractall(self.result_full_path)
+
+            # create a summary.zip file, with cherry-picked content
+            summary_zip = self.result_full_path / "summary.zip"
+            cherrypick = [
+                "*.csv",
+                "clusters.html",
+                "clusters/**/*_raw.*",
+                "backgrounds/*",
+                "masked_prototypes/*",
+                "prototypes/*",
+            ]
+
+            with ZipFile(summary_zip, "w") as zipObj:
+                for cp in cherrypick:
+                    for f in self.result_full_path.glob(cp):
+                        zipObj.write(f, f.relative_to(self.result_full_path))
+
+            # mark the self as finished
+            self.terminate_task()
+        except Exception:
+            self.terminate_task(status="ERROR", error=traceback.format_exc())
 
     @classmethod
     def clear_old_tasks(cls, days_before: int = 30) -> Dict[str, int]:
@@ -125,7 +166,7 @@ class DTIClustering(AbstractAPITask("dti")):
         return {
             "total_size": total_size,
             "n_datasets": n_datasets,
-            "n_clusterings": n_clusterings,
+            "n_experiments": n_clusterings,
         }
 
     @classmethod
