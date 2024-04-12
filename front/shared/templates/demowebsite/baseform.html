@@ -4,16 +4,21 @@
 
 {{ form.media }}
 {{ form.non_field_errors }}
+
 {% for field in form %}
     {{ field.errors }}
     {% if field|field_type == "HiddenInput" %}
         {{ field }}
     {% else %}
     <div class="field">
+         <div class="py-1">
+            {# LABEL #}
+            <label for="{{ field.id_for_label }}" class="label {% if field.field.required %}required{% endif %}">
+                {% if field|field_type != "CheckboxInput" %}{{ field.label }}{% else %}{% endif %}
+            </label>
+        </div>
+
         {% if field|field_type == "CheckboxInput" %}
-            <div>
-                <label class="{% if field.field.required %}required{% endif %}"></label>
-            </div>
             <div class="control">
                 <label for="{{ field.id_for_label }}" class="label">
                     {{ field|add_class:"checkbox" }}
@@ -24,27 +29,19 @@
                 {% endif %}
             </div>
         {% elif field|field_type == "Textarea" or field|field_type == "CheckboxSelectMultiple" or field|field_type == "RadioSelect" %}
-            <div>
-                <label for="{{ field.id_for_label }}" class="label {% if field.field.required %}required{% endif %}">{{ field.label }}</label>
-                {% if field.help_text %}
-                    <div class="help">{{ field.help_text }}</div>
-                {% endif %}
-            </div>
+            {% if field.help_text %}
+                <div class="help pb-2">{{ field.help_text }}</div>
+            {% endif %}
             <div>
                 {{ field }}
             </div>
         {% elif field|field_type == "Select" %}
-            <label for="{{ field.id_for_label }}" class="label {% if field.field.required %}required{% endif %}">{{ field.label }}</label>
             <div>
                 <div class="select">
                     {{ field }}
                 </div>
-                {% if field.help_text %}
-                    <div class="help">{{ field.help_text }}</div>
-                {% endif %}
             </div>
         {% elif field|field_type == "ClearableFileInput" or field|field_type == "FileInput" %}
-            <label for="{{ field.id_for_label }}" class="label {% if field.field.required %}required{% endif %}">{{ field.label }}</label>
             <div class="file has-name is-fullwidth" id="{{ field.id_for_label }}-wrapper">
                 <label for="{{ field.id_for_label }}" class="file-label {% if field.field.required %}required{% endif %}">
                     <span class="file-cta">
@@ -61,19 +58,13 @@
             <script>
                 const fileInput = document.querySelector("#{{ field.id_for_label|escapejs }}-wrapper input[type=file]");
                 fileInput.onchange = () => {
-                if (fileInput.files.length > 0) {
-                    const fileName = document.querySelector("#{{ field.id_for_label|escapejs }}-wrapper .file-name");
-                    fileName.textContent = fileInput.files[0].name;
-                }
+                    if (fileInput.files.length > 0) {
+                        const fileName = document.querySelector("#{{ field.id_for_label|escapejs }}-wrapper .file-name");
+                        fileName.textContent = fileInput.files[0].name;
+                    }
                 };
             </script>
-            <div>
-                {% if field.help_text %}
-                    <div class="help">{{ field.help_text }}</div>
-                {% endif %}
-            </div>
         {% else %}
-            <label for="{{ field.id_for_label }}" class="label {% if field.field.required %}required{% endif %}">{{ field.label }}</label>
             <div>
                 {{ field|add_class:"input" }}
                 {% if field.help_text %}

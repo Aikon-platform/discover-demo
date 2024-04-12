@@ -91,11 +91,11 @@ export function ClusterApp({ clustering_data, editing = false, editable = false,
           {clusters.map((cluster) => (
             <ClusterElement key={cluster.id} editing={editorState.editingCluster == cluster.id} info={cluster} />
           ))}
-          <div className="cl-cluster cl-filler"></div>
-          <div className="cl-cluster cl-filler"></div>
-          <div className="cl-cluster cl-filler"></div>
-          <div className="cl-cluster cl-filler"></div>
-          <div className="cl-cluster cl-filler"></div>
+          <div className="cl-cluster box cl-filler"></div>
+          <div className="cl-cluster box cl-filler"></div>
+          <div className="cl-cluster box cl-filler"></div>
+          <div className="cl-cluster box cl-filler"></div>
+          <div className="cl-cluster box cl-filler"></div>
         </div>
         {editorState.askingCluster !== null &&
           <ClusterAskModale {...editorState.askingCluster!} />}

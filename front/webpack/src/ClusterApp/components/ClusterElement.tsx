@@ -80,7 +80,7 @@ export function ClusterElement(props: ClusterProps) {
 
   // sub components
   const btnMore = (cluster.images.length > n_shown &&
-    <a className="cl-more" href="javascript:void(0)" onClick={() => {setExpanded(!expanded); scrollIntoView();}}>
+    <a className="cl-more card" href="javascript:void(0)" onClick={() => {setExpanded(!expanded); scrollIntoView();}}>
       {expanded ? "–" : "+"}{cluster.images.length - n_shown}
     </a>
   );
@@ -93,7 +93,7 @@ export function ClusterElement(props: ClusterProps) {
 
   // render
   return (
-    <div className={"cl-cluster" + (expanded || props.editing ? " cl-expanded" : "")}>
+    <div className={"cl-cluster box" + (expanded || props.editing ? " cl-expanded" : "")}>
       <div className="cl-anchor" ref={elRef}></div>
       <div className="cl-props">
         <div className="cl-propcontent">
