@@ -61,6 +61,13 @@ class DTIClustering(AbstractAPITask("dti")):
         """
         return f"{self.result_media_url}/summary.zip"
 
+    @property
+    def result_zip_url(self) -> str:
+        """
+        URL to the full result in a zip file
+        """
+        return f"{self.result_media_url}/results.zip"
+
     def get_task_kwargs(self):
         return {
             "dataset_url": f"{settings.BASE_URL}{self.dataset.zip_file.url}",

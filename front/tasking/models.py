@@ -30,7 +30,7 @@ def AbstractAPITask(task_prefix: str):
         id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
         name = models.CharField(
             max_length=64,
-            default=task_prefix,
+            # default=task_prefix,
             blank=True,
             verbose_name="Experiment name",
             help_text="Optional name to identify this clustering experiment",
