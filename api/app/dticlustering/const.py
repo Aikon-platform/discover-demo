@@ -1,7 +1,5 @@
-from pathlib import Path
-from ..config.base import ENV, BASE_DIR, API_DATA_FOLDER, XACCEL_PREFIX
+from ..config.base import BASE_DIR, API_DATA_FOLDER, XACCEL_PREFIX
 
-# TODO add results dir, run dir etc.
 from .lib.src.utils.path import (
     DATASETS_PATH,
     RUNS_PATH,

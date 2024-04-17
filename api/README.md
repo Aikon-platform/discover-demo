@@ -178,12 +178,12 @@ sudo systemctl enable spiped-discover.service
 
 Transfer key to front ([`spiped`](https://github.com/tarsnap/spiped) uses symmetric encryption with same keys on both servers)
 ```bash
-# on gpu machine
-sudo chmod 644 /etc/spiped/discover.key
-scp /etc/spiped/discover.key <front-host>:~ # Assuming you have configured direct ssh connection to front
+# on your local machine
+scp <gpu-host>:/etc/spiped/discover.key <front-host>:~ # Assuming you have configured direct ssh connection to front and gpu
 
 # on front machine
 ssh <front-host>
+sudo apt-get install spiped
 sudo chmod 644 ~/discover.key
 sudo mkdir /etc/spiped
 sudo cp ~/discover.key /etc/spiped/ # Copy key to spiped folder

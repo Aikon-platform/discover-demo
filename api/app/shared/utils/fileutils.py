@@ -103,7 +103,7 @@ def delete_path(path):
     return True
 
 
-def clear_dir(parent_dir, path_to_clear="*", file_to_check=None):
+def clear_dir(parent_dir, path_to_clear="*", file_to_check=None, condition=None):
     """
     Clear a directory of files older than a given number of days
 
@@ -117,7 +117,8 @@ def clear_dir(parent_dir, path_to_clear="*", file_to_check=None):
         if path.is_dir():
             file = path / file_to_check if file_to_check else next(path.iterdir())
 
-        if is_too_old(file):
+        condition = condition if condition is not None else is_too_old(file)
+        if condition:
             cleared += 1 if delete_path(path) else 0
     return cleared
 

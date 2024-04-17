@@ -33,7 +33,6 @@ class DTIClusteringForm(forms.ModelForm):
         help_text="An optional name to identify this dataset",
         max_length=64,
         required=False,
-        # initial="dti-data",
     )
 
     p_n_clusters = forms.IntegerField(
@@ -47,7 +46,6 @@ class DTIClusteringForm(forms.ModelForm):
 
     p_background = forms.ChoiceField(
         label="Background",
-        # help_text="How background is treated for clustering",
         choices=DTI_BACKGROUND_OPTIONS,
         widget=forms.RadioSelect,
         required=True,
