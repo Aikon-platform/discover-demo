@@ -68,12 +68,12 @@ def start_extract_all(client_id):
 
 @blueprint.route("<tracking_id>/cancel", methods=["POST"])
 def cancel_extraction(tracking_id: str):
-    return routes.cancel_task(tracking_id)
+    return shared_routes.cancel_task(tracking_id)
 
 
 @blueprint.route("<tracking_id>/status", methods=["GET"])
 def status_extraction(tracking_id: str):
-    return routes.status(tracking_id, extract_objects)
+    return shared_routes.status(tracking_id, extract_objects)
 
 
 @blueprint.route("qsizes", methods=["GET"])
@@ -81,12 +81,12 @@ def qsizes_extraction():
     """
     List the queues of the broker and the number of tasks in each queue
     """
-    return routes.qsizes(extract_objects.broker)
+    return shared_routes.qsizes(extract_objects.broker)
 
 
 @blueprint.route("monitor", methods=["GET"])
 def monitor_extraction():
-    return routes.monitor(EXT_RESULTS_PATH, extract_objects.broker)
+    return shared_routes.monitor(EXT_RESULTS_PATH, extract_objects.broker)
 
 
 @blueprint.route("models", methods=['GET'])
