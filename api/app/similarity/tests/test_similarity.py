@@ -1,11 +1,30 @@
 import unittest
 import os
+from dramatiq import Worker
+import pytest
 
 from ..const import SCORES_PATH
 from ..lib.similarity import LoggedComputeSimilarity
 from ..lib.const import FEAT_NET
 from ..lib.utils import doc_pairs
 from ...shared.utils.logging import TLogger, LoggerHelper
+
+
+from ...main import broker
+
+
+# @pytest.fixture()
+# def stub_broker():
+#     broker.flush_all()
+#     return broker
+#
+#
+# @pytest.fixture()
+# def stub_worker():
+#     worker = Worker(broker, worker_timeout=100)
+#     worker.start()
+#     yield worker
+#     worker.stop()
 
 
 class TestLoggedComputeSimilarity(unittest.TestCase):
@@ -23,6 +42,15 @@ class TestLoggedComputeSimilarity(unittest.TestCase):
 
     def test_run_task(self):
         self.lcs.run_task()
+
+        # TODO: test with different parameters
+        # TODO: test with incorrect dataset
+        # TODO: test with images that are not / with gallica images
+        # TODO: test number of downloaded images
+        # TODO: test shape of features
+        # TODO: test that the expected number of pair files have been created
+        # TODO: test that pair files contains all images at least 10 times
+        # TODO: test the number of pairs in final files
 
         # Check that the expected number of npy files have been created
         pairs = doc_pairs(list(self.dataset.keys()))

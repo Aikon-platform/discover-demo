@@ -10,7 +10,7 @@ All dramatiq tasks related to the DTI clustering
 """
 
 
-@dramatiq.actor
+@dramatiq.actor()
 def collect_results(experiment_id: str, result_url: str):
     """
     Download the results from the API and save them to the dticlustering.results_path

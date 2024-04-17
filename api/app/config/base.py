@@ -14,6 +14,7 @@ API_DATA_FOLDER = Path(ENV("API_DATA_FOLDER", default=f"{BASE_DIR}/data"))
 # prefix url for exposing results: each app has => /<prefix>/<app_name> (must match docker-confs/nginx.conf)
 XACCEL_PREFIX = ENV("XACCEL_PREFIX", default="/media")
 
+
 class FLASK_CONFIG:
     pass
 

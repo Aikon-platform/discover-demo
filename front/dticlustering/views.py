@@ -259,7 +259,7 @@ class ClearAPIOldClusterings(PermissionRequiredMixin, LoginRequiredMixin, View):
     permission_required = "dticlustering.monitor_dticlustering"
 
     def post(self, *args, **kwargs):
-        output = DTIClustering.clear_api_old_clusterings()
+        output = DTIClustering.clear_api_old_tasks()
 
         if output is None or output.get("error"):
             messages.error(

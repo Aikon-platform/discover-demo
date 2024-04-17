@@ -9,6 +9,9 @@ import traceback
 from typing import Dict, Any
 from pathlib import Path
 
+from django.db.models.signals import pre_delete, post_save
+from django.dispatch.dispatcher import receiver
+
 from django.urls import reverse
 from django.conf import settings
 
@@ -27,7 +30,7 @@ def AbstractAPITask(task_prefix: str):
         id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
         name = models.CharField(
             max_length=64,
-            default=task_prefix,
+            # default=task_prefix,
             blank=True,
             verbose_name="Experiment name",
             help_text="Optional name to identify this clustering experiment",
@@ -217,7 +220,7 @@ def AbstractAPITask(task_prefix: str):
                 try:
                     send_mail(
                         f"[discover-demo] Task {self.status}",
-                        f"Your task {self} on discover-demo has finished with status {self.status}.\n\nYou can access the results at : {BASE_URL}{self.get_absolute_url()}",
+                        f"Your task {self} on discover-demo has finished with status {self.status}.\n\nYou can access the results at: {BASE_URL}{self.get_absolute_url()}",
                         settings.DEFAULT_FROM_EMAIL,
                         [self.requested_by.email],
                         fail_silently=False,
@@ -292,14 +295,14 @@ def AbstractAPITask(task_prefix: str):
         @classmethod
         def clear_old_tasks(cls, days_before: int = 30) -> Dict[str, int]:
             """
-            Clears all clusterings older than days_before days
+            Clears all tasks older than days_before days
             """
             raise NotImplementedError()
 
         @classmethod
-        def clear_api_old_clusterings(cls, days_before: int = 30) -> Dict[str, Any]:
+        def clear_api_old_tasks(cls, days_before: int = 30) -> Dict[str, Any]:
             """
-            Clears all clusterings older than days_before days from the API server
+            Clears all tasks older than days_before days from the API server
             """
             try:
                 api_query = requests.post(
@@ -310,7 +313,7 @@ def AbstractAPITask(task_prefix: str):
                 )
             except (ConnectionError, RequestException):
                 return {
-                    "error": "Connection error when clearing old clusterings from the worker"
+                    "error": "Connection error when clearing old tasks from the worker"
                 }
 
             try:
@@ -320,5 +323,11 @@ def AbstractAPITask(task_prefix: str):
                     "error": "Error when output from API server",
                     "output": api_query.text,
                 }
+
+    @receiver(pre_delete, sender=AbstractAPITask)
+    def pre_delete_task(sender, instance: AbstractAPITask, **kwargs):
+        # Used to delete digit files and annotations
+        # TODO add deletion of associated documents?
+        return
 
     return AbstractAPITask

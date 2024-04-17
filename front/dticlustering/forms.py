@@ -33,7 +33,7 @@ class DTIClusteringForm(forms.ModelForm):
         help_text="An optional name to identify this dataset",
         max_length=64,
         required=False,
-        initial="dti-data",
+        # initial="dti-data",
     )
 
     p_n_clusters = forms.IntegerField(

@@ -100,6 +100,10 @@ class TaskWatcherView(SingleObjectMixin, View):
     Expects data in the request JSON body
     """
 
+    def get(self, *args, **kwargs):
+        # TODO test task
+        return JsonResponse({"success": False, "error": "GET not allowed"})
+
     def post(self, *args, **kwargs):
         object = self.get_object()
 
@@ -112,6 +116,8 @@ class TaskWatcherView(SingleObjectMixin, View):
         data = json.loads(data)
 
         assert data is not None
+        assert "event" in data
+        # assert "output" in data
 
         object.receive_notification(data)
 
@@ -145,7 +151,7 @@ class TaskDeleteView(LoginRequiredIfConfProtectedMixin, TaskMixin, DetailView):
 
 class TaskListView(LoginRequiredIfConfProtectedMixin, TaskMixin, ListView):
     """
-    List of all clusterings
+    List of all tasks
     """
 
     template_name = "tasking/list.html"
@@ -153,7 +159,7 @@ class TaskListView(LoginRequiredIfConfProtectedMixin, TaskMixin, ListView):
     permission_see_all = "notimplemented"
 
     def get_queryset(self):
-        # if user doesn't have dticlustering.monitor right, only show their own clusterings
+        # if user doesn't have task.monitor right, only show their own experiments
         qset = (
             super()
             .get_queryset()

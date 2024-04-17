@@ -2,7 +2,6 @@ from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.db import models
 from django.utils.functional import cached_property
-from django.core.mail import send_mail, mail_admins
 from django.utils import timezone
 from django.urls import reverse
 from pathlib import Path
@@ -14,10 +13,9 @@ import io
 import traceback
 import shutil
 
-from typing import Dict, Any
+from typing import Dict
 
 from datasets.models import ZippedDataset
-from requests import RequestException
 
 from tasking.models import AbstractAPITask, API_URL, BASE_URL
 
@@ -62,6 +60,13 @@ class DTIClustering(AbstractAPITask("dti")):
         URL to the result summary file
         """
         return f"{self.result_media_url}/summary.zip"
+
+    @property
+    def result_zip_url(self) -> str:
+        """
+        URL to the full result in a zip file
+        """
+        return f"{self.result_media_url}/results.zip"
 
     def get_task_kwargs(self):
         return {
@@ -330,3 +335,5 @@ class SavedClustering(models.Model):
                 writer.writerow([img["id"], img["path"], cluster_id, cluster["name"]])
 
         return output.getvalue()
+
+    # TODO do we need a pre_delete method for SavedClustering

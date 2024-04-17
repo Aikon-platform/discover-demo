@@ -435,6 +435,16 @@ ul.messages {
 
 .is-center {
     margin: auto;
+    text-align: center;
+}
+
+.is-top {
+    z-index: 1000;
+}
+
+.is-left {
+    display: flex;
+    justify-content: flex-end;
 }
 
 

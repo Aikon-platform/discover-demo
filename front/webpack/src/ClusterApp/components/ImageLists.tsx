@@ -49,11 +49,10 @@ export function ClusterImage(props: { image: ImageInfo; transformed: boolean; se
   const image = props.image;
 
   return (
-    <div className={"cl-image" + (props.selected ? " cl-selected" : "")} onClick={props.onClick}>
+    <div className={"cl-image card" + (props.selected ? " cl-selected" : "")} onClick={props.onClick}>
       {props.selectable && <a href="javascript:void(0)" className="cl-selecter"></a>}
       <img src={editorContext!.state.base_url + ((props.transformed && image.tsf_url) ? image.tsf_url : image.raw_url)}
         alt={image.id.toString()} title={image.path} />
     </div>
   );
 }
-
