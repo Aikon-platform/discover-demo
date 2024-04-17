@@ -6,10 +6,10 @@ from slugify import slugify
 import uuid
 
 from ..main import app
-from .tasks import extract_objects, extract_all
+from .tasks import extract_objects, extract_all, restart_extract_objects
 from ..shared import routes as shared_routes
-from .const import EXT_RESULTS_PATH, MAN_PATH, MODEL_PATH
-
+from .const import EXT_RESULTS_PATH, MAN_PATH, MODEL_PATH, IMG_PATH
+from ..shared.utils.fileutils import delete_path
 
 blueprint = Blueprint("extraction", __name__, url_prefix="/extraction")
 
@@ -61,6 +61,29 @@ def start_extract_all(client_id):
 
     return {
         "message": f"Extraction task triggered for {url_file.filename}!",
+        "tracking_id": task.message_id,
+        "experiment_id": experiment_id,
+    }
+
+
+@blueprint.route("restart", methods=["POST"])
+@shared_routes.get_client_id
+@shared_routes.error_wrapper
+def restart_extraction(client_id):
+    experiment_id = slugify(request.form.get("experiment_id", str(uuid.uuid4())))
+    manifest_url = request.form['manifest_url']
+    model = request.form.get('model')
+    notify_url = request.form.get('callback')
+
+    task = restart_extract_objects.send(
+        experiment_id=experiment_id,
+        manifest_url=manifest_url,
+        model=model,
+        notify_url=notify_url,
+    )
+
+    return {
+        "message": f"Extraction task restarted for {manifest_url}!",
         "tracking_id": task.message_id,
         "experiment_id": experiment_id,
     }
