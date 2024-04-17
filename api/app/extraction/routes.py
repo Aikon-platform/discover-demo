@@ -1,19 +1,22 @@
 import os
 import time
 
-from flask import request, jsonify
+from flask import request, jsonify, Blueprint
 from slugify import slugify
 import uuid
 
 from ..main import app
-from ..shared import routes
 from .tasks import extract_objects, extract_all
-from ..shared.routes import get_client_id
+from ..shared import routes as shared_routes
 from .const import EXT_RESULTS_PATH, MAN_PATH, MODEL_PATH
 
 
-@app.route("/run_extraction", methods=["POST"])
-@get_client_id
+blueprint = Blueprint("extraction", __name__, url_prefix="/extraction")
+
+
+@blueprint.route("start", methods=["POST"])
+@shared_routes.get_client_id
+@shared_routes.error_wrapper
 def start_extraction(client_id):
     experiment_id = slugify(request.form.get("experiment_id", str(uuid.uuid4())))
     manifest_url = request.form['manifest_url']
@@ -34,8 +37,9 @@ def start_extraction(client_id):
     }
 
 
-@app.route("/extract_all", methods=["POST"])
-@get_client_id
+@blueprint.route("start_all", methods=["POST"])
+@shared_routes.get_client_id
+@shared_routes.error_wrapper
 def start_extract_all(client_id):
     experiment_id = slugify(request.form.get("experiment_id", str(uuid.uuid4())))
     url_file = request.files['url_file']
@@ -62,17 +66,17 @@ def start_extract_all(client_id):
     }
 
 
-@app.route("/extraction/<tracking_id>/cancel", methods=["POST"])
+@blueprint.route("<tracking_id>/cancel", methods=["POST"])
 def cancel_extraction(tracking_id: str):
     return routes.cancel_task(tracking_id)
 
 
-@app.route("/extraction/<tracking_id>/status", methods=["GET"])
+@blueprint.route("<tracking_id>/status", methods=["GET"])
 def status_extraction(tracking_id: str):
     return routes.status(tracking_id, extract_objects)
 
 
-@app.route("/extraction/qsizes", methods=["GET"])
+@blueprint.route("qsizes", methods=["GET"])
 def qsizes_extraction():
     """
     List the queues of the broker and the number of tasks in each queue
@@ -80,12 +84,12 @@ def qsizes_extraction():
     return routes.qsizes(extract_objects.broker)
 
 
-@app.route("/extraction/monitor", methods=["GET"])
+@blueprint.route("monitor", methods=["GET"])
 def monitor_extraction():
     return routes.monitor(EXT_RESULTS_PATH, extract_objects.broker)
 
 
-@app.route('/extraction/models', methods=['GET'])
+@blueprint.route("models", methods=['GET'])
 def get_models():
     models_info = {}
 
