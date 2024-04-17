@@ -26,9 +26,9 @@ def error_wrapper(func):
 def get_client_id(func):
     @functools.wraps(func)
     def decorator(*args, **kwargs):
-        client_ip = request.remote_addr
-        if request.method == "POST" and client_ip:
-            client_id = str(hash_str(client_ip))[:8]
+        client_addr = request.remote_addr + request.environ.get("REMOTE_PORT", "")
+        if request.method == "POST" and client_addr:
+            client_id = str(hash_str(client_addr))[:8]
             return func(client_id, *args, **kwargs)
         else:
             return {"message": "Error when generating the client_id"}, 403
