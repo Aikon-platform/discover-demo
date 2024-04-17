@@ -1,6 +1,6 @@
 dataset:
   name: generic
-  tag: santaphoto
+  tag: generic_config
   img_size: 128
 model:
   name: dtikmeans

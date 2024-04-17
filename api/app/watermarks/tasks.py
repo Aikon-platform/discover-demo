@@ -7,7 +7,13 @@ from typing import List, Dict, Optional
 from pathlib import Path
 import json
 import os
-from .const import MODEL_PATHS, DEVICE, WATERMARKS_DATA_FOLDER, WATERMARKS_QUEUE
+from .const import (
+    MODEL_PATHS,
+    DEVICE,
+    WATERMARKS_DATA_FOLDER,
+    WATERMARKS_QUEUE,
+    WATERMARKS_RESULTS_FOLDER,
+)
 from .sources import WatermarkSource
 
 from ..shared.utils.logging import notifying, TLogger, LoggerHelper
@@ -191,7 +197,7 @@ def pipeline(
     compare_to = WatermarkSource(compare_to) if compare_to else None
     output = _pipeline(image, detect, compare_to)
 
-    result_dir = WATERMARKS_DATA_FOLDER / "results"
+    result_dir = WATERMARKS_RESULTS_FOLDER
     result_dir.mkdir(parents=True, exist_ok=True)
     with open(
         result_dir / f"{CurrentMessage.get_current_message().message_id}.json", "w"

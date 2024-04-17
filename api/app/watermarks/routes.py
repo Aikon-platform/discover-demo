@@ -13,13 +13,14 @@ from PIL import Image, ImageOps
 import json
 import uuid
 
-from ..shared.utils.fileutils import xaccel_send_from_directory
+from ..shared.utils.fileutils import xaccel_send_from_directory, clear_dir
 from ..shared import routes as shared_routes
 from .. import config
 from .const import (
     WATERMARKS_SOURCES_FOLDER,
     WATERMARKS_XACCEL_PREFIX,
-    WATERMARKS_DATA_FOLDER,
+    WATERMARKS_RESULTS_FOLDER,
+    WATERMARKS_TMP_FOLDER,
 )
 from .tasks import pipeline
 from .sources import WatermarkSource
@@ -87,7 +88,7 @@ def start_task():
 
     im = Image.open(request.files["image"])
     im = ImageOps.exif_transpose(im).convert("RGB")
-    sv_dir = WATERMARKS_DATA_FOLDER / "tmp_queries"
+    sv_dir = WATERMARKS_TMP_FOLDER
     sv_dir.mkdir(parents=True, exist_ok=True)
     im_file = sv_dir / f"{experiment_id}.jpg"
     im.save(im_file)
@@ -116,7 +117,7 @@ def task_cancel(tracking_id):
 
 @blueprint.route("task/<tracking_id>/result", methods=["GET"])
 def task_result(tracking_id):
-    out_file = WATERMARKS_DATA_FOLDER / "results" / f"{tracking_id}.json"
+    out_file = WATERMARKS_RESULTS_FOLDER / f"{tracking_id}.json"
     if not out_file.exists():
         r = jsonify({"error": f"Result {tracking_id} not found"})
         r.status_code = 404
@@ -124,3 +125,22 @@ def task_result(tracking_id):
 
     with open(out_file, "r") as f:
         return jsonify(json.load(f))
+
+
+@blueprint.route("monitor/clear/", methods=["POST"])
+def clear_old_tasks():
+    return {
+        "cleared_tmp_queries": clear_dir(WATERMARKS_TMP_FOLDER),
+        "cleared_results": clear_dir(WATERMARKS_RESULTS_FOLDER),
+    }
+
+
+@blueprint.route("monitor/clear/<tracking_id>/", methods=["POST"])
+def clear_task(tracking_id: str):
+    return {
+        "cleared_results": clear_dir(
+            WATERMARKS_RESULTS_FOLDER,
+            file_to_check=f"{tracking_id}.json",
+            condition=True,
+        ),
+    }

@@ -11,7 +11,7 @@ from .. import config
 
 from ..main import app
 from .tasks import train_dti
-from ..shared.utils.fileutils import xaccel_send_from_directory, clear_dir
+from ..shared.utils.fileutils import xaccel_send_from_directory, clear_dir, delete_path
 from ..shared import routes as shared_routes
 from .const import (
     DTI_RESULTS_PATH,
@@ -93,4 +93,15 @@ def clear_clustering():
         "cleared_runs": clear_dir(RUNS_PATH, file_to_check="trainer.log"),
         "cleared_datasets": clear_dir(DATASETS_PATH, file_to_check="ready.meta"),
         "cleared_results": clear_dir(DTI_RESULTS_PATH, path_to_clear="*.zip"),
+    }
+
+
+@blueprint.route("monitor/clear/<tracking_id>/", methods=["POST"])
+def clear_run(tracking_id: str):
+    return {
+        "cleared_runs": 1 if delete_path(RUNS_PATH / tracking_id) else 0,
+        "cleared_datasets": 0,
+        "cleared_results": 1
+        if delete_path(DTI_RESULTS_PATH / f"{tracking_id}.zip")
+        else 0,
     }

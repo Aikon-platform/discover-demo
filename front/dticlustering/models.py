@@ -157,6 +157,20 @@ class DTIClustering(AbstractAPITask("dti")):
         return cleared_data
 
     @classmethod
+    def clear_task(cls, task_id) -> Dict[str, int]:
+        try:
+            c = cls.objects.filter(id=task_id)
+            shutil.rmtree(c.result_full_path, ignore_errors=True)
+            cleared = 1
+        except Exception:
+            cleared = 0
+
+        return {
+            "cleared_clusterings": cleared,
+            "cleared_datasets": 0,
+        }
+
+    @classmethod
     def get_frontend_monitoring(cls):
         """
         Returns a dict with the monitoring data
