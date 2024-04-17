@@ -23,7 +23,7 @@ sudo apt-get install redis-server python3-venv python3-dev
 [//]: # (requirepass <redis_password>)
 [//]: # (```)
 
-You need to init the dti submodule (and have the access to the [dti-sprites](https://github.com/sonatbaltaci/dti-sprites) project):
+You need to init the submodules (for `dticlustering` you need access to the [dti-sprites](https://github.com/sonatbaltaci/dti-sprites) project):
 
 ```bash
 git submodule init
@@ -70,15 +70,14 @@ Requirements:
 
 Create a user (replace `<docker-user>` by the name you want) to run the Docker
 ```bash
-sudo useradd -m <docker-user>
-sudo passwd <docker-user>
-sudo usermod -aG sudo <docker-user>
-sudo -iu <docker-user> # Connect as user
+# OPTIONAL: create a user to run the docker
+sudo useradd -m <docker-user> # Create user
+sudo passwd <docker-user> # Set password
+sudo usermod -aG sudo <docker-user> # Add user to sudo group
 
+sudo -iu <docker-user> # Connect as docker user
 sudo usermod -aG docker $USER # add user to docker group
 su - ${USER} # Reload session for the action to take effect
-
-id -u <docker-user> # Get uuid => DEMO_UID
 ```
 
 Configure SSH connexion to GitHub for user:
@@ -91,30 +90,33 @@ Clone and init submodule
 git clone git@github.com:Evarin/DTI-demo.git
 cd DTI-demo/api/
 
+# OPTIONAL: if you are deploying demos using submodules (like dticlustering)
 git submodule init
 git submodule update
 ```
 
-Copy the file `.env` to a file `.env.prod`. Change it to `TARGET=prod`, and indicate the appropriate credentials.
+Copy the file `.env` to a file `.env.prod` and change `TARGET=prod`.
 
 ```bash
 cp .env.template .env.prod
 sed -i -e 's/^TARGET=.*/TARGET="prod"/' .env.prod
-```
 
-Create a folder (`DATA_FOLDER`) to store results of experiments and set its permissions:
-```bash
-mkdir </path/to/results/> # e.g. /media/<docker-user>/
-sudo chmod o+X </path>
-sudo chmod o+X </path/to>
-sudo chmod -R u+rwX </path/to/results/>
+# OPTIONAL: modify other variables, notably INSTALLED_APPS
+vi .env.prod
 ```
 
 In [`docker.sh`](docker.sh), modify the variables depending on your setup:
 - `DATA_FOLDER`: absolute path to directory where results are stored
-- `DEMO_UID`: Universally Unique Identifier of the `<docker-user>` (`id -u <username>`)
-- `DEVICE_NB`: GPU number to be used by container (get available GPU with `nvidia-smi`)
+- `DEMO_UID`: Universally Unique Identifier of the `<docker-user>` (`id -u <docker-user>`)
+- `DEVICE_NB`: GPU number to be used by container (get available GPUs with `nvidia-smi`)
 
+Create the folder matching `DATA_FOLDER` in the `docker.sh` to store results of experiments and set its permissions:
+```bash
+mkdir </path/to/results/> # e.g. /media/<docker-user>/
+sudo chmod o+X </path/to>
+sudo chmod -R u+rwX </path/to/results/>
+sudo chown <docker-user> </path/to/results/>
+```
 
 Build the docker using the premade script:
 
@@ -125,27 +127,29 @@ bash docker.sh rebuild
 It should have started the docker, check it is the case with:
 - `docker logs demowebsiteapi --tail 50`: show last 50 log messages
 - `docker ps`: show running docker containers
-- `curl 127.0.0.1:8001/test`: show if container receives requests
+- `curl 127.0.0.1:8001/<installed_app>/monitor`: show if container receives requests
 - `docker exec demowebsiteapi /bin/nvidia-smi`: checks that docker communicates with nvidia
+- `docker exec -it demowebsiteapi /bin/bash`
 
 The API is now accessible locally at `http://localhost:8001`.
 
 #### Secure connection
 
-A good thing is to tunnel securely the connection between API and front. For `discover-demo.enpc.fr`, it is done with `spiped`, based on [this tutorial](https://www.digitalocean.com/community/tutorials/how-to-encrypt-traffic-to-redis-with-spiped-on-ubuntu-16-04)
-(with target ports `8001`, in service `spiped-connect` on frontend server and `spiped-dti` on worker).
+A good thing is to tunnel securely the connection between API and front. For `discover-demo.enpc.fr`, it is done with `spiped`, based on [this tutorial](https://www.digitalocean.com/community/tutorials/how-to-encrypt-traffic-to-redis-with-spiped-on-ubuntu-16-04).
+The Docker process running on port `localhost:8001` is encrypted and redirected to port `8080`.
+The front server decrypts the traffic and redirects it to `localhost:8001`.
 
 ```bash
 sudo apt-get update
 sudo apt-get install spiped
 sudo mkdir /etc/spiped
-sudo dd if=/dev/urandom of=/etc/spiped/dti.key bs=32 count=1
-sudo chmod 644 /etc/spiped/dti.key
+sudo dd if=/dev/urandom of=/etc/spiped/discover.key bs=32 count=1 # Genereate key
+sudo chmod 644 /etc/spiped/discover.key
 ```
 
-Create service config file for spiped (`sudo vi /etc/systemd/system/spiped-dti.service`)
-Get `<docker-ip>` with `docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' demowebsiteapi` or use `127.0.0.1`
-The Docker port (here `8001`) must match the `API_PORT` defined in [`api/.env`](./.env.template)
+Create service config file for spiped (`sudo vi /etc/systemd/system/spiped-discover.service`):
+- Get `<docker-ip>` with `docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' demowebsiteapi` or use `127.0.0.1`
+- Pick Docker port (here `8001`) depending on `EXPOSE` in [`Dockerfile`](Dockerfile)
 
 ```bash
 [Unit]
@@ -155,8 +159,8 @@ After=network-online.target
 StartLimitIntervalSec=300
 
 [Service]
-# Redirects <docker-ip>:8001 to 0.0.0.0:8080 and encrypts it with dti.key on the way
-ExecStart=/usr/bin/spiped -F -d -s [0.0.0.0]:8080 -t [<docker-ip>]:8001 -k /etc/spiped/dti.key
+# Redirects <docker-ip>:8001 to 0.0.0.0:8080 and encrypts it with discover.key on the way
+ExecStart=/usr/bin/spiped -F -d -s [0.0.0.0]:8080 -t [<docker-ip>]:8001 -k /etc/spiped/discover.key
 Restart=on-failure
 
 [Install]
@@ -168,23 +172,25 @@ Open port to external requests and enable spiped service
 sudo ufw allow 8080 # open firewall and allow incoming traffic on port 8080
 
 sudo systemctl daemon-reload
-sudo systemctl start spiped-dti.service
-sudo systemctl enable spiped-dti.service
+sudo systemctl start spiped-discover.service
+sudo systemctl enable spiped-discover.service
 ```
 
 Transfer key to front ([`spiped`](https://github.com/tarsnap/spiped) uses symmetric encryption with same keys on both servers)
 ```bash
-# from your gpu machine
-sudo chmod 644 /etc/spiped/dti.key
-scp /etc/spiped/dti.key <front-host>:~
+# on gpu machine
+sudo chmod 644 /etc/spiped/discover.key
+scp /etc/spiped/discover.key <front-host>:~ # Assuming you have configured direct ssh connection to front
+
+# on front machine
 ssh <front-host>
-sudo chmod 644 ~/dti.key
+sudo chmod 644 ~/discover.key
 sudo mkdir /etc/spiped
-sudo cp ~/dti.key /etc/spiped/
+sudo cp ~/discover.key /etc/spiped/ # Copy key to spiped folder
 ```
 
 Create service config file for spiped on front machine (`sudo vi /etc/systemd/system/spiped-connect.service`)
-Get `<gpu-ip>` with `hostname -I` on the machine where is deployed the API.
+- Get `<gpu-ip>` with `hostname -I` on the machine where is deployed the API.
 
 ⚠️ Note to match the output IP (`127.0.0.1:8001` in this example) to the `API_URL` in [`front/.env`](../front/.env)
 
@@ -196,8 +202,8 @@ After=network-online.target
 StartLimitIntervalSec=300
 
 [Service]
-# Redirects <gpu-ip>:8080 output to 127.0.0.1:8001 and decrypts it with dti.key on the way
-ExecStart=/usr/bin/spiped -F -e -s [127.0.0.1]:8001 -t [<gpu-ip>]:8080 -k /etc/spiped/dti.key
+# Redirects <gpu-ip>:8080 output to 127.0.0.1:8001 and decrypts it with discover.key on the way
+ExecStart=/usr/bin/spiped -F -e -s [127.0.0.1]:8001 -t [<gpu-ip>]:8080 -k /etc/spiped/discover.key
 Restart=Always
 
 [Install]
@@ -213,8 +219,8 @@ sudo systemctl enable spiped-connect.service
 
 Test connexion between worker and front
 ```bash
-curl --http0.9 <gpu-ip>:8080/test # outputs the encrypted message
-curl localhost:8001/test # outputs {"response":"ok"}
+curl --http0.9 <gpu-ip>:8080/<installed_app>/monitor # outputs the encrypted message
+curl localhost:8001/<installed_app>/monitor # outputs decrypted message
 ```
 
 ### Update
