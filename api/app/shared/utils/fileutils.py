@@ -1,6 +1,7 @@
 import os
 import shutil
 from datetime import datetime
+from os.path import exists
 
 from pathlib import Path
 from flask import Response
@@ -126,3 +127,17 @@ def get_file_ext(filepath):
     path, ext = os.path.splitext(filepath)
     _, filename = os.path.split(path)
     return filename if ext else None, ext[1:] if ext else None
+
+
+def sanitize_url(string):
+    return string.replace(" ", "+").replace(" ", "+")
+
+
+def sanitize_str(string):
+    return (string.replace("/", "").replace(".", "").replace("https", "").replace("http", "")
+            .replace("www", "").replace(" ", "_").replace(":", ""))
+
+
+def empty_file(string):
+    if exists(string):
+        open(string, 'w').close()
