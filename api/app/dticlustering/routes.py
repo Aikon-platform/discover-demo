@@ -21,6 +21,7 @@ from .const import (
     DTI_XACCEL_PREFIX,
 )
 
+
 blueprint = Blueprint("clustering", __name__, url_prefix="/clustering")
 
 
