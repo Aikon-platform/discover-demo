@@ -26,9 +26,8 @@ def error_wrapper(func):
 def get_client_id(func):
     @functools.wraps(func)
     def decorator(*args, **kwargs):
-        client_addr = (
-            request.remote_addr
-        )  # + str(request.environ.get("REMOTE_PORT", ""))
+        headers = request.headers
+        client_addr = f"{headers.get('User-Agent', '')}_{request.remote_addr}_{headers.get('X-Forwarded-For', '')}"
         if request.method == "POST" and client_addr:
             client_id = str(hash_str(client_addr))[:8]
             return func(client_id, *args, **kwargs)

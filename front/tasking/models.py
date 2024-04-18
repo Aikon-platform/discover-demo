@@ -324,10 +324,38 @@ def AbstractAPITask(task_prefix: str):
                     "output": api_query.text,
                 }
 
+        @classmethod
+        def clear_task(cls, task_id: str) -> Dict[str, int]:
+            """
+            Clears the files of a given task
+            """
+            raise NotImplementedError()
+
+        @classmethod
+        def clear_api_task(cls, tracking_id: str) -> Dict[str, Any]:
+            """
+            Clears the files generated during this task on the API server
+            """
+            try:
+                api_query = requests.post(
+                    f"{API_URL}/{cls.api_endpoint_prefix}/monitor/clear/{tracking_id}",
+                )
+            except (ConnectionError, RequestException):
+                return {"error": "Connection error when clearing task from the worker"}
+
+            try:
+                return api_query.json()
+            except:
+                return {
+                    "error": "Error when clearing task from the worker",
+                    "output": api_query.text,
+                }
+
     @receiver(pre_delete, sender=AbstractAPITask)
     def pre_delete_task(sender, instance: AbstractAPITask, **kwargs):
-        # Used to delete digit files and annotations
-        # TODO add deletion of associated documents?
+        # Clear files on the API server
+        sender.clear_api_task(instance.api_tracking_id)
+        sender.clear_task(instance.id)
         return
 
     return AbstractAPITask

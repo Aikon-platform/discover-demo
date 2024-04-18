@@ -5,7 +5,7 @@ import uuid
 from ..main import app
 from .tasks import compute_similarity
 from ..shared import routes as shared_routes
-from ..shared.utils.fileutils import delete_path
+from ..shared.utils.fileutils import delete_path, clear_dir
 from .const import (
     IMG_PATH,
     FEATS_PATH,
@@ -41,7 +41,7 @@ def start_similarity(client_id):
     """
 
     if not request.is_json:
-        return "Similarity task aborted!"
+        return "No JSON in request: Similarity task aborted!"
 
     experiment_id = slugify(request.form.get("experiment_id", str(uuid.uuid4())))
     # dict of document ids with a URL containing a list of images
@@ -100,16 +100,31 @@ def monitor_similarity():
     return shared_routes.monitor(SIM_RESULTS_PATH, compute_similarity.broker)
 
 
+@blueprint.route("monitor/clear/", methods=["POST"])
+def clear_old_similarity():
+    return {
+        "cleared_img_dir": clear_dir(IMG_PATH),
+        "cleared features": clear_dir(FEATS_PATH, path_to_clear="*.pt"),
+        "cleared_results": clear_dir(SIM_RESULTS_PATH, path_to_clear="*.npy"),
+    }
+
+
 @blueprint.route("monitor/clear/<doc_id>/", methods=["POST"])
 def clear_doc(doc_id: str):
     """
     Clear all images, features and scores related to a given document
     doc_id = "{app_name}_{doc_id}"
+    TODO: re-united doc_id / tracking_id
     """
 
-    output = {
-        "cleared_img_dir": 1 if delete_path(IMG_PATH / doc_id) else 0,
-        "cleared features": 1 if delete_path(FEATS_PATH / f"{doc_id}.pt") else 0,
-        "cleared_results": 0,  # TODO clear all pair score files for a given doc_id
+    return {
+        "cleared_img_dir": clear_dir(
+            IMG_PATH, path_to_clear=f"*_{doc_id}", condition=True
+        ),
+        "cleared features": clear_dir(
+            FEATS_PATH, path_to_clear=f"*_{doc_id}.pt", condition=True
+        ),
+        "cleared_results": clear_dir(
+            SIM_RESULTS_PATH, path_to_clear=f"*{doc_id}*.npy", condition=True
+        ),
     }
-    return output

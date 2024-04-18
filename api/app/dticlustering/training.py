@@ -128,6 +128,23 @@ class LoggingTrainerMixin:
         return [np.array([]) for k in range(self.n_prototypes)]
 
     @torch.no_grad()
+    def save_metric_plots(self):
+        """
+        Overwrite original save_metric_plots method for lightweight plots saving
+        # TODO fill this function even for kmeans clustering
+        """
+        # self.model.eval()
+        # # Prototypes & transformation predictions
+        # self.save_prototypes()
+        # if self.learn_masks:
+        #     self.save_masked_prototypes()
+        #     self.save_masks()
+        # if self.learn_backgrounds:
+        #     self.save_backgrounds()
+        # self.save_transformed_images()
+        pass
+
+    @torch.no_grad()
     def _get_cluster_argmin_idx(self, images):
         raise NotImplementedError()
 
