@@ -124,6 +124,8 @@ Build the docker using the premade script:
 bash docker.sh rebuild
 ```
 
+Inside `$DATA_FOLDER/data`, add models and necessary files for the demos inside their respective sub-folders.
+
 It should have started the docker, check it is the case with:
 - `docker logs demowebsiteapi --tail 50`: show last 50 log messages
 - `docker ps`: show running docker containers
