@@ -58,12 +58,18 @@ def consistent_mask(m1, m2, o1, o2):
     flow21 = (o2.narrow(1, 0, 2).permute(0, 2, 3, 1) - 0.5) * 2
 
     m1_back = F.grid_sample(
-        torch.from_numpy(m2.astype(np.float32)), flow12, mode="bilinear"
+        torch.from_numpy(m2.astype(np.float32)),
+        flow12,
+        mode="bilinear",
+        align_corners=False,
     )
     m1_final = m1 * m1_back.numpy()
 
     m2_back = F.grid_sample(
-        torch.from_numpy(m1.astype(np.float32)), flow21, mode="bilinear"
+        torch.from_numpy(m1.astype(np.float32)),
+        flow21,
+        mode="bilinear",
+        align_corners=False,
     )
     m2_final = m2 * m2_back.numpy()
     return m1_final, m2_final
