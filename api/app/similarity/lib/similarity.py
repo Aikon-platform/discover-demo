@@ -262,7 +262,6 @@ class LoggedComputeSimilarity(LoggingTaskMixin, ComputeSimilarity):
                 self.print_and_log(
                     f"[task.similarity] Unable to download images for {doc_id}", e
                 )
-                continue
 
     def compute_and_send_scores(self):
         for doc_pair in doc_pairs(self.doc_ids):

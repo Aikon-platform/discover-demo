@@ -14,6 +14,7 @@ from PIL import Image
 # from .similarity import log_failed_img
 from ..const import IMG_PATH, MODEL_PATH, LIB_PATH
 from .const import MAX_SIZE
+from ...shared.utils.fileutils import create_dir
 from ...shared.utils.logging import console
 
 model_urls = {
@@ -173,9 +174,9 @@ def get_doc_dirs(doc_pair):
 
 
 def is_downloaded(doc_id):
-    path = f"{IMG_PATH}/{doc_id}/"
+    path = Path(f"{IMG_PATH}/{doc_id}/")
     if not os.path.exists(path):
-        Path(os.path.dirname(path)).mkdir(parents=True, exist_ok=True)
+        create_dir(path)
         return False
     if len(os.listdir(path)) == 0:
         return False
