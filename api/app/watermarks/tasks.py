@@ -10,7 +10,6 @@ import os
 from .const import (
     MODEL_PATHS,
     DEVICE,
-    WATERMARKS_DATA_FOLDER,
     WATERMARKS_QUEUE,
     WATERMARKS_RESULTS_FOLDER,
 )
