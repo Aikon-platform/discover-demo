@@ -40,7 +40,7 @@ def start_similarity(client_id):
     """
 
     if not request.is_json:
-        return "Similarity task aborted!"
+        return "No JSON in request: Similarity task aborted!"
 
     experiment_id = slugify(request.form.get("experiment_id", str(uuid.uuid4())))
     # dict of document ids with a URL containing a list of images
