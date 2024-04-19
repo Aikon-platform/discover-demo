@@ -135,7 +135,10 @@ def download_images(url, doc_id):
     """
 
     images = get_json(url)
-    # z = len(str(len(images)))
+    if len(images.items()) == 0:
+        console(f"{url} does not contain any images.", color="yellow")
+        return []
+
     # i = 1
     paths = []
     for img_name, img_url in tqdm(images.items(), desc="Downloading Images"):
