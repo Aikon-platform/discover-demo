@@ -78,34 +78,34 @@ class DTIClusteringForm(forms.ModelForm):
         required=True,
         initial=["0_identity", "1_color"],
     )
-    p_n_epochs = forms.IntegerField(
-        label="Number of epochs",
-        help_text="Number of times the whole dataset is passed through the network",
-        min_value=10,
-        max_value=1000,
-        initial=400,
-        required=True,
-    )
-    p_batch_size = forms.IntegerField(
-        label="Batch size",
-        help_text="Number of samples used per iteration",
-        min_value=10,
-        max_value=40,
-        initial=16,
-        required=True,
-    )
-    p_milestones = IntegerListField(
-        label="Milestones",
-        help_text="List of epoch indices (integers separated by a comma) where learning rate is reduced",
-        initial=350,
-        required=True,
-    )
-    p_curriculum = IntegerListField(
-        label="Learning curriculum",
-        help_text="List of epoch indices (integers separated by a comma) to unlock/unfreeze/learn transformations",
-        initial=0,
-        required=True,
-    )
+    # p_n_epochs = forms.IntegerField(
+    #     label="Number of epochs",
+    #     help_text="Number of times the whole dataset is passed through the network",
+    #     min_value=10,
+    #     max_value=1000,
+    #     initial=400,
+    #     required=True,
+    # )
+    # p_batch_size = forms.IntegerField(
+    #     label="Batch size",
+    #     help_text="Number of samples used per iteration",
+    #     min_value=10,
+    #     max_value=40,
+    #     initial=16,
+    #     required=True,
+    # )
+    # p_milestones = IntegerListField(
+    #     label="Milestones",
+    #     help_text="List of epoch indices (integers separated by a comma) where learning rate is reduced",
+    #     initial=350,
+    #     required=True,
+    # )
+    # p_curriculum = IntegerListField(
+    #     label="Learning curriculum",
+    #     help_text="List of epoch indices (integers separated by a comma) to unlock/unfreeze/learn transformations",
+    #     initial=0,
+    #     required=True,
+    # )
 
     class Meta:
         model = DTIClustering
