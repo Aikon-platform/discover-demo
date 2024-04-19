@@ -251,11 +251,22 @@ def run_sprites_training(
     train_config["dataset"]["tag"] = dataset_id
     run_dir = RUNS_PATH / clustering_id
 
-    if parameters.get("background_option", "1_learn_bg") == "2_const_bg":
+    # Set background option
+    bkg_opt = parameters.get("background_option", "1_learn_bg")
+
+    if bkg_opt == "2_const_bg":
         # Data parameters are respectively [foreground, background, masks]
         train_config["model"]["prototype"]["data"]["freeze"][1] = True
         train_config["model"]["prototype"]["data"]["init"][1] = "constant"
         train_config["model"]["prototype"]["data"]["value"][1] = 0.1
+    elif bkg_opt == "3_learn_fg":
+        train_config["model"]["prototype"]["data"]["freeze"] = [True, True, False]
+        train_config["model"]["prototype"]["data"]["init"] = [
+            "constant",
+            "constant",
+            "gaussian",
+        ]
+        train_config["model"]["prototype"]["data"]["value"] = [0.1, 0.9, 0.0]
 
     # Set training parameters from parameters
     if "n_prototypes" in parameters:
