@@ -112,8 +112,9 @@ def segswap_similarity(cos_pairs, output_file=None):
     mask = np.ones((feat_size, feat_size), dtype=bool)
     y_grid, x_grid = np.where(mask)
 
-    dtype = [("score", float), ("doc1", "U100"), ("doc2", "U100")]
-    scores_npy = np.empty((0, 3), dtype=dtype)
+    # dtype = [("score", float), ("doc1", "U100"), ("doc2", "U100")]
+    # scores_npy = np.empty((0, 3), dtype=dtype)
+    scores_npy = np.empty((0, 3), dtype=object)
 
     norm_mean, norm_std = (0.485, 0.456, 0.406), (0.229, 0.224, 0.225)
     transformINet = transforms.Compose(
@@ -153,18 +154,24 @@ def segswap_similarity(cos_pairs, output_file=None):
             x_grid,
         )
 
-        q_scores = np.empty(len(score), dtype=dtype)
+        # q_scores = np.empty(len(score), dtype=dtype)
 
         for i in range(len(score)):
-            q_scores[i]["score"] = round(score[i], 5)
-            q_scores[i]["doc1"] = q_img
-            q_scores[i]["doc2"] = os.path.basename(sim_imgs[i])
+            s_img = sim_imgs[i]
+            pair_score = np.array(
+                [[round(score[i], 5), q_img, os.path.basename(s_img)]]
+            )
+            scores_npy = np.vstack([scores_npy, pair_score])
+            # q_scores[i]["score"] = round(score[i], 5)
+            # q_scores[i]["doc1"] = q_img
+            # q_scores[i]["doc2"] = os.path.basename(sim_imgs[i])
 
-        scores_npy = np.append(scores_npy, q_scores)
+        # scores_npy = np.append(scores_npy, q_scores)
 
     if output_file:
         try:
-            np.save(output_file, scores_npy, allow_pickle=False)
+            # np.save(output_file, scores_npy, allow_pickle=False)
+            np.save(output_file, scores_npy)
         except Exception as e:
             console(f"Failed to save {output_file}.npy", e=e)
 
