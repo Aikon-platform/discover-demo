@@ -14,10 +14,10 @@ from .training import (
 from ..shared.utils.logging import notifying, TLogger, LoggerHelper
 
 
+# @notifying TODO implement results return with notifying
 @dramatiq.actor(
     time_limit=1000 * 60 * 60, max_retries=0, store_results=True, queue_name=DTI_QUEUE
 )
-@notifying
 def train_dti(
     experiment_id: str,
     dataset_id: str,
