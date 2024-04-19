@@ -46,7 +46,7 @@ def get_doc_feat(doc_id, feat_net=FEAT_NET, feat_set=FEAT_SET, feat_layer=FEAT_L
         .numpy()
     )
     if not len(features) or type(features) is not np.ndarray:
-        console("Error when extracting features", color="red")
+        console(f"Error when extracting features of {doc_id}", color="red")
         raise ValueError
     return features, img_dataset.get_image_paths()
 
@@ -205,12 +205,6 @@ class ComputeSimilarity:
             return False
         return True
 
-    def download_doc(self, doc_id, url):
-        doc_id = f"{self.client_id}_{doc_id}"
-        self.doc_ids.append(doc_id)
-        if not is_downloaded(doc_id):
-            download_images(url, doc_id)
-
     def send_scores(self, doc_pair, score_file):
         if not self.notify_url:
             return
@@ -254,10 +248,17 @@ class LoggedComputeSimilarity(LoggingTaskMixin, ComputeSimilarity):
 
     def download_dataset(self):
         for doc_id, url in self.dataset.items():
-            self.print_and_log(f"[task.similarity] Processing {doc_id}...")
+            self.print_and_log(
+                f"[task.similarity] Processing {doc_id}...", color="blue"
+            )
             try:
-                self.print_and_log(f"[task.similarity] Downloading {doc_id} images...")
-                self.download_doc(doc_id, url)
+                doc_id = f"{self.client_id}_{doc_id}"
+                self.doc_ids.append(doc_id)
+                if not is_downloaded(doc_id):
+                    self.print_and_log(
+                        f"[task.similarity] Downloading {doc_id} images..."
+                    )
+                    download_images(url, doc_id)
             except Exception as e:
                 self.print_and_log(
                     f"[task.similarity] Unable to download images for {doc_id}", e
@@ -268,12 +269,16 @@ class LoggedComputeSimilarity(LoggingTaskMixin, ComputeSimilarity):
             score_file = self.compute_scores(doc_pair)
             if not score_file:
                 self.print_and_log_warning(
-                    "[task.similarity] Error when computing scores"
+                    f"[task.similarity] Error when computing scores for {doc_pair}"
                 )
                 continue
 
             try:
                 self.send_scores(doc_pair, score_file)
+                self.print_and_log(
+                    f"[task.similarity] Successfully send scores for {doc_pair} to {self.notify_url}",
+                    color="magenta",
+                )
             except requests.exceptions.RequestException as e:
                 self.print_and_log(
                     f"[task.similarity] Error in callback request for {doc_pair}", e
@@ -292,7 +297,7 @@ class LoggedComputeSimilarity(LoggingTaskMixin, ComputeSimilarity):
         pair_name = "-".join(sorted(doc_pair))
         score_file = SCORES_PATH / f"{pair_name}.npy"
         if not os.path.exists(score_file):
-            self.print_and_log(f"COMPUTING SIMILARITY FOR {doc_pair}")
+            self.print_and_log(f"COMPUTING SIMILARITY FOR {doc_pair}", color="magenta")
             success = self.compute_pairs(doc_pair, score_file)
             if success:
                 self.computed_pairs.append(pair_name)
