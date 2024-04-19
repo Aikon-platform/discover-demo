@@ -1,6 +1,7 @@
 import os
 import sys
 from itertools import combinations_with_replacement
+from tqdm import tqdm
 
 import requests
 import urllib.request
@@ -74,7 +75,7 @@ def save_img(
         img.save(f"{img_path}/{img_filename}.jpg", format=img_format)
         return img
     except Exception as e:
-        console(f"Failed to save img as JPEG", e=e)
+        console(f"Failed to save {img_filename} as JPEG", e=e)
         return False
 
 
@@ -97,6 +98,7 @@ def doc_pairs(doc_ids: list):
 
 def download_img(img_url, doc_id, img_name):
     doc_dir = f"{IMG_PATH}/{doc_id}"
+    console(f"{img_name}...")
     try:
         with requests.get(img_url, stream=True) as response:
             response.raw.decode_content = True
@@ -135,7 +137,7 @@ def download_images(url, doc_id):
     # z = len(str(len(images)))
     # i = 1
     paths = []
-    for img_name, img_url in images.items():
+    for img_name, img_url in tqdm(images.items(), desc="Downloading Images"):
         # img_name = f"{i:0{z}}.jpg"
         # i += 1
         download_img(img_url, doc_id, img_name)
