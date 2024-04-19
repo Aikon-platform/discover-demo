@@ -46,8 +46,7 @@ def get_doc_feat(doc_id, feat_net=FEAT_NET, feat_set=FEAT_SET, feat_layer=FEAT_L
         .numpy()
     )
     if not len(features) or type(features) is not np.ndarray:
-        console(f"Error when extracting features of {doc_id}", color="red")
-        raise ValueError
+        raise ValueError(f"No feature extracted for {doc_id}")
     return features, img_dataset.get_image_paths()
 
 

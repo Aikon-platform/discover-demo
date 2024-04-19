@@ -14,7 +14,7 @@ from .const import (
 )
 
 from .lib.const import FEAT_NET, FEAT_SET, FEAT_LAYER
-
+from ..shared.utils.logging import console
 
 blueprint = Blueprint("similarity", __name__, url_prefix="/similarity")
 
@@ -43,18 +43,21 @@ def start_similarity(client_id):
     if not request.is_json:
         return "No JSON in request: Similarity task aborted!"
 
+    json_param = request.get_json()
+    console(json_param, color="cyan")
+
     experiment_id = slugify(request.form.get("experiment_id", str(uuid.uuid4())))
     # dict of document ids with a URL containing a list of images
-    dataset = request.get_json().get("documents", {})
+    dataset = json_param.get("documents", {})
     parameters = {
         # which feature extraction backbone to use
-        "feat_net": request.get_json().get("model", FEAT_NET),
-        "feat_set": request.get_json().get("feat_set", FEAT_SET),
-        "feat_layer": request.get_json().get("feat_layer", FEAT_LAYER),
+        "feat_net": json_param.get("model", FEAT_NET),
+        "feat_set": json_param.get("feat_set", FEAT_SET),
+        "feat_layer": json_param.get("feat_layer", FEAT_LAYER),
         "client_id": client_id,
     }
     # which url to send back the similarity results and updates on the task
-    notify_url = request.get_json().get("callback", None)
+    notify_url = json_param.get("callback", None)
 
     return shared_routes.start_task(
         compute_similarity,

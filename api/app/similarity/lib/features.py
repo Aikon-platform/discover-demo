@@ -74,12 +74,13 @@ def extract_features(
         if os.path.exists(feat_path):
             feats = torch.load(feat_path, map_location=device)
             if feats.numel() != 0:
-                console(f"Load already computed features {doc_id}")
+                console(f"Load extracted features for {doc_id}")
                 return feats
             console(
                 f"[extract_features] {doc_id} features file is empty: recomputing...",
                 color="yellow",
             )
+        console(f"[extract_features] Extracting features for {doc_id}...")
 
         try:
             model_path = get_model_path(feat_net)
