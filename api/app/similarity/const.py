@@ -8,7 +8,7 @@ DEMO_NAME = "similarity"
 DEMO_DIR = BASE_DIR / "app" / DEMO_NAME
 LIB_PATH = DEMO_DIR / "lib"
 
-SIM_QUEUE = "queue2"  # see docker-confs/supervisord.conf
+SIM_QUEUE = "queue1"  # see docker-confs/supervisord.conf
 
 SIM_DATA_FOLDER = API_DATA_FOLDER / DEMO_NAME
 SIM_XACCEL_PREFIX = f"{XACCEL_PREFIX}/{DEMO_NAME}"
@@ -24,4 +24,3 @@ create_dirs_if_not([IMG_PATH, MODEL_PATH, SCORES_PATH, FEATS_PATH])
 IMG_LOG = Path(f"{DEMO_DIR}/img.log")
 
 create_file_if_not(IMG_LOG)
-

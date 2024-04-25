@@ -46,8 +46,7 @@ def get_doc_feat(doc_id, feat_net=FEAT_NET, feat_set=FEAT_SET, feat_layer=FEAT_L
         .numpy()
     )
     if not len(features) or type(features) is not np.ndarray:
-        console("Error when extracting features", color="red")
-        raise ValueError
+        raise ValueError(f"No feature extracted for {doc_id}")
     return features, img_dataset.get_image_paths()
 
 
@@ -113,8 +112,9 @@ def segswap_similarity(cos_pairs, output_file=None):
     mask = np.ones((feat_size, feat_size), dtype=bool)
     y_grid, x_grid = np.where(mask)
 
-    dtype = [("score", float), ("doc1", "U100"), ("doc2", "U100")]
-    scores_npy = np.empty((0, 3), dtype=dtype)
+    # dtype = [("score", float), ("doc1", "U100"), ("doc2", "U100")]
+    # scores_npy = np.empty((0, 3), dtype=dtype)
+    scores_npy = np.empty((0, 3), dtype=object)
 
     norm_mean, norm_std = (0.485, 0.456, 0.406), (0.229, 0.224, 0.225)
     transformINet = transforms.Compose(
@@ -154,18 +154,24 @@ def segswap_similarity(cos_pairs, output_file=None):
             x_grid,
         )
 
-        q_scores = np.empty(len(score), dtype=dtype)
+        # q_scores = np.empty(len(score), dtype=dtype)
 
         for i in range(len(score)):
-            q_scores[i]["score"] = round(score[i], 5)
-            q_scores[i]["doc1"] = q_img
-            q_scores[i]["doc2"] = os.path.basename(sim_imgs[i])
+            s_img = sim_imgs[i]
+            pair_score = np.array(
+                [[round(score[i], 5), q_img, os.path.basename(s_img)]]
+            )
+            scores_npy = np.vstack([scores_npy, pair_score])
+            # q_scores[i]["score"] = round(score[i], 5)
+            # q_scores[i]["doc1"] = q_img
+            # q_scores[i]["doc2"] = os.path.basename(sim_imgs[i])
 
-        scores_npy = np.append(scores_npy, q_scores)
+        # scores_npy = np.append(scores_npy, q_scores)
 
     if output_file:
         try:
-            np.save(output_file, scores_npy, allow_pickle=False)
+            # np.save(output_file, scores_npy, allow_pickle=False)
+            np.save(output_file, scores_npy)
         except Exception as e:
             console(f"Failed to save {output_file}.npy", e=e)
 
@@ -204,12 +210,6 @@ class ComputeSimilarity:
         if len(list(self.dataset.keys())) == 0:
             return False
         return True
-
-    def download_doc(self, doc_id, url):
-        doc_id = f"{self.client_id}_{doc_id}"
-        self.doc_ids.append(doc_id)
-        if not is_downloaded(doc_id):
-            download_images(url, doc_id)
 
     def send_scores(self, doc_pair, score_file):
         if not self.notify_url:
@@ -254,27 +254,37 @@ class LoggedComputeSimilarity(LoggingTaskMixin, ComputeSimilarity):
 
     def download_dataset(self):
         for doc_id, url in self.dataset.items():
-            self.print_and_log(f"[task.similarity] Processing {doc_id}...")
+            self.print_and_log(
+                f"[task.similarity] Processing {doc_id}...", color="blue"
+            )
             try:
-                self.print_and_log(f"[task.similarity] Downloading {doc_id} images...")
-                self.download_doc(doc_id, url)
+                doc_id = f"{self.client_id}_{doc_id}"
+                self.doc_ids.append(doc_id)
+                if not is_downloaded(doc_id):
+                    self.print_and_log(
+                        f"[task.similarity] Downloading {doc_id} images..."
+                    )
+                    download_images(url, doc_id)
             except Exception as e:
                 self.print_and_log(
                     f"[task.similarity] Unable to download images for {doc_id}", e
                 )
-                continue
 
     def compute_and_send_scores(self):
         for doc_pair in doc_pairs(self.doc_ids):
             score_file = self.compute_scores(doc_pair)
             if not score_file:
                 self.print_and_log_warning(
-                    "[task.similarity] Error when computing scores"
+                    f"[task.similarity] Error when computing scores for {doc_pair}"
                 )
                 continue
 
             try:
                 self.send_scores(doc_pair, score_file)
+                self.print_and_log(
+                    f"[task.similarity] Successfully send scores for {doc_pair} to {self.notify_url}",
+                    color="magenta",
+                )
             except requests.exceptions.RequestException as e:
                 self.print_and_log(
                     f"[task.similarity] Error in callback request for {doc_pair}", e
@@ -293,7 +303,7 @@ class LoggedComputeSimilarity(LoggingTaskMixin, ComputeSimilarity):
         pair_name = "-".join(sorted(doc_pair))
         score_file = SCORES_PATH / f"{pair_name}.npy"
         if not os.path.exists(score_file):
-            self.print_and_log(f"COMPUTING SIMILARITY FOR {doc_pair}")
+            self.print_and_log(f"COMPUTING SIMILARITY FOR {doc_pair}", color="magenta")
             success = self.compute_pairs(doc_pair, score_file)
             if success:
                 self.computed_pairs.append(pair_name)

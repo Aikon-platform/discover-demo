@@ -8,7 +8,7 @@ DEMO_NAME = "extraction"
 DEMO_DIR = BASE_DIR / "app" / DEMO_NAME
 LIB_PATH = DEMO_DIR / "lib"
 
-EXT_QUEUE = "queue3"  # see docker-confs/supervisord.conf
+EXT_QUEUE = "queue0"  # see docker-confs/supervisord.conf
 
 EXT_DATA_FOLDER = API_DATA_FOLDER / DEMO_NAME
 # EXT_XACCEL_PREFIX = Path(ENV("EXT_XACCEL_PREFIX", default="/media/extraction-results"))

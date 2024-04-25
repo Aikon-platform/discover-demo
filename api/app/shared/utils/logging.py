@@ -440,7 +440,7 @@ class LoggingTaskMixin:
         super().__init__(*args, **kwargs)
 
     def print_and_log(self, s, e: Optional[Exception] = None, **kwargs) -> None:
-        console(s, e=e)
+        console(s, e=e, **kwargs)
         if e:
             self.jlogger.error(s, exception=e)
             return

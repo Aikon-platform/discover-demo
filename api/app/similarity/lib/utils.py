@@ -1,6 +1,7 @@
 import os
 import sys
 from itertools import combinations_with_replacement
+from tqdm import tqdm
 
 import requests
 import urllib.request
@@ -13,6 +14,7 @@ from PIL import Image
 # from .similarity import log_failed_img
 from ..const import IMG_PATH, MODEL_PATH, LIB_PATH
 from .const import MAX_SIZE
+from ...shared.utils.fileutils import create_dir
 from ...shared.utils.logging import console
 
 model_urls = {
@@ -74,7 +76,7 @@ def save_img(
         img.save(f"{img_path}/{img_filename}.jpg", format=img_format)
         return img
     except Exception as e:
-        console(f"Failed to save img as JPEG", e=e)
+        console(f"Failed to save {img_filename} as JPEG", e=e)
         return False
 
 
@@ -132,10 +134,16 @@ def download_images(url, doc_id):
     """
 
     images = get_json(url)
-    # z = len(str(len(images)))
+    if len(images.items()) == 0:
+        console(f"{url} does not contain any images.", color="yellow")
+        return []
+
     # i = 1
     paths = []
-    for img_name, img_url in images.items():
+    for (
+        img_name,
+        img_url,
+    ) in images.items():  # tqdm(images.items(), desc="Downloading Images"):
         # img_name = f"{i:0{z}}.jpg"
         # i += 1
         download_img(img_url, doc_id, img_name)
@@ -171,9 +179,9 @@ def get_doc_dirs(doc_pair):
 
 
 def is_downloaded(doc_id):
-    path = f"{IMG_PATH}/{doc_id}/"
+    path = Path(f"{IMG_PATH}/{doc_id}/")
     if not os.path.exists(path):
-        Path(os.path.dirname(path)).mkdir(parents=True, exist_ok=True)
+        create_dir(path)
         return False
     if len(os.listdir(path)) == 0:
         return False
