@@ -9,7 +9,6 @@ from ..shared.utils.logging import notifying, TLogger, LoggerHelper
 @dramatiq.actor(
     time_limit=1000 * 60 * 60, max_retries=0, store_results=True, queue_name=EXT_QUEUE
 )
-@notifying
 def extract_objects(
     experiment_id: str,
     manifest_url,
@@ -25,7 +24,6 @@ def extract_objects(
 
 
 @dramatiq.actor(time_limit=1000 * 60 * 60, max_retries=0, store_results=True)
-@notifying
 def extract_all(
     experiment_id: str,
     manifest_list,
