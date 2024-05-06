@@ -17,7 +17,7 @@ from .util.get_param_dicts import get_param_dict
 from .util.logger import setup_logger
 from .util.slconfig import DictAction, SLConfig
 from .util.utils import ModelEma, BestMetricHolder
-#from .util.misc import util.misc as utils
+from .util import misc as utils
 
 from .datasets import *
 from .datasets import build_dataset, get_coco_api_from_dataset
