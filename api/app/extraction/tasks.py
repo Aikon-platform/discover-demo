@@ -17,7 +17,7 @@ def extract_objects(
     logger: TLogger = LoggerHelper,
 ):
     extraction_task = LoggedExtractObjects(
-        logger, manifest_url=manifest_url, model=model, notify_url=notify_url
+        logger, experiment_id=experiment_id, manifest_url=manifest_url, model=model, notify_url=notify_url
     )
     extraction_task.run_task()
 

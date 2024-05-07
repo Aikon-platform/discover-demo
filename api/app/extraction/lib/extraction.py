@@ -249,10 +249,12 @@ def detect(
 class ExtractObjects:
     def __init__(
         self,
+        experiment_id: str,
         manifest_url: str,
         model: Optional[str] = None,
         notify_url: Optional[str] = None,
     ):
+        self.experiment_id = experiment_id
         self.manifest_url = manifest_url
         self.model = model
         self.notify_url = notify_url
@@ -266,7 +268,7 @@ class ExtractObjects:
             return False
         return True
 
-    def send_annotations(self, annotation_file, digitization_ref, extraction_model):
+    def send_annotations(self, experiment_id, annotation_file, digitization_ref, extraction_model):
         if not self.notify_url:
             return False
 
@@ -276,7 +278,10 @@ class ExtractObjects:
         response = requests.post(
             url=f"{self.notify_url}/{digitization_ref}",
             files={"annotation_file": annotation_file},
-            data={"model": extraction_model},
+            data={
+                "model": extraction_model,
+                "experiment_id": experiment_id,
+            },
         )
         response.raise_for_status()
         return True
@@ -325,7 +330,7 @@ class LoggedExtractObjects(LoggingTaskMixin, ExtractObjects):
 
         try:
             success = self.send_annotations(
-                annotation_file, digitization_ref, extraction_model
+                self.experiment_id, annotation_file, digitization_ref, extraction_model
             )
             if not success:
                 self.print_and_log_warning(

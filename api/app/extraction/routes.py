@@ -18,7 +18,7 @@ blueprint = Blueprint("extraction", __name__, url_prefix="/extraction")
 @shared_routes.get_client_id
 @shared_routes.error_wrapper
 def start_extraction(client_id):
-    experiment_id = slugify(request.form.get("experiment_id", str(uuid.uuid4())))
+    experiment_id = request.form.get("experiment_id")
     manifest_url = request.form['manifest_url']
     model = request.form.get('model')
     notify_url = request.form.get('callback')
