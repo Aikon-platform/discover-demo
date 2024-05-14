@@ -9,7 +9,7 @@
 
 
 import torch
-from util.misc import (
+from ...util.misc import (
     NestedTensor,
     nested_tensor_from_tensor_list,
     accuracy,
@@ -22,7 +22,7 @@ from util.misc import (
 )
 
 # from .DABDETR import sigmoid_focal_loss
-from util import box_ops
+from ...util import box_ops
 import torch.nn.functional as F
 
 

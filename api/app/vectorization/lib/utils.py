@@ -346,3 +346,113 @@ def plot_arc(ax, arc, c='r', linewidth=2):
     ax.add_patch(arc_patch_2)
 
 
+#################################################### HELPER FUNCTIONS TO GET SVGS FROM NPZ ####################################################
+
+def read_npz(npz_dir, im_name):
+    model_pred = np.load(npz_dir / f"{im_name}.npz")
+    lines, line_scores = model_pred["lines"], model_pred["line_scores"]
+    circles, circle_scores = model_pred["circles"], model_pred["circle_scores"]
+    arcs, arc_scores = model_pred["arcs"], model_pred["arc_scores"]
+    return lines, circles, arcs
+    
+def box_xyxy_to_cxcyr(x):
+    """
+    Only valid for circles
+    """
+    x0, y0, x1, y1 = x.T
+    b = np.stack([(x0 + x1) / 2, (y0 + y1) / 2,
+                  ((x1 - x0) + (y1 - y0))/4], axis=-1)
+    return b
+
+def calculate_angle(p1, p2, p3):
+    v1 = p1 - p2
+    v2 = p3 - p2
+    angle1 = np.arctan2(v1[1], v1[0])
+    angle2 = np.arctan2(v2[1], v2[0])
+    angle = angle1 - angle2
+    angle = (angle + np.pi) % (2 * np.pi) - np.pi
+    return angle
+
+def write_svg_dwg(dwg, lines = None, circles=None, arcs=None, show_image = False, image=None):
+    # Add the background image to the drawing
+    from matplotlib.patches import Polygon, Circle
+    
+    if show_image:
+        dpi = 100
+        fig = plt.figure(dpi=dpi)
+        plt.rcParams["font.size"] = "5"
+        ax = plt.gca()
+        ax.imshow(image)
+
+    for circle in circles:
+        cx,cy = circle[:2]
+        radius = circle[-1]
+        if show_image:
+            circle_plot = Circle(circle[:2], circle[-1], fill=None, color="red", linewidth=1)
+            ax.add_patch(circle_plot)
+        dwg.add(dwg.circle(center=[str(cx), str(cy)], r=str(radius), fill="none", stroke='blue', stroke_width=3))
+
+    for line in lines:
+        
+        p1x, p1y = line[0]
+        p2x, p2y = line[1]
+        if show_image:
+            line_plot = Polygon(line, fill=None, color="red", linewidth=1)
+            ax.add_patch(line_plot)
+
+        dwg.add(dwg.path(d="M " + str(p1x) + " " + str(p1y) + " L " + str(p2x) + " " + str(p2y), stroke="green", stroke_width=3, fill="none"))
+    for arc in arcs:  
+        p0, p1, pmid =  arc[0],arc[1],arc[2]   
+        start_angle, mid_angle, end_angle, arc_center = get_angles_from_arc_points(p0, p1, pmid)
+        arc_radius = np.linalg.norm(p0 - arc_center)
+        large_arc_flag = np.linalg.norm((p0+p1)/2 - pmid) > arc_radius
+        sweep_flag = calculate_angle(p0,p1,pmid) < 0
+        # p1x, p1y = p0
+        # p2x, p2y = pmid
+        # dwg.add(dwg.path(d="M " + str(p1x) + " " + str(p1y) + " L " + str(p2x) + " " + str(p2y), stroke="red", stroke_width=2, fill="none"))
+        # p1x, p1y = pmid
+        # p2x, p2y = p1
+        # dwg.add(dwg.path(d="M " + str(p1x) + " " + str(p1y) + " L " + str(p2x) + " " + str(p2y), stroke="red", stroke_width=2, fill="none"))
+        arc_args = {
+            "x0": p0[0],
+            "y0": p0[1],
+            "xradius": arc_radius,
+            "yradius": arc_radius,
+            "ellipseRotation": 0,  # has no effect for circles
+            "x1": p1[0],
+            "y1": p1[1],
+            "large_arc_flag": int(large_arc_flag),
+            "sweep_flag": int(sweep_flag),  # set sweep-flag to 1 for clockwise arc
+        }
+        dwg.add(dwg.path(
+                    d="M %(x0)f,%(y0)f A %(xradius)f,%(yradius)f %(ellipseRotation)f %(large_arc_flag)d,%(sweep_flag)d %(x1)f,%(y1)f"
+                    % arc_args,
+                    fill="none",
+                    stroke="firebrick",
+                    stroke_width=3,
+                ))
+        
+    return dwg
+
+
+
+def get_arc_param(arc_path, arc_transform=None):
+    to_2pi = lambda x: (x + 2 * np.pi) % (2 * np.pi)
+    assert len(arc_path) == 1, f"arc path with more than one arc {arc}"
+    arc_path = arc_path[0]
+        
+    assert arc_path.rotation == 0, f"arc path with non-zero rotation {arc_path}"
+
+    p0 = np.array([arc_path.start.real, arc_path.start.imag])
+    p1 = np.array([arc_path.end.real, arc_path.end.imag])
+    if not arc_path.sweep:
+        p0, p1 = p1, p0
+    center = np.array([arc_path.center.real, arc_path.center.imag])
+
+    radius = np.linalg.norm(p0 - center)
+    start_angle = to_2pi(np.arctan2(p0[1] - center[1], p0[0] - center[0]))
+    end_angle = to_2pi(np.arctan2(p1[1] - center[1], p1[0] - center[0]))
+
+    return center, radius, start_angle, end_angle, p0, p1
+
+

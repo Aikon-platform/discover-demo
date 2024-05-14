@@ -87,7 +87,9 @@ def get_args_parser():
 
 def build_model_main(args):
     # we use register to maintain models from catdet6 on.
-    from models.registry import MODULE_BUILD_FUNCS
+    from .models.registry import MODULE_BUILD_FUNCS
+
+    print(args in MODULE_BUILD_FUNCS._module_dict)
 
     assert args.modelname in MODULE_BUILD_FUNCS._module_dict
     build_func = MODULE_BUILD_FUNCS.get(args.modelname)

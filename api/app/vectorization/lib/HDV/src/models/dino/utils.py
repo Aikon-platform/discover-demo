@@ -10,7 +10,7 @@ from torch import nn, Tensor
 import math
 import torch.nn.functional as F
 from torch import nn
-from util.misc import normalize_parameter, unnormalize_parameter
+from ...util.misc import normalize_parameter, unnormalize_parameter
 
 
 def gen_encoder_output_proposals(

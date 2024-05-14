@@ -21,8 +21,8 @@ import torch.nn.functional as F
 from torch import nn
 from torchvision.ops.boxes import nms
 
-from util import box_ops
-from util.misc import (
+from ...util import box_ops
+from ...util.misc import (
     NestedTensor,
     nested_tensor_from_tensor_list,
     accuracy,

@@ -33,11 +33,6 @@ def compute_vectorization(
     }
     """
 
-    print("Received experiment_id:", experiment_id)
-    print("Received dataset:", dataset)
-    print("Received doc_id", doc_id)
-
-
     vectorization_task = LoggedComputeVectorization(
         logger, dataset=dataset, notify_url=notify_url, doc_id=doc_id
     )
