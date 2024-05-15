@@ -1,15 +1,17 @@
 import React, { useEffect } from "react";
 import { WatermarkMatches, WatermarkMatch } from "../types";
-import { Watermark } from "./Watermark";
+import { WatermarkDisplay } from "./WatermarkDisplay";
 import { MatchGroup } from "./MatchGroup";
+import { MatchCSVExporter } from "./MatchExporter";
 
 interface MatchRowProps {
     matches: WatermarkMatches;
     group_by_source: boolean;
     highlit?: boolean;
+    threshold?: number;
 }
 
-export function MatchRow({matches, group_by_source, highlit}: MatchRowProps) {
+export function MatchRow({matches, group_by_source, highlit, threshold}: MatchRowProps) {
     /*
     Component to render a single watermark match.
     */
@@ -28,13 +30,14 @@ export function MatchRow({matches, group_by_source, highlit}: MatchRowProps) {
             <div className="column match-query">
                 <h4>{matches.query.source?.name || matches.query.name}</h4>
                 <div className="columns is-multiline match-items is-centered">
-                    <Watermark watermark={matches.query} />
+                    <WatermarkDisplay watermark={matches.query} />
                 </div>
-                {groups.length > 5 && <p><a href="javascript:void(0)" onClick={toggleShowAll}>{showAll ? "Show only 5 best" : `Show all ${groups.length} results`}</a></p>}
+                {groups.length > 5 && <p><a href="javascript:void(0)" onClick={toggleShowAll}>{showAll ? "Show only 5 best" : `Show all results`}</a></p>}
+                <MatchCSVExporter matches={matches} threshold={threshold} />
             </div>
             <div className="column columns match-results">
                 {groups.slice(0, showAll ? groups.length : 5).map((grouped_by_source, k) => (
-                    <MatchGroup key={k} matches={grouped_by_source} grouped={group_by_source} />
+                    <MatchGroup key={k} matches={grouped_by_source} grouped={group_by_source} threshold={threshold} wref={matches.query} />
                 ))}
             </div>
         </div>
