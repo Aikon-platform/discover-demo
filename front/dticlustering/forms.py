@@ -58,7 +58,7 @@ class DTIClusteringForm(forms.ModelForm):
     p_n_clusters = forms.IntegerField(
         label="Number of clusters",
         help_text="The number of clusters to be generated",
-        min_value=2,
+        min_value=1,
         max_value=50,
         initial=10,
         required=True,
