@@ -3,6 +3,7 @@ import sys
 from itertools import combinations_with_replacement
 from tqdm import tqdm_notebook as tqdm
 import numpy as np
+import zipfile
 
 import requests
 import urllib.request
@@ -454,5 +455,22 @@ def get_arc_param(arc_path, arc_transform=None):
     end_angle = to_2pi(np.arctan2(p1[1] - center[1], p1[0] - center[0]))
 
     return center, radius, start_angle, end_angle, p0, p1
+
+
+#########################################################################################################################################
+
+def zip_directory(directory_path, zip_path):
+    """
+    Crée un fichier zip contenant tous les fichiers du répertoire spécifié.
+
+    :param directory_path: Chemin du répertoire à zipper
+    :param zip_path: Chemin du fichier zip à créer
+    """
+    with zipfile.ZipFile(zip_path, 'w', zipfile.ZIP_DEFLATED) as zipf:
+        for root, _, files in os.walk(directory_path):
+            for file in files:
+                file_path = os.path.join(root, file)
+                arcname = os.path.relpath(file_path, start=directory_path)
+                zipf.write(file_path, arcname)
 
 

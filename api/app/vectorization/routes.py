@@ -19,7 +19,7 @@ blueprint = Blueprint("vectorization", __name__, url_prefix="/vectorization")
 @blueprint.route("start", methods=["POST"])
 @shared_routes.get_client_id
 @shared_routes.error_wrapper
-def start_similarity(client_id):
+def start_vectorization(client_id):
     """
     {"images":
     {
@@ -44,6 +44,7 @@ def start_similarity(client_id):
     # which url to send back the similarity results and updates on the task
     notify_url = data.get("callback", None)
     doc_id = data.get("doc_id", None)
+    model = data.get("model", None)
 
 
 
@@ -53,11 +54,12 @@ def start_similarity(client_id):
         {
             "dataset": dataset,
             "notify_url": notify_url,
-            "doc_id": doc_id
+            "doc_id": doc_id,
+            "model" : model
         },
     )
 
-'''
+
 @blueprint.route("<tracking_id>/cancel", methods=["POST"])
 def cancel_vectorization(tracking_id: str):
     return shared_routes.cancel_task(tracking_id)
@@ -67,7 +69,7 @@ def cancel_vectorization(tracking_id: str):
 def status_vectorization(tracking_id: str):
     return shared_routes.status(tracking_id, compute_vectorization)
 
-
+'''
 @blueprint.route("task/<doc_pair>/result", methods=["GET"])
 def result_vectorization(doc_pair: str):
     """

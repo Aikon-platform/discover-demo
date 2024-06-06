@@ -12,6 +12,7 @@ import cv2
 from PIL import Image
 from torchvision import transforms
 from torch.utils.data import DataLoader
+import zipfile
 
 
 from .HDV.src.main import build_model_main
@@ -76,6 +77,7 @@ class LoggedComputeVectorization(LoggingTaskMixin, ComputeVectorization):
         #self.compute_vectorization()
         #self.get_svgs()
         self.process_inference()
+        self.send_zip(self.notify_url)
 
         return True
 
@@ -432,3 +434,35 @@ class LoggedComputeVectorization(LoggingTaskMixin, ComputeVectorization):
                     self.print_and_log(f"[task.vectorization] Failed to process {image_path}", e)
 
             self.print_and_log(f"[task.vectorization] Task over", color="yellow")
+
+    def send_zip(self, post_url):
+        """
+        Zip le répertoire correspondant à self.doc_id et envoie ce répertoire via POST à l'URL spécifiée.
+
+        :param post_url: URL où envoyer le fichier zip via une requête POST
+        """
+        try:
+            # Chemin du répertoire à zipper
+            output_dir = VEC_RESULTS_PATH / self.doc_id
+            
+            # Chemin du fichier zip à créer
+            zip_path = output_dir / f"{self.doc_id}.zip"
+            
+            # Crée le fichier zip
+            self.print_and_log(f"[task.vectorization] Zipping directory {output_dir}", color="blue")
+            zip_directory(output_dir, zip_path)
+            
+            # Envoie le fichier zip 
+            self.print_and_log(f"[task.vectorization] Sending zip {zip_path} to {post_url}", color="blue")
+            with open(zip_path, 'rb') as zip_file:
+                response = requests.post(post_url, files={'file': zip_file})
+            
+            # tests
+            if response.status_code == 200:
+                self.print_and_log(f"[task.vectorization] Zip sent successfully to {post_url}", color="yellow")
+            else:
+                self.print_and_log(f"[task.vectorization] Failed to send zip to {post_url}. Status code: {response.status_code}", color="red")
+        
+        except Exception as e:
+            self.print_and_log(f"[task.vectorization] Failed to zip and send directory {output_dir}", e)
+

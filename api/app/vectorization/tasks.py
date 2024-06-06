@@ -13,7 +13,8 @@ def compute_vectorization(
     dataset: dict,
     notify_url: Optional[str] = None,
     logger: TLogger = LoggerHelper,
-    doc_id = str
+    doc_id = str,
+    model = str
 ):
     """
     Run vecto task on list of URL
