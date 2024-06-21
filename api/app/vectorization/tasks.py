@@ -1,4 +1,5 @@
 import dramatiq
+from dramatiq.brokers.redis import RedisBroker
 from typing import Optional
 from datetime import datetime, timedelta
 import os
@@ -8,6 +9,9 @@ from .const import VEC_QUEUE, IMG_PATH
 from .lib.vectorization import LoggedComputeVectorization
 from ..shared.utils.logging import notifying, TLogger, LoggerHelper
 
+
+redis_broker = RedisBroker()
+dramatiq.set_broker(redis_broker)
 
 # @notifying TODO implement results return with notifying
 @dramatiq.actor(time_limit=1000 * 60 * 60, max_retries=0, queue_name=VEC_QUEUE)
