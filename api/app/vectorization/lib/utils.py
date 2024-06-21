@@ -17,6 +17,7 @@ from ..const import IMG_PATH, LIB_PATH
 from .const import MAX_SIZE
 from ...shared.utils.fileutils import create_dir
 from ...shared.utils.logging import console
+from datetime import datetime
 
 
 
@@ -35,7 +36,7 @@ def save_img(
         if img.width > max_dim or img.height > max_dim:
             img.thumbnail(
                 (max_dim, max_dim), Image.ANTIALIAS
-            )  # Image.Resampling.LANCZOS
+            )  
         img_path = os.path.join(doc_dir, img_filename + ".jpg")
         img.save(img_path, format=img_format)
         return img 
@@ -80,10 +81,38 @@ def download_img(img_url, doc_id, img_name):
         console(f"[download_img] {img_url} image was not downloaded", e=e)
 
 
+def file_age(path=__file__):
+    """Calculates and returns the age of a file in days based on its last modification time."""
+    dt = datetime.now() - datetime.fromtimestamp(Path(path).stat().st_mtime)  # delta
+    return dt.days  # + dt.seconds / 86400  # fractional days
+
 
 def is_downloaded(doc_id, image_id):
     path = Path(f"{IMG_PATH}/{doc_id}/{image_id}.jpg")
     return path.exists()
+
+
+def delete_directory(doc_id):
+    
+    """Supprime le répertoire d'images téléchargées pour relancer la vectorisation."""
+
+    path = Path(f"{IMG_PATH}/{doc_id}")
+    try:
+        # Vérifie si le répertoire existe
+        if os.path.isdir(path):
+            # Supprime le répertoire et tout son contenu
+            shutil.rmtree(path)
+            print(f"Le répertoire {doc_id} a été supprimé avec succès.")
+            return True
+        else:
+            print(f"Le répertoire {doc_id} n'existe pas.")
+            return False
+    except Exception as e:
+        print(f"Une erreur s'est produite lors de la suppression du répertoire {doc_id}: {e}")
+        return False
+
+
+
 
 ########################################## VECTO HELPER FUNCTIONS ######################################
 
