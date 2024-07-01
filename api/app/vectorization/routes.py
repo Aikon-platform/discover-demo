@@ -15,8 +15,6 @@ from ..shared.utils.logging import console
 
 blueprint = Blueprint("vectorization", __name__, url_prefix="/vectorization")
 
-
-@blueprint.route("relauch", methods=["POST"])
 @blueprint.route("start", methods=["POST"])
 @shared_routes.get_client_id
 @shared_routes.error_wrapper
