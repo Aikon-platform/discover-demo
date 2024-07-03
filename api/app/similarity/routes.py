@@ -116,16 +116,16 @@ def clear_old_similarity():
 def clear_doc(doc_id: str):
     """
     Clear all images, features and scores related to a given document
-    doc_id = "{app_name}_{doc_id}"
+    doc_id = "{doc_id}"
     TODO: re-united doc_id / tracking_id
     """
 
     return {
         "cleared_img_dir": clear_dir(
-            IMG_PATH, path_to_clear=f"*_{doc_id}", condition=True
+            IMG_PATH, path_to_clear=f"*{doc_id}*", condition=True
         ),
         "cleared features": clear_dir(
-            FEATS_PATH, path_to_clear=f"*_{doc_id}.pt", condition=True
+            FEATS_PATH, path_to_clear=f"*{doc_id}*.pt", condition=True
         ),
         "cleared_results": clear_dir(
             SIM_RESULTS_PATH, path_to_clear=f"*{doc_id}*.npy", condition=True
