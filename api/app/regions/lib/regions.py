@@ -8,7 +8,7 @@ import requests
 import torch
 
 from ..const import DEFAULT_MODEL, ANNO_PATH, MODEL_PATH, IMG_PATH
-from ...shared.utils.fileutils import sanitize_str, create_dirs_if_not, empty_file
+from ...shared.utils.fileutils import sanitize_str, empty_file
 from ...shared.utils.logging import LoggingTaskMixin
 from ...shared.utils.iiif import IIIFDownloader
 
@@ -246,16 +246,16 @@ def detect(
         strip_optimizer(weights[0])  # update model (to fix SourceChangeWarning)
 
 
-class ExtractObjects:
+class ExtractRegions:
     def __init__(
         self,
         experiment_id: str,
-        manifest_url: str,
+        document: str,
         model: Optional[str] = None,
         notify_url: Optional[str] = None,
     ):
         self.experiment_id = experiment_id
-        self.manifest_url = manifest_url
+        self.document = document
         self.model = model
         self.notify_url = notify_url
 
@@ -264,7 +264,7 @@ class ExtractObjects:
 
     def check_url(self):
         # TODO check url
-        if not self.manifest_url:
+        if not self.document:
             return False
         return True
 
@@ -287,10 +287,10 @@ class ExtractObjects:
         return True
 
 
-class LoggedExtractObjects(LoggingTaskMixin, ExtractObjects):
+class LoggedExtractRegions(LoggingTaskMixin, ExtractRegions):
     def run_task(self):
         if not self.check_url():
-            self.print_and_log_warning(f"[task.extraction] No documents to annotate")
+            self.print_and_log_warning(f"[task.extract_objects] No documents to annotate")
             return
 
         model = DEFAULT_MODEL if self.model is None else self.model
@@ -298,16 +298,16 @@ class LoggedExtractObjects(LoggingTaskMixin, ExtractObjects):
         extraction_model = model.split(".")[0]
 
         self.print_and_log(
-            f"[task.extraction] Extraction task triggered for {self.manifest_url} with {model}!"
+            f"[task.extract_objects] Extraction task triggered for {self.document} with {model}!"
         )
 
-        downloader = IIIFDownloader(self.manifest_url)
+        downloader = IIIFDownloader(self.document)
         downloader.run()
 
         image_dir = downloader.get_dir_name()
         digitization_ref = downloader.manifest_id
         annotation_dir = (
-            ANNO_PATH / extraction_model / sanitize_str(self.manifest_url.split("/")[2])
+            ANNO_PATH / extraction_model / sanitize_str(self.document.split("/")[2])
         )
 
         if not exists(annotation_dir):
@@ -316,7 +316,7 @@ class LoggedExtractObjects(LoggingTaskMixin, ExtractObjects):
         annotation_file = f"{annotation_dir}/{digitization_ref}.txt"
         empty_file(annotation_file)
 
-        self.print_and_log(f"DETECTING VISUAL ELEMENTS FOR {self.manifest_url} 🕵️")
+        self.print_and_log(f"DETECTING VISUAL ELEMENTS FOR {self.document} 🕵️")
 
         digitization_path = IMG_PATH / image_dir
         for i, image in enumerate(sorted(os.listdir(digitization_path)), 1):
@@ -334,16 +334,16 @@ class LoggedExtractObjects(LoggingTaskMixin, ExtractObjects):
             )
             if not success:
                 self.print_and_log_warning(
-                    f"[task.extraction] No notify url to send annotation for {self.manifest_url}"
+                    f"[task.regions] No notify url to send annotation for {self.document}"
                 )
         except Exception as e:
             self.print_and_log_error(
-                f"[task.extraction] Failed to send annotation for {self.manifest_url}",
+                f"[task.regions] Failed to send annotation for {self.document}",
                 e=e,
             )
             return False
 
         self.print_and_log(
-            f"[task.extraction] Successfully sent annotation for {self.manifest_url}"
+            f"[task.regions] Successfully sent annotation for {self.document}"
         )
         return True

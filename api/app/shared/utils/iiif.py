@@ -7,7 +7,7 @@ import requests
 from PIL import Image, UnidentifiedImageError
 from urllib.parse import urlparse
 
-from ...extraction.const import IMG_PATH
+from ...regions.const import IMG_PATH
 from .fileutils import check_dir, sanitize_str, sanitize_url
 from .logging import console
 
