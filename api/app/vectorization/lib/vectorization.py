@@ -1,66 +1,50 @@
-import os, sys
 import re
-import shutil
-from calendar import c
-import xml.etree.ElementTree as ET
-from pathlib import Path
-from typing import Optional
-import requests
-import numpy as np
-import torch, json
-import cv2
-from PIL import Image
-from torchvision import transforms
-from torch.utils.data import DataLoader
-import zipfile
+import torch
+import glob
+import svgwrite
 
+import xml.etree.ElementTree as ET
+from typing import Optional
 
 from .HDV.src.main import build_model_main
 from .HDV.src.util.slconfig import SLConfig
-from .HDV.src.datasets import build_dataset
-from .HDV.src.util.visualizer import COCOVisualizer, get_angles_from_arc_points
-from .HDV.src.util import box_ops
-from .HDV.src.datasets.transforms import arc_cxcywh2_to_xy3, arc_xy3_to_cxcywh2
+from .HDV.src.util.visualizer import COCOVisualizer
+from .HDV.src.datasets import transforms as T
+
 from .utils import *
 from pathlib import Path
-from torch import nn
-import matplotlib.pyplot as plt
-from .HDV.src.datasets import transforms as T
-import glob
-import cv2
-import svgwrite
 
 from svg.path import parse_path
 from svg.path.path import Line, Move, Arc
 
 from ..const import IMG_PATH, MODEL_PATH, VEC_RESULTS_PATH
-
-from ...shared.utils.logging import LoggingTaskMixin, console
-
+from ...shared.utils.logging import LoggingTaskMixin
 from ..lib.utils import is_downloaded, download_img
 
 
 class ComputeVectorization:
     def __init__(
         self,
-        dataset: dict,
+        experiment_id: str,
+        document: dict,
         doc_id: str,
+        model: Optional[str] = None,
         notify_url: Optional[str] = None,
-        model: Optional[str] = None
     ):
-        self.dataset = dataset
+        self.experiment_id = experiment_id
+        self.document = document
+        self.model = model
+        self.doc_id = doc_id
         self.notify_url = notify_url
         self.client_id = "default"
-        self.doc_id = doc_id
         self.imgs = []
-        self.model = model
 
     def run_task(self):
         pass
 
     def check_dataset(self):
         # TODO add more checks
-        if len(list(self.dataset.keys())) == 0:
+        if len(list(self.document.keys())) == 0:
             return False
         return True
 
@@ -72,17 +56,17 @@ class LoggedComputeVectorization(LoggingTaskMixin, ComputeVectorization):
             return
 
         self.print_and_log(
-            f"[task.vectorization] Vectorization task triggered for {list(self.dataset.keys())} !"
+            f"[task.vectorization] Vectorization task triggered for {list(self.document.keys())} !"
         )
 
         self.download_dataset()
         self.process_inference()
-        self.send_zip(self.notify_url)
+        self.send_zip()
 
         return True
 
     def download_dataset(self):
-        for image_id, url in self.dataset.items():
+        for image_id, url in self.document.items():
             self.print_and_log(
                 f"[task.vectorization] Dowloading images...", color="blue"
             )
@@ -97,7 +81,6 @@ class LoggedComputeVectorization(LoggingTaskMixin, ComputeVectorization):
                 self.print_and_log(
                     f"[task.vectorization] Unable to download images for {image_id}", e
                 )
-    
 
     def process_inference(self):
         model_folder = Path(MODEL_PATH) 
@@ -229,29 +212,32 @@ class LoggedComputeVectorization(LoggingTaskMixin, ComputeVectorization):
 
             self.print_and_log(f"[task.vectorization] Task over", color="yellow")
 
-    def send_zip(self, post_url):
+    def send_zip(self):
         """
         Zip le répertoire correspondant à self.doc_id et envoie ce répertoire via POST à l'URL spécifiée.
 
         :param post_url: URL où envoyer le fichier zip via une requête POST
         """
         try:
-            # Chemin du répertoire à zipper
             output_dir = VEC_RESULTS_PATH / self.doc_id
-            
-            # Chemin du fichier zip à créer
             zip_path = output_dir / f"{self.doc_id}.zip"
-            
-            # Crée le fichier zip
             self.print_and_log(f"[task.vectorization] Zipping directory {output_dir}", color="blue")
+
             zip_directory(output_dir, zip_path)
-            
-            # Envoie le fichier zip 
-            self.print_and_log(f"[task.vectorization] Sending zip {zip_path} to {post_url}", color="blue")
+            self.print_and_log(f"[task.vectorization] Sending zip {zip_path} to {self.notify_url}", color="blue")
+
             with open(zip_path, 'rb') as zip_file:
-                response = requests.post(post_url, files={'file': zip_file})
+                response = requests.post(
+                    url=self.notify_url,
+                    files={
+                        "file": zip_file,
+                    },
+                    data={
+                        "experiment_id": self.experiment_id,
+                        "model": self.model,
+                    },
+                )
             
-            # tests
             if response.status_code == 200:
                 self.print_and_log(f"[task.vectorization] Zip sent successfully to {post_url}", color="yellow")
             else:
@@ -259,4 +245,3 @@ class LoggedComputeVectorization(LoggingTaskMixin, ComputeVectorization):
         
         except Exception as e:
             self.print_and_log(f"[task.vectorization] Failed to zip and send directory {output_dir}", e)
-

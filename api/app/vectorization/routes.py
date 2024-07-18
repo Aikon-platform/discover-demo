@@ -15,6 +15,7 @@ from ..shared.utils.logging import console
 
 blueprint = Blueprint("vectorization", __name__, url_prefix="/vectorization")
 
+
 @blueprint.route("start", methods=["POST"])
 @shared_routes.get_client_id
 @shared_routes.error_wrapper
@@ -33,29 +34,24 @@ def start_vectorization(client_id):
     }
     A list of images to download + informations
     """
-
     if not request.is_json:
         return "No JSON in request: Vectorization task aborted!"
 
-    data = request.get_json()
-    console(data, color="cyan")
+    json_param = request.get_json()
+    console(json_param, color="cyan")
 
     experiment_id = slugify(request.form.get("experiment_id", str(uuid.uuid4())))
-    # dict of document ids with a URL containing a list of images
-    dataset = data.get("images", {})
-    # which url to send back the similarity results and updates on the task
-    notify_url = data.get("callback", None)
-    doc_id = data.get("doc_id", None)
-    model = data.get("model", None)
+    documents = json_param.get("documents", {})
+    model = json_param.get("model", None)
+    notify_url = json_param.get("callback", None)
 
     return shared_routes.start_task(
         compute_vectorization,
         experiment_id,
         {
-            "dataset": dataset,
+            "documents": documents,
+            "model": model,
             "notify_url": notify_url,
-            "doc_id": doc_id,
-            "model" : model
         },
     )
 
