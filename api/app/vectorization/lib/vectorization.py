@@ -80,6 +80,7 @@ class LoggedComputeVectorization(LoggingTaskMixin, ComputeVectorization):
             self.task_update("SUCCESS", error_list if error_list else None)
 
         except Exception as e:
+            self.print_and_log(f"Error when computing vectorizations", e=e)
             self.task_update("ERROR", "[API ERROR] Vectorization task failed")
 
     def download_dataset(self, doc_id, document):
