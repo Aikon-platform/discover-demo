@@ -8,7 +8,7 @@ DEMO_NAME = "vectorization"
 DEMO_DIR = BASE_DIR / "app" / DEMO_NAME
 LIB_PATH = DEMO_DIR / "lib"
 
-VEC_QUEUE = "queue0"  # see docker-confs/supervisord.conf
+VEC_QUEUE = "queue4"  # see docker-confs/supervisord.conf
 
 VEC_DATA_FOLDER = API_DATA_FOLDER / DEMO_NAME
 # EXT_XACCEL_PREFIX = Path(ENV("EXT_XACCEL_PREFIX", default="/media/extraction-results"))

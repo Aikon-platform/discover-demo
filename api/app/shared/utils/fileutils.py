@@ -4,6 +4,8 @@ from datetime import datetime
 from os.path import exists
 
 from pathlib import Path
+
+import requests
 from flask import Response
 import mimetypes
 from typing import Union
@@ -142,3 +144,16 @@ def sanitize_str(string):
 def empty_file(string):
     if exists(string):
         open(string, 'w').close()
+
+
+def send_update(experiment_id, tracking_url, event, message):
+    response = requests.post(
+        url=tracking_url,
+        data={
+            "experiment_id": experiment_id,
+            "event": event,
+            "message": message if message else "",
+        }
+    )
+    response.raise_for_status()
+    return True

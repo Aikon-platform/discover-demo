@@ -18,6 +18,7 @@ from svg.path import parse_path
 from svg.path.path import Line, Move, Arc
 
 from ..const import IMG_PATH, MODEL_PATH, VEC_RESULTS_PATH
+from ...shared.utils.fileutils import send_update
 from ...shared.utils.logging import LoggingTaskMixin
 from ..lib.utils import is_downloaded, download_img
 
@@ -26,16 +27,16 @@ class ComputeVectorization:
     def __init__(
         self,
         experiment_id: str,
-        document: dict,
-        doc_id: str,
+        documents: dict,
         model: Optional[str] = None,
         notify_url: Optional[str] = None,
+        tracking_url: Optional[str] = None,
     ):
         self.experiment_id = experiment_id
-        self.document = document
+        self.documents = documents
         self.model = model
-        self.doc_id = doc_id
         self.notify_url = notify_url
+        self.tracking_url = tracking_url
         self.client_id = "default"
         self.imgs = []
 
@@ -44,45 +45,61 @@ class ComputeVectorization:
 
     def check_dataset(self):
         # TODO add more checks
-        if len(list(self.document.keys())) == 0:
+        if len(list(self.documents.keys())) == 0:
             return False
         return True
+
+    def task_update(self, event, message=None):
+        if self.tracking_url:
+            send_update(self.experiment_id, self.tracking_url, event, message)
+            return True
+        else:
+            return False
 
 
 class LoggedComputeVectorization(LoggingTaskMixin, ComputeVectorization):
     def run_task(self):
         if not self.check_dataset():
             self.print_and_log_warning(f"[task.vectorization] No documents to download")
+            self.task_update("ERROR", f"[API ERROR] Failed to download documents for vectorization")
             return
 
+        error_list = []
+
+        try:
+            for doc_id, document in self.documents.items():
+                self.print_and_log(
+                    f"[task.vectorization] Vectorization task triggered for {doc_id} !"
+                )
+                self.task_update("STARTED")
+
+                self.download_dataset(doc_id, document)
+                self.process_inference(doc_id)
+                self.send_zip(doc_id)
+
+            self.task_update("SUCCESS", error_list if error_list else None)
+
+        except Exception as e:
+            self.task_update("ERROR", "[API ERROR] Vectorization task failed")
+
+    def download_dataset(self, doc_id, document):
         self.print_and_log(
-            f"[task.vectorization] Vectorization task triggered for {list(self.document.keys())} !"
+            f"[task.vectorization] Dowloading images...", color="blue"
         )
-
-        self.download_dataset()
-        self.process_inference()
-        self.send_zip()
-
-        return True
-
-    def download_dataset(self):
-        for image_id, url in self.document.items():
-            self.print_and_log(
-                f"[task.vectorization] Dowloading images...", color="blue"
-            )
+        for image_id, url in document.items():
             try:
-                if not is_downloaded(self.doc_id, image_id):
+                if not is_downloaded(doc_id, image_id):
                     self.print_and_log(
-                        f"[task.vectorization] Downloading {image_id} images..."
+                        f"[task.vectorization] Downloading image {image_id}"
                     )
-                    download_img(url, self.doc_id, image_id)
+                    download_img(url, doc_id, image_id)
 
             except Exception as e:
                 self.print_and_log(
-                    f"[task.vectorization] Unable to download images for {image_id}", e
+                    f"[task.vectorization] Unable to download image {image_id}", e
                 )
 
-    def process_inference(self):
+    def process_inference(self, doc_id):
         model_folder = Path(MODEL_PATH) 
         model_config_path = f"{model_folder}/config_cfg.py" 
         epoch = '0036'
@@ -92,8 +109,8 @@ class LoggedComputeVectorization(LoggingTaskMixin, ComputeVectorization):
         args.num_select = 200
 
         corpus_folder = Path(IMG_PATH)
-        image_paths = glob.glob(str(corpus_folder / self.doc_id) + "/*.jpg")
-        output_dir = VEC_RESULTS_PATH / self.doc_id
+        image_paths = glob.glob(str(corpus_folder / doc_id) + "/*.jpg")
+        output_dir = VEC_RESULTS_PATH / doc_id
         os.makedirs(output_dir, exist_ok=True)
 
         model, criterion, postprocessors = build_model_main(args)
@@ -212,15 +229,13 @@ class LoggedComputeVectorization(LoggingTaskMixin, ComputeVectorization):
 
             self.print_and_log(f"[task.vectorization] Task over", color="yellow")
 
-    def send_zip(self):
+    def send_zip(self, doc_id):
         """
-        Zip le répertoire correspondant à self.doc_id et envoie ce répertoire via POST à l'URL spécifiée.
-
-        :param post_url: URL où envoyer le fichier zip via une requête POST
+        Zip le répertoire correspondant à doc_id et envoie ce répertoire via POST à l'URL spécifiée.
         """
         try:
-            output_dir = VEC_RESULTS_PATH / self.doc_id
-            zip_path = output_dir / f"{self.doc_id}.zip"
+            output_dir = VEC_RESULTS_PATH / doc_id
+            zip_path = output_dir / f"{doc_id}.zip"
             self.print_and_log(f"[task.vectorization] Zipping directory {output_dir}", color="blue")
 
             zip_directory(output_dir, zip_path)
@@ -239,9 +254,9 @@ class LoggedComputeVectorization(LoggingTaskMixin, ComputeVectorization):
                 )
             
             if response.status_code == 200:
-                self.print_and_log(f"[task.vectorization] Zip sent successfully to {post_url}", color="yellow")
+                self.print_and_log(f"[task.vectorization] Zip sent successfully to {self.notify_url}", color="yellow")
             else:
-                self.print_and_log(f"[task.vectorization] Failed to send zip to {post_url}. Status code: {response.status_code}", color="red")
+                self.print_and_log(f"[task.vectorization] Failed to send zip to {self.notify_url}. Status code: {response.status_code}", color="red")
         
         except Exception as e:
             self.print_and_log(f"[task.vectorization] Failed to zip and send directory {output_dir}", e)

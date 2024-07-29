@@ -40,10 +40,12 @@ def start_vectorization(client_id):
     json_param = request.get_json()
     console(json_param, color="cyan")
 
-    experiment_id = slugify(request.form.get("experiment_id", str(uuid.uuid4())))
+    experiment_id = json_param.get("experiment_id")
     documents = json_param.get("documents", {})
     model = json_param.get("model", None)
+
     notify_url = json_param.get("callback", None)
+    tracking_url = json_param.get("tracking_url")
 
     return shared_routes.start_task(
         compute_vectorization,
@@ -52,6 +54,7 @@ def start_vectorization(client_id):
             "documents": documents,
             "model": model,
             "notify_url": notify_url,
+            "tracking_url": tracking_url,
         },
     )
 
@@ -107,6 +110,6 @@ def delete_and_relaunch(client_id):
             "cleared_img_dir": 0,
             "start_vectorization": "Directory deletion failed, vectorization not started."
         })
-        
+
 
 

@@ -35,7 +35,9 @@ def start_regions_extraction(client_id):
     experiment_id = json_param.get('experiment_id')
     documents = json_param.get('documents', {})
     model = json_param.get('model')
+
     notify_url = json_param.get('callback')
+    tracking_url = json_param.get("tracking_url")
 
     return shared_routes.start_task(
         extract_objects,
@@ -44,6 +46,7 @@ def start_regions_extraction(client_id):
             "documents": documents,
             "model": model,
             "notify_url": notify_url,
+            "tracking_url": tracking_url,
         },
     )
 
