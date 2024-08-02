@@ -27,6 +27,7 @@ from .segswap import load_backbone, load_encoder, resize, compute_score
 from .utils import get_model_path, is_downloaded, download_images, doc_pairs
 
 from ...shared.utils import get_device
+from ...shared.utils.fileutils import send_update
 from ...shared.utils.logging import LoggingTaskMixin, console
 
 
@@ -187,12 +188,17 @@ def segswap_similarity(cos_pairs, output_file=None):
 class ComputeSimilarity:
     def __init__(
         self,
+        experiment_id: str,
         dataset: dict,
         parameters: Optional[dict] = None,
         notify_url: Optional[str] = None,
+        tracking_url: Optional[str] = None,
     ):
+        self.experiment_id = experiment_id
         self.dataset = dataset
         self.notify_url = notify_url
+        self.tracking_url = tracking_url
+
         self.client_id = parameters.get("client_id") if parameters else "default"
         self.feat_net = parameters.get("feat_net", FEAT_NET) if parameters else FEAT_NET
         self.feat_set = parameters.get("feat_set", FEAT_SET) if parameters else FEAT_SET
@@ -210,6 +216,13 @@ class ComputeSimilarity:
         if len(list(self.dataset.keys())) == 0:
             return False
         return True
+
+    def task_update(self, event, message=None):
+        if self.tracking_url:
+            send_update(self.experiment_id, self.tracking_url, event, message)
+            return True
+        else:
+            return False
 
     def send_scores(self, doc_pair, score_file):
         if not self.notify_url:
@@ -229,6 +242,9 @@ class ComputeSimilarity:
             response = requests.post(
                 url=f"{self.notify_url}",
                 files=npy_pairs,
+                data={
+                    "experiment_id": self.experiment_id,
+                },
             )
             response.raise_for_status()
 
@@ -237,20 +253,26 @@ class LoggedComputeSimilarity(LoggingTaskMixin, ComputeSimilarity):
     def run_task(self):
         if not self.check_dataset():
             self.print_and_log_warning(f"[task.similarity] No documents to compare")
+            self.task_update("ERROR", "[API ERROR] No documents to compare")
             return
 
         self.print_and_log(
             f"[task.similarity] Similarity task triggered for {list(self.dataset.keys())} with {self.feat_net}!"
         )
+        self.task_update("STARTED")
 
-        self.download_dataset()
+        try:
+            self.download_dataset()
+            self.compute_and_send_scores()
 
-        self.compute_and_send_scores()
+            self.print_and_log(
+                f"[task.similarity] Successfully send similarity scores for {self.doc_ids}"
+            )
+            self.task_update("SUCCESS")
+            return True
 
-        self.print_and_log(
-            f"[task.similarity] Successfully send similarity scores for {self.doc_ids}"
-        )
-        return True
+        except Exception as e:
+            self.task_update("ERROR", "[API ERROR] Failed to compute and send similarity scores")
 
     def download_dataset(self):
         for doc_id, url in self.dataset.items():
@@ -269,6 +291,7 @@ class LoggedComputeSimilarity(LoggingTaskMixin, ComputeSimilarity):
                 self.print_and_log(
                     f"[task.similarity] Unable to download images for {doc_id}", e
                 )
+                raise Exception
 
     def compute_and_send_scores(self):
         for doc_pair in doc_pairs(self.doc_ids):
@@ -289,10 +312,12 @@ class LoggedComputeSimilarity(LoggingTaskMixin, ComputeSimilarity):
                 self.print_and_log(
                     f"[task.similarity] Error in callback request for {doc_pair}", e
                 )
+                raise Exception
             except Exception as e:
                 self.print_and_log(
                     f"[task.similarity] An error occurred for {doc_pair}", e
                 )
+                raise Exception
         if len(self.computed_pairs) > 0:
             self.print_and_log(
                 f"[task.similarity] Successfully computed pairs for {self.computed_pairs}"
@@ -328,11 +353,11 @@ class LoggedComputeSimilarity(LoggingTaskMixin, ComputeSimilarity):
             cos_pairs = compute_cos_pairs(doc1, doc2)
         except Exception as e:
             self.print_and_log(f"Error when computing cosine similarity", e=e)
-            return False
+            raise Exception
         try:
             self.print_and_log(f"Computing segswap scores for {doc_pair}")
             segswap_similarity(cos_pairs, output_file=score_file)
         except Exception as e:
             self.print_and_log(f"Error when computing segswap scores", e=e)
-            return False
+            raise Exception
         return True

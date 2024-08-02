@@ -9,14 +9,20 @@ python-slugify
 pytest
 tox
 
+addict
 pandas
 Pillow<10.0
-scipy==1.12.0
+#scipy==1.12.0
 scikit-learn
 matplotlib
-seaborn
 opencv-python
+pycocotools
+seaborn
+svgwrite
+svg.path
+termcolor
 ultralytics
+yapf==0.3.1
 
 kornia==0.7.*
 torch==1.12.1+cu116

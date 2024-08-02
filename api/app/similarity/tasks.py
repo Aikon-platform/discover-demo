@@ -13,6 +13,7 @@ def compute_similarity(
     dataset: dict,
     parameters: Optional[dict] = None,
     notify_url: Optional[str] = None,
+    tracking_url: Optional[str] = None,
     logger: TLogger = LoggerHelper,
 ):
     """
@@ -34,6 +35,11 @@ def compute_similarity(
     """
 
     similarity_task = LoggedComputeSimilarity(
-        logger, dataset=dataset, parameters=parameters, notify_url=notify_url
+        logger,
+        experiment_id=experiment_id,
+        dataset=dataset,
+        parameters=parameters,
+        notify_url=notify_url,
+        tracking_url=tracking_url
     )
     similarity_task.run_task()
