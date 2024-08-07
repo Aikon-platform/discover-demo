@@ -8,7 +8,7 @@ from .lib.utils import delete_directory
 from ..shared import routes as shared_routes
 from ..shared.utils.fileutils import delete_path, clear_dir
 from .const import (
-    IMG_PATH
+    IMG_PATH, VEC_RESULTS_PATH
 )
 
 from ..shared.utils.logging import console
@@ -67,6 +67,19 @@ def cancel_vectorization(tracking_id: str):
 @blueprint.route("<tracking_id>/status", methods=["GET"])
 def status_vectorization(tracking_id: str):
     return shared_routes.status(tracking_id, compute_vectorization)
+
+
+@blueprint.route("qsizes", methods=["GET"])
+def qsizes_similarity():
+    """
+    List the queues of the broker and the number of tasks in each queue
+    """
+    return shared_routes.qsizes(compute_vectorization.broker)
+
+
+@blueprint.route("monitor", methods=["GET"])
+def monitor_similarity():
+    return shared_routes.monitor(VEC_RESULTS_PATH, compute_vectorization.broker)
 
 
 @blueprint.route("delete_and_relaunch", methods=["POST"])
