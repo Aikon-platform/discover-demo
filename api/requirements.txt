@@ -16,7 +16,6 @@ Pillow<10.0
 scipy
 scikit-learn
 matplotlib
-MultiScaleDeformableAttention
 opencv-python
 pycocotools
 scikit-image

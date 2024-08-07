@@ -28,7 +28,8 @@ RUN apt-get update && apt-get install -y \
     python3-dev \
     python3-venv \
     redis-server \
-    nginx
+    nginx \
+    git
 
 WORKDIR /home/${USER}
 
