@@ -1,6 +1,7 @@
 from pathlib import Path
 from ..shared.utils.fileutils import create_dirs_if_not, create_file_if_not
 from ..config.base import ENV, BASE_DIR, XACCEL_PREFIX, API_DATA_FOLDER
+import torch
 
 DEMO_NAME = "vectorization"
 
@@ -19,7 +20,6 @@ ANNO_PATH = VEC_RESULTS_PATH
 MODEL_PATH = VEC_DATA_FOLDER / "models"
 
 create_dirs_if_not([IMG_PATH, MODEL_PATH])
-
-TORCH_HOME = BASE_DIR / ".cache"
+torch.hub.set_dir(f'{BASE_DIR}/.cache')
 
 DEFAULT_EPOCHS = "0045"
