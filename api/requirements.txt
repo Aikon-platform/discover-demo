@@ -12,7 +12,7 @@ tox
 addict
 cython
 pandas
-Pillow<10.0
+Pillow==9.5.0
 scipy
 scikit-learn
 matplotlib
