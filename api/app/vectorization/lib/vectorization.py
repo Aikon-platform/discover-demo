@@ -17,7 +17,7 @@ from pathlib import Path
 from svg.path import parse_path
 from svg.path.path import Line, Move, Arc
 
-from ..const import IMG_PATH, MODEL_PATH, VEC_RESULTS_PATH
+from ..const import IMG_PATH, MODEL_PATH, VEC_RESULTS_PATH, DEFAULT_EPOCHS
 from ...shared.utils.fileutils import send_update
 from ...shared.utils.logging import LoggingTaskMixin
 from ..lib.utils import is_downloaded, download_img
@@ -103,7 +103,7 @@ class LoggedComputeVectorization(LoggingTaskMixin, ComputeVectorization):
     def process_inference(self, doc_id):
         model_folder = Path(MODEL_PATH) 
         model_config_path = f"{model_folder}/config_cfg.py" 
-        epoch = '0036'
+        epoch = DEFAULT_EPOCHS if self.model is None else self.model
         model_checkpoint_path = f"{model_folder}/checkpoint{epoch}.pth"
         args = SLConfig.fromfile(model_config_path)
         args.device = 'cuda'

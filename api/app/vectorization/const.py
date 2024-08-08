@@ -20,4 +20,6 @@ MODEL_PATH = VEC_DATA_FOLDER / "models"
 
 create_dirs_if_not([IMG_PATH, MODEL_PATH])
 
-DEFAULT_MODEL = "checkpoint0045.pth"
+TORCH_HOME = BASE_DIR / ".cache"
+
+DEFAULT_EPOCHS = "0045"
