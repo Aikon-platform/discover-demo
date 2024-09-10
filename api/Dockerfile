@@ -1,13 +1,13 @@
 # Final image
 FROM ubuntu:22.04
 
-ENV USER demowebsite
+ENV USER=demowebsite
 ARG USERID
 
 RUN useradd -u ${USERID} -m -d /home/${USER} ${USER}
 
 ## Silence error messages
-ENV TERM linux
+ENV TERM=linux
 
 ## Bash instead of shell
 SHELL ["/bin/bash", "-c"]
@@ -33,7 +33,7 @@ RUN apt-get update && apt-get install -y \
 WORKDIR /home/${USER}
 
 ## Set nvidia
-ENV NVIDIA_DRIVER_CAPABILITIES compute,utility
+ENV NVIDIA_DRIVER_CAPABILITIES=compute,utility
 
 ## Copy requirements and install them
 # (Before copying the rest so that this part is not rerun unless requirements change)
