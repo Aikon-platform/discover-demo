@@ -46,7 +46,7 @@ def start_similarity(client_id):
     json_param = request.get_json()
     console(json_param, color="cyan")
 
-    experiment_id = slugify(request.form.get("experiment_id", str(uuid.uuid4())))
+    experiment_id = json_param.get("experiment_id")
     # dict of document ids with a URL containing a list of images
     dataset = json_param.get("documents", {})
     parameters = {
@@ -58,6 +58,7 @@ def start_similarity(client_id):
     }
     # which url to send back the similarity results and updates on the task
     notify_url = json_param.get("callback", None)
+    tracking_url = json_param.get("tracking_url")
 
     return shared_routes.start_task(
         compute_similarity,
@@ -66,6 +67,7 @@ def start_similarity(client_id):
             "dataset": dataset,
             "parameters": parameters,
             "notify_url": notify_url,
+            "tracking_url": tracking_url,
         },
     )
 

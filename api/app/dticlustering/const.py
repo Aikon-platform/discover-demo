@@ -16,4 +16,4 @@ DEMO_DIR = BASE_DIR / "app" / DEMO_NAME
 DTI_DATA_FOLDER = API_DATA_FOLDER / DEMO_NAME
 DTI_XACCEL_PREFIX = f"{XACCEL_PREFIX}/{DEMO_NAME}"
 DTI_RESULTS_PATH = DTI_DATA_FOLDER / "results"
-DTI_QUEUE = "queue0"  # see docker-confs/supervisord.conf
+DTI_QUEUE = "queue2"  # see docker-confs/supervisord.conf

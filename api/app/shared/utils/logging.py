@@ -355,7 +355,7 @@ class JobLogger:
         title: str = "",
         total: Optional[int] = None,
         rate_limit: float = 1.0,
-    ) -> Iterable[T]:
+    ) -> TqdmProgress:
         """
         Monitor the progress of iterating an iterable (through tqdm)
         """

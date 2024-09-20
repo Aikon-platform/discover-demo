@@ -7,7 +7,7 @@ import requests
 from PIL import Image, UnidentifiedImageError
 from urllib.parse import urlparse
 
-from ...extraction.const import IMG_PATH
+from ...regions.const import IMG_PATH
 from .fileutils import check_dir, sanitize_str, sanitize_url
 from .logging import console
 
@@ -127,7 +127,7 @@ class IIIFDownloader:
         self.manifest_id = self.manifest_id + self.get_manifest_id(manifest)
         if manifest is not None:
             console(f"Processing {self.manifest_url}...")
-            if check_dir(self.manifest_dir_path):
+            if not check_dir(self.manifest_dir_path):
                 i = 1
                 for rsrc in get_iiif_resources(manifest):
                     is_downloaded = self.save_iiif_img(rsrc, i)
