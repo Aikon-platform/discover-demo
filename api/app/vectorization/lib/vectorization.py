@@ -1,116 +1,117 @@
-import os, sys
 import re
-import shutil
-from calendar import c
-import xml.etree.ElementTree as ET
-from pathlib import Path
-from typing import Optional
-import requests
-import numpy as np
-import torch, json
-import cv2
-from PIL import Image
-from torchvision import transforms
-from torch.utils.data import DataLoader
-import zipfile
+import torch
+import glob
+import svgwrite
 
+import xml.etree.ElementTree as ET
+from typing import Optional
 
 from .HDV.src.main import build_model_main
 from .HDV.src.util.slconfig import SLConfig
-from .HDV.src.datasets import build_dataset
-from .HDV.src.util.visualizer import COCOVisualizer, get_angles_from_arc_points
-from .HDV.src.util import box_ops
-from .HDV.src.datasets.transforms import arc_cxcywh2_to_xy3, arc_xy3_to_cxcywh2
+from .HDV.src.util.visualizer import COCOVisualizer
+from .HDV.src.datasets import transforms as T
+
 from .utils import *
 from pathlib import Path
-from torch import nn
-import matplotlib.pyplot as plt
-from .HDV.src.datasets import transforms as T
-import glob
-import cv2
-import svgwrite
 
 from svg.path import parse_path
 from svg.path.path import Line, Move, Arc
 
-from ..const import IMG_PATH, MODEL_PATH, VEC_RESULTS_PATH
-
-from ...shared.utils.logging import LoggingTaskMixin, console
-
+from ..const import IMG_PATH, MODEL_PATH, VEC_RESULTS_PATH, DEFAULT_EPOCHS
+from ...shared.utils.fileutils import send_update
+from ...shared.utils.logging import LoggingTaskMixin
 from ..lib.utils import is_downloaded, download_img
 
 
 class ComputeVectorization:
     def __init__(
         self,
-        dataset: dict,
-        doc_id: str,
+        experiment_id: str,
+        documents: dict,
+        model: Optional[str] = None,
         notify_url: Optional[str] = None,
-        model: Optional[str] = None
+        tracking_url: Optional[str] = None,
     ):
-        self.dataset = dataset
-        self.notify_url = notify_url
-        self.client_id = "default"
-        self.doc_id = doc_id
-        self.imgs = []
+        self.experiment_id = experiment_id
+        self.documents = documents
         self.model = model
+        self.notify_url = notify_url
+        self.tracking_url = tracking_url
+        self.client_id = "default"
+        self.imgs = []
 
     def run_task(self):
         pass
 
     def check_dataset(self):
         # TODO add more checks
-        if len(list(self.dataset.keys())) == 0:
+        if len(list(self.documents.keys())) == 0:
             return False
         return True
+
+    def task_update(self, event, message=None):
+        if self.tracking_url:
+            send_update(self.experiment_id, self.tracking_url, event, message)
+            return True
+        else:
+            return False
 
 
 class LoggedComputeVectorization(LoggingTaskMixin, ComputeVectorization):
     def run_task(self):
         if not self.check_dataset():
             self.print_and_log_warning(f"[task.vectorization] No documents to download")
+            self.task_update("ERROR", f"[API ERROR] Failed to download documents for vectorization")
             return
 
+        error_list = []
+
+        try:
+            for doc_id, document in self.documents.items():
+                self.print_and_log(
+                    f"[task.vectorization] Vectorization task triggered for {doc_id} !"
+                )
+                self.task_update("STARTED")
+
+                self.download_dataset(doc_id, document)
+                self.process_inference(doc_id)
+                self.send_zip(doc_id)
+
+            self.task_update("SUCCESS", error_list if error_list else None)
+
+        except Exception as e:
+            self.print_and_log(f"Error when computing vectorizations", e=e)
+            self.task_update("ERROR", "[API ERROR] Vectorization task failed")
+
+    def download_dataset(self, doc_id, document):
         self.print_and_log(
-            f"[task.vectorization] Vectorization task triggered for {list(self.dataset.keys())} !"
+            f"[task.vectorization] Dowloading images...", color="blue"
         )
-
-        self.download_dataset()
-        self.process_inference()
-        self.send_zip(self.notify_url)
-
-        return True
-
-    def download_dataset(self):
-        for image_id, url in self.dataset.items():
-            self.print_and_log(
-                f"[task.vectorization] Dowloading images...", color="blue"
-            )
+        for image_id, url in document.items():
             try:
-                if not is_downloaded(self.doc_id, image_id):
+                if not is_downloaded(doc_id, image_id):
                     self.print_and_log(
-                        f"[task.vectorization] Downloading {image_id} images..."
+                        f"[task.vectorization] Downloading image {image_id}"
                     )
-                    download_img(url, self.doc_id, image_id)
+                    download_img(url, doc_id, image_id)
 
             except Exception as e:
                 self.print_and_log(
-                    f"[task.vectorization] Unable to download images for {image_id}", e
+                    f"[task.vectorization] Unable to download image {image_id}", e
                 )
-    
 
-    def process_inference(self):
+    def process_inference(self, doc_id):
         model_folder = Path(MODEL_PATH) 
         model_config_path = f"{model_folder}/config_cfg.py" 
-        epoch = '0036'
+        epoch = DEFAULT_EPOCHS if self.model is None else self.model
         model_checkpoint_path = f"{model_folder}/checkpoint{epoch}.pth"
         args = SLConfig.fromfile(model_config_path)
         args.device = 'cuda'
         args.num_select = 200
 
         corpus_folder = Path(IMG_PATH)
-        image_paths = glob.glob(str(corpus_folder / self.doc_id) + "/*.jpg")
-        output_dir = VEC_RESULTS_PATH / self.doc_id
+        image_paths = glob.glob(str(corpus_folder / doc_id) + "/*.jpg")
+        output_dir = VEC_RESULTS_PATH / doc_id
         os.makedirs(output_dir, exist_ok=True)
 
         model, criterion, postprocessors = build_model_main(args)
@@ -229,34 +230,34 @@ class LoggedComputeVectorization(LoggingTaskMixin, ComputeVectorization):
 
             self.print_and_log(f"[task.vectorization] Task over", color="yellow")
 
-    def send_zip(self, post_url):
+    def send_zip(self, doc_id):
         """
-        Zip le répertoire correspondant à self.doc_id et envoie ce répertoire via POST à l'URL spécifiée.
-
-        :param post_url: URL où envoyer le fichier zip via une requête POST
+        Zip le répertoire correspondant à doc_id et envoie ce répertoire via POST à l'URL spécifiée.
         """
         try:
-            # Chemin du répertoire à zipper
-            output_dir = VEC_RESULTS_PATH / self.doc_id
-            
-            # Chemin du fichier zip à créer
-            zip_path = output_dir / f"{self.doc_id}.zip"
-            
-            # Crée le fichier zip
+            output_dir = VEC_RESULTS_PATH / doc_id
+            zip_path = output_dir / f"{doc_id}.zip"
             self.print_and_log(f"[task.vectorization] Zipping directory {output_dir}", color="blue")
+
             zip_directory(output_dir, zip_path)
-            
-            # Envoie le fichier zip 
-            self.print_and_log(f"[task.vectorization] Sending zip {zip_path} to {post_url}", color="blue")
+            self.print_and_log(f"[task.vectorization] Sending zip {zip_path} to {self.notify_url}", color="blue")
+
             with open(zip_path, 'rb') as zip_file:
-                response = requests.post(post_url, files={'file': zip_file})
+                response = requests.post(
+                    url=self.notify_url,
+                    files={
+                        "file": zip_file,
+                    },
+                    data={
+                        "experiment_id": self.experiment_id,
+                        "model": self.model,
+                    },
+                )
             
-            # tests
             if response.status_code == 200:
-                self.print_and_log(f"[task.vectorization] Zip sent successfully to {post_url}", color="yellow")
+                self.print_and_log(f"[task.vectorization] Zip sent successfully to {self.notify_url}", color="yellow")
             else:
-                self.print_and_log(f"[task.vectorization] Failed to send zip to {post_url}. Status code: {response.status_code}", color="red")
+                self.print_and_log(f"[task.vectorization] Failed to send zip to {self.notify_url}. Status code: {response.status_code}", color="red")
         
         except Exception as e:
             self.print_and_log(f"[task.vectorization] Failed to zip and send directory {output_dir}", e)
-

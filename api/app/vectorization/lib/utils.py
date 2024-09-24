@@ -1,7 +1,4 @@
 import os
-import sys
-from itertools import combinations_with_replacement
-from tqdm import tqdm_notebook as tqdm
 import numpy as np
 import zipfile
 
@@ -15,11 +12,8 @@ from PIL import Image
 
 from ..const import IMG_PATH, LIB_PATH
 from .const import MAX_SIZE
-from ...shared.utils.fileutils import create_dir
 from ...shared.utils.logging import console
 from datetime import datetime
-
-
 
 
 def save_img(
@@ -46,13 +40,9 @@ def save_img(
         return False
 
 
-
-
 def get_json(url):
     with urllib.request.urlopen(url) as url:
         return json.loads(url.read().decode())
-
-
 
 
 def download_img(img_url, doc_id, img_name):
@@ -82,7 +72,9 @@ def download_img(img_url, doc_id, img_name):
 
 
 def file_age(path=__file__):
-    """Calculates and returns the age of a file in days based on its last modification time."""
+    """
+    Calculates and returns the age of a file in days based on its last modification time.
+    """
     dt = datetime.now() - datetime.fromtimestamp(Path(path).stat().st_mtime)  # delta
     return dt.days  # + dt.seconds / 86400  # fractional days
 
@@ -93,8 +85,9 @@ def is_downloaded(doc_id, image_id):
 
 
 def delete_directory(doc_id):
-    
-    """Supprime le répertoire d'images téléchargées pour relancer la vectorisation."""
+    """
+    Supprime le répertoire d'images téléchargées pour relancer la vectorisation.
+    """
 
     path = Path(f"{IMG_PATH}/{doc_id}")
     try:
@@ -112,10 +105,6 @@ def delete_directory(doc_id):
         return False
 
 
-
-
-########################################## VECTO HELPER FUNCTIONS ######################################
-
 def line_to_xy(x):
     c_x, c_y, w, h = x
     x0, y0 = c_x - w / 2, c_y - h / 2
@@ -123,10 +112,12 @@ def line_to_xy(x):
     
     return x0, y0, x1, y1
 
+
 def circle_to_xy(x):
     c_x, c_y, w, h = x
     r = (w+h)/4 
     return c_x, c_y, r
+
 
 def arc_to_xy(x):
     cx, cy, w, h, w_mid, h_mid = x
@@ -134,6 +125,7 @@ def arc_to_xy(x):
     x1, y1 = cx + w / 2, cy + h / 2
     x_mid, y_mid = cx + w_mid / 2, cy + h_mid / 2
     return x0, y0, x1, y1, x_mid, y_mid
+
 
 def get_outputs_per_class(pred_dict):
     mask = pred_dict["labels"] == 0
@@ -158,8 +150,12 @@ def is_large_arc(rad_angle):
     if rad_angle[0] <= np.pi:
         return not (rad_angle[0] < rad_angle[1] < (np.pi + rad_angle[0]))
     return (rad_angle[0] - np.pi) < rad_angle[1] < rad_angle[0]
+
+
 def find_circle_center(p1, p2, p3):
-    """Circle center from 3 points"""
+    """
+    Circle center from 3 points
+    """
     # print(p1, p2, p3)
     temp = p2[0] * p2[0] + p2[1] * p2[1]
     bc = (p1[0] * p1[0] + p1[1] * p1[1] - temp) / 2
@@ -172,8 +168,11 @@ def find_circle_center(p1, p2, p3):
     cy = ((p1[0] - p2[0]) * cd - (p2[0] - p3[0]) * bc) / det
     return np.array([cx, cy])
 
+
 def find_circle_center_arr(p1, p2, p3):
-    """Circle center from 3 points"""
+    """
+    Circle center from 3 points
+    """
     temp = p2[:, 0] ** 2 + p2[:, 1] ** 2
     bc = (p1[:, 0] ** 2 + p1[:, 1] ** 2 - temp) / 2
     cd = (temp - p3[:, 0] ** 2 - p3[:, 1] ** 2) / 2
@@ -190,7 +189,6 @@ def find_circle_center_arr(p1, p2, p3):
     cx = (bc * (p2[:, 1] - p3[:, 1]) - cd * (p1[:, 1] - p2[:, 1])) / det
     cy = ((p1[:, 0] - p2[:, 0]) * cd - (p2[:, 0] - p3[:, 0]) * bc) / det
     return np.stack([cx, cy], axis=-1)
-
 
 
 def get_angles_from_arc_points(p0, p_mid, p1):
@@ -219,10 +217,6 @@ def get_arc_plot_params(arc):
     # print("angles", start_angle, mid_angle, end_angle)
     return start_angle, mid_angle, end_angle, arc_center, diameter
 
-############################# SOME HELPERS FOR REMOVING DUPLICATAES #####################
-
-#removing immediate duplicates, very small lines, arcs on top of lines and circles 
-#(might need to add merging fragmented lines and arcs)
 
 def remove_duplicate_circles(circle_coords_list, image_size, circle_scores=None):
     circle_coords = np.array(circle_coords_list).reshape(-1, 3) # (n_circles, 3)
@@ -235,6 +229,7 @@ def remove_duplicate_circles(circle_coords_list, image_size, circle_scores=None)
         circle_scores = np.array(circle_scores)
         return circle_coords_list[indices_to_keep], circle_scores[indices_to_keep]
     return circle_coords[indices_to_keep]
+
 
 def remove_duplicate_lines(line_coords_list, image_size, line_scores=None):
     line_coords = np.array(line_coords_list).reshape(-1, 4) # (n_lines, 4)
@@ -249,6 +244,7 @@ def remove_duplicate_lines(line_coords_list, image_size, line_scores=None):
         return line_coords_list[indices_to_keep], line_scores[indices_to_keep]
     return line_coords_list[indices_to_keep]
 
+
 def remove_small_lines(line_coords_list, image_size, line_scores=None):
     line_coords = np.array(line_coords_list).reshape(-1, 4) # (n_lines, 4)
     lengths = np.linalg.norm(line_coords[:, :2] - line_coords[:, 2:], axis=-1)
@@ -260,6 +256,7 @@ def remove_small_lines(line_coords_list, image_size, line_scores=None):
         line_scores = np.array(line_scores)
         return line_coords_list[indices_to_keep], line_scores[indices_to_keep]
     return line_coords_list[indices_to_keep]
+
 
 def remove_duplicate_arcs(line_coords_list, image_size, line_scores=None):
     line_coords = np.array(line_coords_list).reshape(-1, 6) # (n_lines, 6)
@@ -273,6 +270,7 @@ def remove_duplicate_arcs(line_coords_list, image_size, line_scores=None):
         line_scores = np.array(line_scores)
         return line_coords_list[indices_to_keep], line_scores[indices_to_keep]
     return line_coords_list[indices_to_keep]
+
 
 def remove_arcs_on_top_of_circles(arc_coords_list, circle_coords_list, image_size, arc_scores=None): 
     arc_coords = np.array(arc_coords_list).reshape(-1, 6) # (n_arcs, 6)
@@ -296,6 +294,7 @@ def remove_arcs_on_top_of_circles(arc_coords_list, circle_coords_list, image_siz
         return arc_coords_list[indices_to_keep], arc_scores[indices_to_keep]
     return arc_coords_list[indices_to_keep]
 
+
 def remove_arcs_on_top_of_lines(arc_coords_list, line_coords_list, image_size, arc_scores=None): 
     arc_coords = np.array(arc_coords_list).reshape(-1, 6) # (n_arcs, 6)
     line_coords = np.array(line_coords_list).reshape(-1, 4) # (n_lines, 4)
@@ -312,7 +311,6 @@ def remove_arcs_on_top_of_lines(arc_coords_list, line_coords_list, image_size, a
     return arc_coords_list[indices_to_keep]
 
 
-# arc visualization, very clunky in python but this should work
 from matplotlib.patches import Arc
 def plot_arc(ax, arc, c='r', linewidth=2):
     arc = arc.reshape(-1)
@@ -376,15 +374,14 @@ def plot_arc(ax, arc, c='r', linewidth=2):
     ax.add_patch(arc_patch_2)
 
 
-#################################################### HELPER FUNCTIONS TO GET SVGS FROM NPZ ####################################################
-
 def read_npz(npz_dir, im_name):
     model_pred = np.load(npz_dir / f"{im_name}.npz")
     lines, line_scores = model_pred["lines"], model_pred["line_scores"]
     circles, circle_scores = model_pred["circles"], model_pred["circle_scores"]
     arcs, arc_scores = model_pred["arcs"], model_pred["arc_scores"]
     return lines, circles, arcs
-    
+
+
 def box_xyxy_to_cxcyr(x):
     """
     Only valid for circles
@@ -394,6 +391,7 @@ def box_xyxy_to_cxcyr(x):
                   ((x1 - x0) + (y1 - y0))/4], axis=-1)
     return b
 
+
 def calculate_angle(p1, p2, p3):
     v1 = p1 - p2
     v2 = p3 - p2
@@ -402,6 +400,7 @@ def calculate_angle(p1, p2, p3):
     angle = angle1 - angle2
     angle = (angle + np.pi) % (2 * np.pi) - np.pi
     return angle
+
 
 def write_svg_dwg(dwg, lines = None, circles=None, arcs=None, show_image = False, image=None):
     # Add the background image to the drawing
@@ -465,7 +464,6 @@ def write_svg_dwg(dwg, lines = None, circles=None, arcs=None, show_image = False
     return dwg
 
 
-
 def get_arc_param(arc_path, arc_transform=None):
     to_2pi = lambda x: (x + 2 * np.pi) % (2 * np.pi)
     assert len(arc_path) == 1, f"arc path with more than one arc {arc}"
@@ -485,8 +483,6 @@ def get_arc_param(arc_path, arc_transform=None):
 
     return center, radius, start_angle, end_angle, p0, p1
 
-
-#########################################################################################################################################
 
 def zip_directory(directory_path, zip_path):
     """

@@ -41,7 +41,6 @@ def start_task(task_fct, experiment_id, task_kwargs):
     """
     Start a new task
     """
-
     task = task_fct.send(experiment_id=experiment_id, **task_kwargs)
 
     return {

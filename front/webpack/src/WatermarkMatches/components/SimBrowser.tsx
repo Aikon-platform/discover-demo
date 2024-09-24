@@ -2,7 +2,7 @@ import React, { useReducer } from "react";
 import { Watermark, WatermarkMatches, WatermarkOutputRaw, WatermarkSource, WatermarksIndex, WatermarksIndexRaw, unserializeSingleWatermarkMatches } from "../types";
 import { MatchRow } from "./MatchRow";
 import { IconBtn } from "../../utils/IconBtn";
-import { Magnifier, MagnifyProps, MagnifyingContext } from "./MatchViewer";
+import { Magnifier, MagnifyProps, MagnifyingContext } from "./Magnifier";
 import { Pagination } from "./Pagination";
 
 export interface SimBrowserProps {
@@ -21,6 +21,7 @@ export function WatermarkSimBrowser({ matches, index }: SimBrowserProps) {
     const [magnifying, setMagnifying] = React.useState<MagnifyProps | null>(null);
     const [page, setPage] = React.useState(1);
     const [highlit, setHighlit] = React.useState<Watermark | null>(null);
+    const [threshold, setThreshold] = React.useState(50);
 
     const matches_filtered = filter_by_source ? matches.filter(match => match.query.source === filter_by_source) : matches;
     const PAGINATE_BY = 30;
@@ -70,13 +71,28 @@ export function WatermarkSimBrowser({ matches, index }: SimBrowserProps) {
         <MagnifyingContext.Provider value={{magnify: setMagnifying, matchesHref}}>
             <div className="viewer-options">
                 <div className="columns">
-                    <div className="field column is-3">
+                    <div className="field column is-2">
                         <label className="checkbox is-normal">
                             <input type="checkbox" className="checkbox mr-2" name="group-by-source" id="group-by-source" checked={group_by_source} onChange={toggleGroupBySource} />
                             Group by source document
                         </label>
                     </div>
-                    <div className="field column is-horizontal is-9">
+                    <div className="field column is-horizontal is-4">
+                        <div className="field-label is-normal">
+                            <label className="label is-expanded">
+                                Threshold:
+                            </label>
+                        </div>
+                        <div className="field-body">
+                            <div className="field">
+                                <div className="control">
+                                    <input type="range" min="30" max="100" value={threshold} onChange={(e) => setThreshold(parseInt(e.target.value))} />
+                                    <span className="m-3">{threshold}%</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div className="field column is-horizontal is-6">
                         <div className="field-label is-normal">
                             <label className="label">
                                 Filter by document:
@@ -103,7 +119,7 @@ export function WatermarkSimBrowser({ matches, index }: SimBrowserProps) {
             <div className="viewer-table">
 
             {matches_filtered.slice((actual_page-1)*PAGINATE_BY, (actual_page)*PAGINATE_BY).map((matches, idx) => (
-                <MatchRow key={idx} matches={matches} group_by_source={group_by_source} highlit={highlit==matches.query} />
+                <MatchRow key={idx} matches={matches} group_by_source={group_by_source} highlit={highlit==matches.query} threshold={threshold} />
             ))}
             </div>
             <div className="mt-4"></div>

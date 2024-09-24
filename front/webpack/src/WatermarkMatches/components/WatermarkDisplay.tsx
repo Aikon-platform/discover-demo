@@ -1,15 +1,16 @@
 import { Icon } from "@iconify/react";
 import { MatchTransformation, Watermark } from "../types";
-import { MagnifyingContext } from "./MatchViewer";
 import React from "react";
+import { MagnifyingContext } from "./Magnifier";
 
 interface WatermarkProps {
     watermark: Watermark;
     similarity?: number;
     transformations?: MatchTransformation[];
+    wref?: Watermark
 }
 
-export function Watermark({watermark, similarity, transformations}: WatermarkProps) {
+export function WatermarkDisplay({watermark, similarity, transformations, wref}: WatermarkProps) {
     /*
     Component to render a single watermark match.
     */
@@ -17,12 +18,14 @@ export function Watermark({watermark, similarity, transformations}: WatermarkPro
 
     return (
         <div className="match-item column">
-            <img src={watermark.image_url} alt={watermark.name} className={"match-img "+(transformations || []).join(" ")} onClick={() => magnifyier.magnify && magnifyier.magnify({watermark, transformations})} />
+            <div className="match-img">
+                <img src={watermark.image_url} alt={watermark.name} className={"watermark "+(transformations || []).join(" ")} onClick={() => magnifyier.magnify && magnifyier.magnify({watermark, transformations, wref})} />
+            </div>
             <div className="match-tools">
                 {watermark.link && <a href={watermark.link} className="match-source" target="_blank" title="See in context">
                     <Icon icon="mdi:book-open-blank-variant" />
                 </a>}
-                {magnifyier.magnify && <a href="javascript:void(0)" className="match-magnify" title="Magnify" onClick={() => magnifyier.magnify!({watermark, transformations})}>
+                {magnifyier.magnify && <a href="javascript:void(0)" className="match-magnify" title="Magnify" onClick={() => magnifyier.magnify!({watermark, transformations, wref})}>
                     <Icon icon="mdi:arrow-expand" />
                 </a>}
                 {magnifyier.matchesHref && <a href={magnifyier.matchesHref(watermark)} className="match-focus" title="Show matches">

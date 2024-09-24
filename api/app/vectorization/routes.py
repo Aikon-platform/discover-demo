@@ -8,12 +8,13 @@ from .lib.utils import delete_directory
 from ..shared import routes as shared_routes
 from ..shared.utils.fileutils import delete_path, clear_dir
 from .const import (
-    IMG_PATH
+    IMG_PATH, VEC_RESULTS_PATH
 )
 
 from ..shared.utils.logging import console
 
 blueprint = Blueprint("vectorization", __name__, url_prefix="/vectorization")
+
 
 @blueprint.route("start", methods=["POST"])
 @shared_routes.get_client_id
@@ -33,29 +34,27 @@ def start_vectorization(client_id):
     }
     A list of images to download + informations
     """
-
     if not request.is_json:
         return "No JSON in request: Vectorization task aborted!"
 
-    data = request.get_json()
-    console(data, color="cyan")
+    json_param = request.get_json()
+    console(json_param, color="cyan")
 
-    experiment_id = slugify(request.form.get("experiment_id", str(uuid.uuid4())))
-    # dict of document ids with a URL containing a list of images
-    dataset = data.get("images", {})
-    # which url to send back the similarity results and updates on the task
-    notify_url = data.get("callback", None)
-    doc_id = data.get("doc_id", None)
-    model = data.get("model", None)
+    experiment_id = json_param.get("experiment_id")
+    documents = json_param.get("documents", {})
+    model = json_param.get("model", None)
+
+    notify_url = json_param.get("callback", None)
+    tracking_url = json_param.get("tracking_url")
 
     return shared_routes.start_task(
         compute_vectorization,
         experiment_id,
         {
-            "dataset": dataset,
+            "documents": documents,
+            "model": model,
             "notify_url": notify_url,
-            "doc_id": doc_id,
-            "model" : model
+            "tracking_url": tracking_url,
         },
     )
 
@@ -68,6 +67,19 @@ def cancel_vectorization(tracking_id: str):
 @blueprint.route("<tracking_id>/status", methods=["GET"])
 def status_vectorization(tracking_id: str):
     return shared_routes.status(tracking_id, compute_vectorization)
+
+
+@blueprint.route("qsizes", methods=["GET"])
+def qsizes_similarity():
+    """
+    List the queues of the broker and the number of tasks in each queue
+    """
+    return shared_routes.qsizes(compute_vectorization.broker)
+
+
+@blueprint.route("monitor", methods=["GET"])
+def monitor_similarity():
+    return shared_routes.monitor(VEC_RESULTS_PATH, compute_vectorization.broker)
 
 
 @blueprint.route("delete_and_relaunch", methods=["POST"])
@@ -111,6 +123,6 @@ def delete_and_relaunch(client_id):
             "cleared_img_dir": 0,
             "start_vectorization": "Directory deletion failed, vectorization not started."
         })
-        
+
 
 

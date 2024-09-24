@@ -8,6 +8,7 @@ export interface WatermarksIndexRaw {
             name: string;
             url: string;
             page_url: string;
+            metadata: {[key: string]: string};
         }
     }
     images: [
@@ -15,6 +16,7 @@ export interface WatermarksIndexRaw {
             name: string;
             source: string;
             page: number;
+            id?: string;
         }
     ]
     flips: MatchTransformation[];
@@ -49,6 +51,7 @@ export interface WatermarkSource {
     name: string;
     url: string;
     page_url: string;
+    metadata: {[key: string]: string};
 }
 
 export interface Watermark {
@@ -56,6 +59,7 @@ export interface Watermark {
     image_url: string;
     source?: WatermarkSource;
     id?: number;
+    uid?: string;
     page?: number;
     link?: string;
 }
@@ -116,6 +120,7 @@ export function unserializeWatermarkIndex(index: WatermarksIndexRaw, base_url: s
             source: source_documents[image.source],
             name: image.name,
             page: image.page,
+            uid: image.id,
             image_url: base_url + image.source + "/" + image.name
         }));
     source_images.forEach(image => {
