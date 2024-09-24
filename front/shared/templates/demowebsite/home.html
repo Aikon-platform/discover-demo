@@ -5,7 +5,15 @@
 
 {% block content %}
     <div class="centerwrap container p-5" id="demo-list">
-        <h1 class="is-title is-size-2 py-3 is-link">Research demos</h1>
+        <div class="columns is-vcentered">
+            <section class="is-6 column is-large">
+                <h1 class="is-title is-size-2 py-3 is-link">Research demos</h1>
+                <p class="notification is-light">
+                    This project is supported by <strong>ERC project DISCOVER</strong> funded by the European Union’s
+                    Horizon Europe Research and Innovation program under grant agreement No. 101076028.
+                </p>
+            </section>
+        </div>
         <div class="columns is-vcentered">
 
             {% include "includes/demo-card.html" with demo="dticlustering" demo_title="DTI clustering" demo_subtitle="Group images dataset on content" %}
