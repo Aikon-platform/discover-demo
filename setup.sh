@@ -44,6 +44,10 @@ echoTitle(){
     colorEcho purple "\n\n$sep_line\n$title\n$sep_line"
 }
 
+echoTitle "DOWNLOADING API SUBMODULE"
+git submodule init
+git submodule update
+
 echoTitle "REQUIREMENTS INSTALL"
 
 colorEcho yellow "\nSystem packages ..."
@@ -173,7 +177,7 @@ set_redis() {
 colorEcho yellow "\nSetting $FRONT_ENV file ..."
 update_env "$FRONT_ENV"
 
-echoTitle "DOWNLOADING DTI SUBMODULE"
+echoTitle "DOWNLOADING API SUBMODULES (dticlustering, etc.)"
 git submodule init
 git submodule update
 

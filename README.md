@@ -1,7 +1,7 @@
 # DTI-demo
 A web interface as demo for DTI clustering
 
-Please refer to [api/README](api/README.md) and [front/README](front/README.md) for installing and running each individual part.
+Please refer to [api/README](https://github.com/Aikon-platform/discover-api/blob/main/README.md) and [front/README](front/README.md) for installing and running each individual part.
 
 ## General requirements
 
@@ -13,7 +13,7 @@ Please refer to [api/README](api/README.md) and [front/README](front/README.md) 
 
 ## Development
 
-To install the API and Front application following the instructions in [api/README](api/README.md) and [front/README](front/README.md)
+To install the API and Front application following the instructions in [api/README](https://github.com/Aikon-platform/discover-api/blob/main/README.md) and [front/README](front/README.md)
 
 ```bash
 bash setup.sh
