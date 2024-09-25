@@ -24,7 +24,7 @@ def load_model(model_path, feat_net, feat_set, device):
             device
         )
         model = create_feature_extractor(
-            model, return_nodes={"layer3.5.bn2": "conv4", "avgpool": "avgpool"}
+            model, return_nodes={"layer3.5.bn2": FEAT_LAYER, "avgpool": "avgpool"}
         )
 
     elif feat_net == "moco_v2_800ep_pretrain" and feat_set == "imagenet":
@@ -37,7 +37,7 @@ def load_model(model_path, feat_net, feat_set, device):
 
         model.load_state_dict(new_state_dict, strict=False)
         model = create_feature_extractor(
-            model, return_nodes={"layer3.5.bn3": "conv4", "avgpool": "avgpool"}
+            model, return_nodes={"layer3.5.bn3": FEAT_LAYER, "avgpool": "avgpool"}
         )
     elif feat_net == "dino_deitsmall16_pretrain":
         pre_dict = torch.load(model_path)
@@ -94,7 +94,9 @@ def extract_features(
         for i, img in enumerate(data_loader):
             features.append(img_feat(img, model, feat_net, feat_layer))
 
-    features = torch.cat(features)
+    features = torch.cat(
+        features
+    )  # .as(torch.float16) #TODO change here to reduce feat size
     torch.save(features, feat_path)
 
     return features

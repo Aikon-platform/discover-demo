@@ -272,7 +272,9 @@ class LoggedComputeSimilarity(LoggingTaskMixin, ComputeSimilarity):
             return True
 
         except Exception as e:
-            self.task_update("ERROR", "[API ERROR] Failed to compute and send similarity scores")
+            self.task_update(
+                "ERROR", "[API ERROR] Failed to compute and send similarity scores"
+            )
 
     def download_dataset(self):
         for doc_id, url in self.dataset.items():

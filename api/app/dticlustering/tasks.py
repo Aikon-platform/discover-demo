@@ -73,7 +73,7 @@ def train_dti(
         # Use DTI clustering
         output_path = run_kmeans_training(experiment_id, dataset_id, parameters, logger)
     else:
-        # Use DTI sprites (1_learn_bg / 2_const_bg)
+        # Use DTI sprites (1_learn_bg / 2_const_bg / 3_learn_fg)
         output_path = run_sprites_training(
             experiment_id, dataset_id, parameters, logger
         )

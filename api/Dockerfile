@@ -1,13 +1,13 @@
 # Final image
 FROM nvidia/cuda:11.6.1-cudnn8-devel-ubuntu20.04
 
-ENV USER demowebsite
+ENV USER=demowebsite
 ARG USERID
 
 RUN useradd -u ${USERID} -m -d /home/${USER} ${USER}
 
 ## Silence error messages
-ENV TERM linux
+ENV TERM=linux
 
 ## Bash instead of shell
 SHELL ["/bin/bash", "-c"]
@@ -40,7 +40,7 @@ RUN apt-get update && apt-get install -y \
 WORKDIR /home/${USER}
 
 ## Set nvidia
-ENV NVIDIA_DRIVER_CAPABILITIES compute,utility
+ENV NVIDIA_DRIVER_CAPABILITIES=compute,utility
 
 ## Copy requirements and install them
 # (Before copying the rest so that this part is not rerun unless requirements change)
@@ -53,7 +53,7 @@ RUN source venv/bin/activate && pip install --upgrade pip && pip install -r requ
 COPY --chown=${USER} ./ ./api/
 COPY --chown=${USER} ./.env.prod ./api/.env
 
-COPY /docker-confs/nginx.conf /etc/nginx/conf.d/demowebsite.conf
+COPY docker-confs/nginx.conf /etc/nginx/conf.d/demowebsite.conf
 
 EXPOSE 8001
 
