@@ -13,14 +13,12 @@ Please refer to [api/README](https://github.com/Aikon-platform/discover-api/blob
 
 ## Development
 
-To install the API and Front application following the instructions in [api/README](https://github.com/Aikon-platform/discover-api/blob/main/README.md) and [front/README](front/README.md)
-
-```bash
-bash setup.sh
-```
-
-Copy the `.env.dev.template` files to `.env.dev`, o start everything in one killable process, run (after installing each part like advised in the subfolders):
-
-```bash
-bash run.sh
-```
+1. To install the API and Front application following the instructions in [api/README](https://github.com/Aikon-platform/discover-api/blob/main/README.md) and [front/README](front/README.md)
+    ```bash
+    bash setup.sh
+    ```
+2. Change the `.env.dev` variables to fit your requirements.
+3. To start everything in one killable process, run (after installing each part like advised in the subfolders):
+    ```bash
+    bash run.sh
+    ```
