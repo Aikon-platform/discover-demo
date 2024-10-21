@@ -3,10 +3,10 @@ import requests
 from zipfile import ZipFile
 import traceback
 
-from .models import Similarity
+from .models import Regions
 
 """
-All dramatiq tasks related to Similarity retrieval
+All dramatiq tasks related to images regions extraction
 """
 
 

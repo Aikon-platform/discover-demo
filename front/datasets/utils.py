@@ -2,6 +2,7 @@ from django.utils.deconstruct import deconstructible
 import os
 import uuid
 
+
 @deconstructible
 class PathAndRename(object):
     """

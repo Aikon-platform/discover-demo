@@ -33,14 +33,14 @@ def AbstractAPITask(task_prefix: str):
             # default=task_prefix,
             blank=True,
             verbose_name="Experiment name",
-            help_text="Optional name to identify this clustering experiment",
+            help_text=f"Optional name to identify this {task_prefix} experiment",
         )
 
         notify_email = models.BooleanField(
             default=True,
             verbose_name="Notify by email",
             blank=True,
-            help_text="Send an email when the clustering is finished",
+            help_text=f"Send an email when the {task_prefix} task is finished",
         )
 
         status = models.CharField(max_length=20, default="PENDING", editable=False)
@@ -50,7 +50,6 @@ def AbstractAPITask(task_prefix: str):
             User, null=True, on_delete=models.SET_NULL, editable=False
         )
 
-        # The clustering tracking id
         api_tracking_id = models.UUIDField(null=True, editable=False)
 
         api_endpoint_prefix = task_prefix
@@ -58,6 +57,7 @@ def AbstractAPITask(task_prefix: str):
 
         class Meta:
             abstract = True
+            ordering = ["-requested_on"]
 
         # Util URLs and Paths
         @property
