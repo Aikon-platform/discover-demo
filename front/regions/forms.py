@@ -5,12 +5,13 @@ from django.conf import settings
 from .models import Regions
 from datasets.fields import ContentRestrictedFileField
 
-REGIONS_API_URL = f"{getattr(settings, 'API_URL', 'http://localhost:5000')}/regions"
+REGIONS_API_URL = f"{getattr(settings, 'API_URL', 'http://localhost:5001')}/regions"
 
 
 class RegionsForm(forms.ModelForm):
     class Meta:
         model = Regions
+        fields = ("name", "dataset_zip", "dataset_name", "model", "notify_email")
 
     dataset_zip = ContentRestrictedFileField(
         label="Dataset",
@@ -32,19 +33,26 @@ class RegionsForm(forms.ModelForm):
     )
     model = forms.ChoiceField(
         label="Model",
+        help_text="Model used to extract image regions in the dataset",
         choices=[],  # dynamically set in __init__
         widget=forms.RadioSelect,
         required=True,
     )
 
     def __init__(self, *args, **kwargs):
+        self.__user = kwargs.pop("user", None)
         super().__init__(*args, **kwargs)
-        self.fields['model'].choices = self.get_available_models()
+        self.fields["model"].choices = self.get_available_models()
+        self.initial["model"] = None
 
     def get_available_models(self):
         response = requests.get(f"{REGIONS_API_URL}/models")
         response.raise_for_status()
         models = response.json()
+        if not models:
+            return [("", "No available models for extraction")]
 
         # models = {model: "date", ...}
-        return [(model, f"{model} (last update: {date})") for model, date in models.items()]
+        return [
+            (model, f"{model} (last update: {date})") for model, date in models.items()
+        ]
