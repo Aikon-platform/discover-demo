@@ -1,11 +1,7 @@
 from django import forms
-from django.conf import settings
-
-from datasets.models import ZippedDataset, path_datasets
-from datasets.fields import ContentRestrictedFileField
 
 from .models import DTIClustering, SavedClustering
-from shared.forms import AbstractTaskOnDatasetForm
+from tasking.forms import AbstractTaskOnDatasetForm
 
 
 class IntegerListField(forms.CharField):

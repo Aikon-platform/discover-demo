@@ -1,10 +1,5 @@
-from django import forms
-from django.db.models.base import Model
-
 from .models import WatermarkProcessing
-from datasets.fields import ContentRestrictedFileField
-
-from shared.forms import AbstractTaskOnImageForm
+from tasking.forms import AbstractTaskOnImageForm
 
 
 # class WatermarkProcessingForm(forms.ModelForm):
