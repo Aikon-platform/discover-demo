@@ -1,4 +1,3 @@
-from django.urls import reverse_lazy
 from django.views.generic import (
     DetailView,
     ListView,
@@ -13,7 +12,6 @@ from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMix
 from django.contrib import messages
 from django.shortcuts import redirect
 from django.http import JsonResponse, Http404, HttpResponse
-import json
 from typing import Any
 
 from tasking.views import (
@@ -163,6 +161,7 @@ class SavedClusteringEdit(LoginRequiredMixin, UpdateView):
 class SavedClusteringDelete(LoginRequiredMixin, DeleteView):
     """
     Delete a saved clustering
+    TODO make abstract class out of it
     """
 
     model = SavedClustering
@@ -211,6 +210,7 @@ class SavedClusteringCSVExport(LoginRequiredMixin, SingleObjectMixin, View):
 class MonitoringView(PermissionRequiredMixin, LoginRequiredMixin, TemplateView):
     """
     Monitoring view
+    TODO make abstract class out of it
     """
 
     template_name = "tasking/monitoring.html"
@@ -228,6 +228,7 @@ class MonitoringView(PermissionRequiredMixin, LoginRequiredMixin, TemplateView):
 class ClearOldClusterings(PermissionRequiredMixin, LoginRequiredMixin, View):
     """
     Clear old clusterings
+    TODO make abstract class out of it
     """
 
     permission_required = "dticlustering.monitor_dticlustering"
@@ -254,6 +255,7 @@ class ClearOldClusterings(PermissionRequiredMixin, LoginRequiredMixin, View):
 class ClearAPIOldClusterings(PermissionRequiredMixin, LoginRequiredMixin, View):
     """
     Clear old clusterings from the API server
+    TODO make abstract class out of it
     """
 
     permission_required = "dticlustering.monitor_dticlustering"
