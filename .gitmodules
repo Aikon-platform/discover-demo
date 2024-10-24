@@ -1,3 +1,7 @@
 [submodule "discover-api"]
 	path = api
 	url = git@github.com:Aikon-platform/discover-api.git
+[submodule "cantaloupe"]
+	path = front/cantaloupe
+	url = git@github.com:Aikon-platform/cantaloupe.git
+	branch = aikon
