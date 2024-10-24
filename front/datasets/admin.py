@@ -1,5 +1,5 @@
 from django.contrib import admin
 
-from .models import ZippedDataset
+from .models import *
 
 admin.site.register(ZippedDataset)

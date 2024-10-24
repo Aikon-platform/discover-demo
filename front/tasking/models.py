@@ -1,7 +1,3 @@
-from django.db import models
-from django.contrib.auth import get_user_model
-from django.core.mail import send_mail, mail_admins
-from django.utils.functional import cached_property
 import uuid
 import requests
 from requests.exceptions import RequestException
@@ -9,11 +5,16 @@ import traceback
 from typing import Dict, Any
 from pathlib import Path
 
+from django.db import models
+from django.contrib.auth import get_user_model
+from django.core.mail import send_mail, mail_admins
+from django.utils.functional import cached_property
 from django.db.models.signals import pre_delete, post_save
 from django.dispatch.dispatcher import receiver
-
 from django.urls import reverse
 from django.conf import settings
+
+from datasets.models import Dataset, ZippedDataset
 
 User = get_user_model()
 
@@ -359,3 +360,25 @@ def AbstractAPITask(task_prefix: str):
         return
 
     return AbstractAPITask
+
+
+def AbstractAPITaskOnDataset(task_prefix: str):
+    class AbstractAPITaskOnDataset(AbstractAPITask(task_prefix)):
+        """
+        Abstract model for tasks that are sent to the API
+        """
+
+        api_endpoint_prefix = task_prefix
+        django_app_name = task_prefix
+
+        dataset = models.ForeignKey(ZippedDataset, null=True, on_delete=models.SET_NULL)
+        # dataset = models.ForeignKey(Dataset, null=True, on_delete=models.SET_NULL)
+        parameters = models.JSONField(null=True)
+
+        class Meta:
+            ordering = ["-requested_on"]
+
+        def get_absolute_url(self):
+            return reverse(f"{self.django_app_name}:status", kwargs={"pk": self.pk})
+
+    return AbstractAPITaskOnDataset

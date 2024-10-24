@@ -4,6 +4,8 @@ from django.conf import settings
 from datasets.fields import ContentRestrictedFileField
 from datasets.models import ZippedDataset
 
+from front.datasets.forms import DatasetForm
+
 
 class AbstractTaskForm(forms.ModelForm):
     class Meta:
@@ -33,31 +35,16 @@ class AbstractTaskOnDatasetForm(AbstractTaskForm):
     class Meta(AbstractTaskForm.Meta):
         model = None
         abstract = True
-        # TODO add format, iiif, pdf
         fields = AbstractTaskForm.Meta.fields + ("dataset_zip", "dataset_name")
+        # fields = AbstractTaskForm.Meta.fields + ("dataset")
 
-    # dataset_format = forms.ChoiceField(
-    #     label="Type",
-    #     choices=[("zip", "ZIP"), ("iiif", "IIIF Manifest"), ("pdf", "PDF")],
-    # )
-    dataset_zip = ContentRestrictedFileField(
-        label="Zipped Dataset",
-        help_text="A .zip file containing the dataset to be processed",
+    # dataset_form = None
+    dataset_pdf = ContentRestrictedFileField(
+        label="PDF",
+        help_text="A .pdf file containing the dataset to be processed",
         accepted_types=["application/zip"],
         max_size=settings.MAX_UPLOAD_SIZE,
     )
-    # dataset_iiif = forms.URLField(
-    #     label="IIIF Manifest URL",
-    #     help_text="The URL to the IIIF manifest of the dataset to be processed",
-    #     max_length=500,
-    #     required=False,
-    # )
-    # dataset_pdf = ContentRestrictedFileField(
-    #     label="PDF",
-    #     help_text="A .pdf file containing the dataset to be processed",
-    #     accepted_types=["application/zip"],
-    #     max_size=settings.MAX_UPLOAD_SIZE,
-    # )
     dataset_name = forms.CharField(
         label="Dataset name",
         help_text="An optional name to identify this dataset",
@@ -73,15 +60,31 @@ class AbstractTaskOnDatasetForm(AbstractTaskForm):
             self.fields.pop("dataset_zip")
             self.fields.pop("dataset_name")
 
+        # super().__init__(*args, **kwargs)
+        #
+        # # If the instance has a dataset, initialize the DatasetForm with its instance
+        # if self.instance and self.instance.dataset:
+        #     self.dataset_form = DatasetForm(instance=self.instance.dataset)
+        # else:
+        #     self.dataset_form = DatasetForm()  # Empty form if no dataset exists
+
+    # def is_valid(self):
+    #     # Ensure both forms are valid
+    #     return super().is_valid() and self.dataset_form.is_valid()
+
     def _populate_instance(self, instance):
         super()._populate_instance(instance)
         if self.__dataset:
             instance.dataset = self.__dataset
         else:
+            # TODO use Dataset instead
             instance.dataset = ZippedDataset.objects.create(
                 zip_file=self.cleaned_data["dataset_zip"],
                 name=self.cleaned_data["dataset_name"],
             )
+
+        # dataset = self.dataset_form.save(commit=True)
+        # instance.dataset = dataset
 
 
 class AbstractTaskOnImageForm(AbstractTaskForm):
