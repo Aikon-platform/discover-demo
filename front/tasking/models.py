@@ -371,11 +371,14 @@ def AbstractAPITaskOnDataset(task_prefix: str):
         api_endpoint_prefix = task_prefix
         django_app_name = task_prefix
 
-        dataset = models.ForeignKey(ZippedDataset, null=True, on_delete=models.SET_NULL)
+        zip_dataset = models.ForeignKey(
+            ZippedDataset, null=True, on_delete=models.SET_NULL
+        )
         # dataset = models.ForeignKey(Dataset, null=True, on_delete=models.SET_NULL)
         parameters = models.JSONField(null=True)
 
         class Meta:
+            abstract = True
             ordering = ["-requested_on"]
 
         def get_absolute_url(self):

@@ -265,18 +265,18 @@ class SavedClusteringForm(forms.ModelForm):
         widgets = {"clustering_data": forms.HiddenInput()}
 
     def __init__(self, *args, **kwargs):
-        self.__from_dti = kwargs.pop("from_dti", None)
+        self.__from_task = kwargs.pop("from_task", None)
 
         super().__init__(*args, **kwargs)
 
-        if self.__from_dti:
-            self.fields["name"].initial = self.__from_dti.name
+        if self.__from_task:
+            self.fields["name"].initial = self.__from_task.name
 
     def save(self, commit=True):
         instance = super().save(commit=False)
 
-        if self.__from_dti:
-            instance.from_dti = self.__from_dti
+        if self.__from_task:
+            instance.from_task = self.__from_task
 
         if commit:
             instance.save()

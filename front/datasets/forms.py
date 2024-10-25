@@ -35,6 +35,6 @@ class DatasetForm(forms.ModelForm):
     pdf_file = ContentRestrictedFileField(
         label="PDF",
         help_text="A .pdf file containing the dataset to be processed",
-        accepted_types=["application/zip"],
+        accepted_types=["pdf"],
         max_size=settings.MAX_UPLOAD_SIZE,
     )

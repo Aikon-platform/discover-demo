@@ -13,15 +13,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMix
 
 from .forms import RegionsForm
 from .models import Regions
-from tasking.views import (
-    TaskStartView,
-    TaskStatusView,
-    TaskProgressView,
-    TaskCancelView,
-    TaskWatcherView,
-    TaskDeleteView,
-    TaskListView,
-)
+from tasking.views import *
 
 
 class RegionsMixin:
@@ -39,6 +31,10 @@ class RegionsStart(RegionsMixin, TaskStartView):
     pass
 
 
+class RegionsStartFrom(TaskStartFromView):
+    pass
+
+
 class RegionsList(RegionsMixin, TaskListView):
     # permission_see_all = "dticlustering.monitor_dticlustering"
 
@@ -46,18 +42,41 @@ class RegionsList(RegionsMixin, TaskListView):
         return super().get_queryset().prefetch_related("dataset")
 
 
-class RegionsMonitor(PermissionRequiredMixin, LoginRequiredMixin, TemplateView):
+class RegionsMonitor(RegionsMixin, TaskMonitoringView):
     """
     Monitoring view
     """
 
-    template_name = "tasking/monitoring.html"
     permission_required = "regions.monitor_regions"
 
-    def get_context_data(self, **kwargs) -> dict[str, Any]:
-        context = super().get_context_data(**kwargs)
-        context["app_name"] = "regions"
-        context["task_name"] = "Regions extraction"
-        # context["api"] = Regions.get_api_monitoring()
-        # context["frontend"] = Regions.get_frontend_monitoring()
-        return context
+
+class RegionsStatus(RegionsMixin, TaskStatusView):
+    pass
+
+
+class RegionsProgress(RegionsMixin, TaskProgressView):
+    pass
+
+
+class RegionsCancel(RegionsMixin, TaskCancelView):
+    pass
+
+
+class RegionsWatcher(RegionsMixin, TaskWatcherView):
+    pass
+
+
+class RegionsDelete(RegionsMixin, TaskDeleteView):
+    pass
+
+
+class RegionsByDatasetList(RegionsMixin, TaskByDatasetList):
+    pass
+
+
+class ClearOldRegions(RegionsMixin, ClearOldResultsView):
+    pass
+
+
+class ClearAPIOldRegions(RegionsMixin, ClearAPIOldResultsView):
+    pass

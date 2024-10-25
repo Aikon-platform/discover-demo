@@ -26,6 +26,8 @@ class AbstractDataset(models.Model):
 
 
 class Dataset(AbstractDataset):
+    """Set of images to be processed"""
+
     format = models.CharField(
         max_length=64,
         default="dataset",
@@ -49,3 +51,13 @@ class ZippedDataset(AbstractDataset):
     """
 
     zip_file = models.FileField(upload_to=path_datasets, max_length=500)
+
+
+class CropList(models.Model):
+    """
+    DB instance + json file to define zones coordinates in a dataset
+    base of clustering/similarity/vectorization task
+    bounding boxes / full images
+    """
+
+    pass

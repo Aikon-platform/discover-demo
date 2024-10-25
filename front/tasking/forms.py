@@ -4,8 +4,6 @@ from django.conf import settings
 from datasets.fields import ContentRestrictedFileField
 from datasets.models import ZippedDataset
 
-from front.datasets.forms import DatasetForm
-
 
 class AbstractTaskForm(forms.ModelForm):
     class Meta:
@@ -39,9 +37,9 @@ class AbstractTaskOnDatasetForm(AbstractTaskForm):
         # fields = AbstractTaskForm.Meta.fields + ("dataset")
 
     # dataset_form = None
-    dataset_pdf = ContentRestrictedFileField(
-        label="PDF",
-        help_text="A .pdf file containing the dataset to be processed",
+    dataset_zip = ContentRestrictedFileField(
+        label="Zipped Dataset",
+        help_text="A .zip file containing the dataset to be processed",
         accepted_types=["application/zip"],
         max_size=settings.MAX_UPLOAD_SIZE,
     )

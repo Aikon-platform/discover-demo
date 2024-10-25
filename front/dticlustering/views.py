@@ -14,15 +14,7 @@ from django.shortcuts import redirect
 from django.http import JsonResponse, Http404, HttpResponse
 from typing import Any
 
-from tasking.views import (
-    TaskStartView,
-    TaskStatusView,
-    TaskProgressView,
-    TaskCancelView,
-    TaskWatcherView,
-    TaskDeleteView,
-    TaskListView,
-)
+from tasking.views import *
 
 from .models import DTIClustering, SavedClustering
 from .forms import DTIClusteringForm, SavedClusteringForm
@@ -43,24 +35,25 @@ class DTIClusteringStart(DTIClusteringMixin, TaskStartView):
     pass
 
 
-class DTIClusteringStartFrom(DTIClusteringStart):
-    """
-    Request a clustering from a previous one
-    """
-
-    def get_form_kwargs(self):
-        kwargs = super().get_form_kwargs()
-        self.from_dti = DTIClustering.objects.get(id=self.kwargs["pk"])
-        kwargs["dataset"] = self.from_dti.dataset
-        kwargs["initial"] = {"name": self.from_dti.name}
-
-        return kwargs
-
-    def get_context_data(self, **kwargs) -> dict[str, Any]:
-        context = super().get_context_data(**kwargs)
-        context["task_name"] = self.task_name
-        context["from_task"] = self.from_dti
-        return context
+class DTIClusteringStartFrom(TaskStartFromView):
+    # """
+    # Request a clustering from a previous one
+    # """
+    #
+    # def get_form_kwargs(self):
+    #     kwargs = super().get_form_kwargs()
+    #     self.from_task = DTIClustering.objects.get(id=self.kwargs["pk"])
+    #     kwargs["dataset"] = self.from_task.dataset
+    #     kwargs["initial"] = {"name": self.from_task.name}
+    #
+    #     return kwargs
+    #
+    # def get_context_data(self, **kwargs) -> dict[str, Any]:
+    #     context = super().get_context_data(**kwargs)
+    #     context["task_name"] = self.task_name
+    #     context["from_task"] = self.from_task
+    #     return context
+    pass
 
 
 class DTIClusteringStatus(DTIClusteringMixin, TaskStatusView):
@@ -90,20 +83,24 @@ class DTIClusteringList(DTIClusteringMixin, TaskListView):
         return super().get_queryset().prefetch_related("dataset")
 
 
-class DTIClusteringByDatasetList(DTIClusteringList):
-    """
-    List of all clusterings for a given dataset [for admins]
-    """
+class DTIClusteringByDatasetList(TaskByDatasetList):
+    permission_see_all = "dticlustering.monitor_dticlustering"
 
-    def get_queryset(self):
-        return super().get_queryset().filter(dataset__id=self.kwargs["dataset_pk"])
-
-    def get_context_data(self, **kwargs) -> dict[str, Any]:
-        context = super().get_context_data(**kwargs)
-
-        context["filter"] = f"DTI clustering of dataset {self.kwargs['dataset_pk']}"
-
-        return context
+    # """
+    # DTIClusteringList
+    # List of all clusterings for a given dataset [for admins]
+    # """
+    #
+    # def get_queryset(self):
+    #     return super().get_queryset().filter(dataset__id=self.kwargs["dataset_pk"])
+    #
+    # def get_context_data(self, **kwargs) -> dict[str, Any]:
+    #     context = super().get_context_data(**kwargs)
+    #
+    #     context["filter"] = f"DTI clustering of dataset {self.kwargs['dataset_pk']}"
+    #
+    #     return context
+    pass
 
 
 class SavedClusteringFromDTI(LoginRequiredMixin, CreateView):
@@ -119,20 +116,20 @@ class SavedClusteringFromDTI(LoginRequiredMixin, CreateView):
         kwargs = super().get_form_kwargs()
 
         try:
-            self.from_dti = DTIClustering.objects.get(id=self.kwargs["from_pk"])
+            self.from_task = DTIClustering.objects.get(id=self.kwargs["from_pk"])
         except DTIClustering.DoesNotExist:
             raise Http404()
 
         initial = kwargs.get("initial", {})
-        initial["clustering_data"] = self.from_dti.expanded_results
-        kwargs["from_dti"] = self.from_dti
+        initial["clustering_data"] = self.from_task.expanded_results
+        kwargs["from_task"] = self.from_task
 
         return kwargs
 
     def get_context_data(self, **kwargs) -> dict[str, Any]:
         context = super().get_context_data(**kwargs)
 
-        context["from_dti"] = self.from_dti
+        context["from_task"] = self.from_task
         context["editing"] = True
 
         return context
@@ -148,12 +145,12 @@ class SavedClusteringEdit(LoginRequiredMixin, UpdateView):
     form_class = SavedClusteringForm
 
     def get_queryset(self):
-        return super().get_queryset().filter(from_dti=self.kwargs["from_pk"])
+        return super().get_queryset().filter(from_task=self.kwargs["from_pk"])
 
     def get_context_data(self, **kwargs) -> dict[str, Any]:
         context = super().get_context_data(**kwargs)
 
-        context["from_dti"] = self.object.from_dti
+        context["from_task"] = self.object.from_task
 
         return context
 
@@ -173,10 +170,10 @@ class SavedClusteringDelete(LoginRequiredMixin, DeleteView):
         return context
 
     def get_queryset(self):
-        return super().get_queryset().filter(from_dti=self.kwargs["from_pk"])
+        return super().get_queryset().filter(from_task=self.kwargs["from_pk"])
 
     def get_success_url(self):
-        return self.object.from_dti.get_absolute_url()
+        return self.object.from_task.get_absolute_url()
 
 
 class SavedClusteringCSVExport(LoginRequiredMixin, SingleObjectMixin, View):
@@ -189,7 +186,7 @@ class SavedClusteringCSVExport(LoginRequiredMixin, SingleObjectMixin, View):
     context_object_name = "clustering"
 
     def get_queryset(self):
-        return super().get_queryset().filter(from_dti=self.kwargs["from_pk"])
+        return super().get_queryset().filter(from_task=self.kwargs["from_pk"])
 
     def get(self, *args, **kwargs):
         if not hasattr(self, "object"):
@@ -207,19 +204,12 @@ class SavedClusteringCSVExport(LoginRequiredMixin, SingleObjectMixin, View):
 # SuperUser views
 
 
-class MonitoringView(PermissionRequiredMixin, LoginRequiredMixin, TemplateView):
-    """
-    Monitoring view
-    TODO make abstract class out of it
-    """
-
-    template_name = "tasking/monitoring.html"
+class MonitoringView(DTIClusteringMixin, TaskMonitoringView):
+    # template_name = "tasking/monitoring.html"
     permission_required = "dticlustering.monitor_dticlustering"
 
     def get_context_data(self, **kwargs) -> dict[str, Any]:
         context = super().get_context_data(**kwargs)
-        context["app_name"] = "dticlustering"
-        context["task_name"] = "DTI clustering"
         context["api"] = DTIClustering.get_api_monitoring()
         context["frontend"] = DTIClustering.get_frontend_monitoring()
         return context

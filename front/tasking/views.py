@@ -1,5 +1,5 @@
 from typing import Any
-from django.views.generic import CreateView, DetailView, View, ListView
+from django.views.generic import CreateView, DetailView, View, ListView, TemplateView
 from django.views.generic.detail import SingleObjectMixin
 from django.conf import settings
 from django.contrib.auth.mixins import AccessMixin
@@ -25,6 +25,11 @@ class LoginRequiredIfConfProtectedMixin(AccessMixin):
 
 
 class TaskMixin:
+    app_name = None
+    task_name = None
+    model = None
+    form_class = None
+
     def get_context_data(self, **kwargs) -> dict[str, Any]:
         context = super().get_context_data(**kwargs)
         context["task_name"] = getattr(self, "task_name", self.model._meta.verbose_name)
@@ -47,6 +52,28 @@ class TaskStartView(LoginRequiredIfConfProtectedMixin, TaskMixin, CreateView):
         self.object.start_task()
 
         return self.object.get_absolute_url()
+
+
+class TaskStartFromView(TaskStartView):
+    """
+    Request a task using same dataset as a previous one
+    """
+
+    # def __init__(self):
+    #     self.from_task = None
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        self.from_task = self.model.objects.get(id=self.kwargs["pk"])
+        kwargs["dataset"] = self.from_task.dataset
+        kwargs["initial"] = {"name": self.from_task.name}
+        return kwargs
+
+    def get_context_data(self, **kwargs) -> dict[str, Any]:
+        context = super().get_context_data(**kwargs)
+        # context["task_name"] = self.task_name
+        context["from_task"] = self.from_task
+        return context
 
 
 class TaskStatusView(LoginRequiredIfConfProtectedMixin, TaskMixin, DetailView):
@@ -146,6 +173,7 @@ class TaskDeleteView(LoginRequiredIfConfProtectedMixin, TaskMixin, DetailView):
     def get_success_url(self):
         if hasattr(self, "success_url"):
             return self.success_url
+        # return reverse(f"{self.app_name}:list")
         return reverse(f"{self.model.django_app_name}:list")
 
 
@@ -171,3 +199,50 @@ class TaskListView(LoginRequiredIfConfProtectedMixin, TaskMixin, ListView):
         if not self.request.user.has_perm(self.permission_see_all):
             qset = qset.filter(requested_by=self.request.user)
         return qset
+
+
+class TaskByDatasetList(TaskListView):
+    """
+    List of all task results for a given dataset
+    """
+
+    def get_queryset(self):
+        return super().get_queryset().filter(dataset__id=self.kwargs["dataset_pk"])
+
+    def get_context_data(self, **kwargs) -> dict[str, Any]:
+        context = super().get_context_data(**kwargs)
+        context[
+            "filter"
+        ] = f"{context['task_name']} results on dataset {self.kwargs['dataset_pk']}"
+        return context
+
+
+class TaskMonitoringView(LoginRequiredIfConfProtectedMixin, TaskMixin, TemplateView):
+    """
+    PermissionRequiredMixin, LoginRequiredMixin, TemplateView
+    """
+
+    template_name = "tasking/monitoring.html"
+    permission_required = None
+
+    def get_context_data(self, **kwargs) -> dict[str, Any]:
+        context = super().get_context_data(**kwargs)
+        # context["api"] = self.model.get_api_monitoring()
+        # context["frontend"] = self.model.get_frontend_monitoring()
+        return context
+
+
+class ClearOldResultsView(LoginRequiredIfConfProtectedMixin, TaskMixin, View):
+    # permission_required = f"{self.app_name}.monitor_{self.app_name}"
+    permission_required = None
+
+    def post(self, *args, **kwargs):
+        pass
+
+
+class ClearAPIOldResultsView(LoginRequiredIfConfProtectedMixin, TaskMixin, View):
+    # permission_required = f"{self.app_name}.monitor_{self.app_name}"
+    permission_required = None
+
+    def post(self, *args, **kwargs):
+        pass
