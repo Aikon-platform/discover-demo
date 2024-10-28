@@ -2,6 +2,7 @@ from typing import Any
 from django.views.generic import CreateView, DetailView, View, ListView, TemplateView
 from django.views.generic.detail import SingleObjectMixin
 from django.conf import settings
+from django.contrib import messages
 from django.contrib.auth.mixins import AccessMixin
 from django.http import JsonResponse
 from django.shortcuts import redirect
@@ -237,7 +238,11 @@ class ClearOldResultsView(LoginRequiredIfConfProtectedMixin, TaskMixin, View):
     permission_required = None
 
     def post(self, *args, **kwargs):
-        pass
+        messages.error(
+            self.request,
+            "Front task clearing not implemented",
+        )
+        return redirect(f"{self.app_name}:monitor")
 
 
 class ClearAPIOldResultsView(LoginRequiredIfConfProtectedMixin, TaskMixin, View):
@@ -245,4 +250,8 @@ class ClearAPIOldResultsView(LoginRequiredIfConfProtectedMixin, TaskMixin, View)
     permission_required = None
 
     def post(self, *args, **kwargs):
-        pass
+        messages.error(
+            self.request,
+            "API clearing not implemented",
+        )
+        return redirect(f"{self.app_name}:monitor")

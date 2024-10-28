@@ -31,7 +31,7 @@ class RegionsStart(RegionsMixin, TaskStartView):
     pass
 
 
-class RegionsStartFrom(TaskStartFromView):
+class RegionsStartFrom(RegionsMixin, TaskStartFromView):
     pass
 
 
@@ -39,7 +39,7 @@ class RegionsList(RegionsMixin, TaskListView):
     # permission_see_all = "dticlustering.monitor_dticlustering"
 
     def get_queryset(self):
-        return super().get_queryset().prefetch_related("dataset")
+        return super().get_queryset().prefetch_related("zip_dataset")
 
 
 class RegionsMonitor(RegionsMixin, TaskMonitoringView):

@@ -35,7 +35,7 @@ class DTIClusteringStart(DTIClusteringMixin, TaskStartView):
     pass
 
 
-class DTIClusteringStartFrom(TaskStartFromView):
+class DTIClusteringStartFrom(DTIClusteringMixin, TaskStartFromView):
     # """
     # Request a clustering from a previous one
     # """
@@ -202,8 +202,6 @@ class SavedClusteringCSVExport(LoginRequiredMixin, SingleObjectMixin, View):
 
 
 # SuperUser views
-
-
 class MonitoringView(DTIClusteringMixin, TaskMonitoringView):
     # template_name = "tasking/monitoring.html"
     permission_required = "dticlustering.monitor_dticlustering"
@@ -218,7 +216,7 @@ class MonitoringView(DTIClusteringMixin, TaskMonitoringView):
 class ClearOldClusterings(PermissionRequiredMixin, LoginRequiredMixin, View):
     """
     Clear old clusterings
-    TODO make abstract class out of it
+    TODO use abstract class
     """
 
     permission_required = "dticlustering.monitor_dticlustering"
@@ -245,7 +243,7 @@ class ClearOldClusterings(PermissionRequiredMixin, LoginRequiredMixin, View):
 class ClearAPIOldClusterings(PermissionRequiredMixin, LoginRequiredMixin, View):
     """
     Clear old clusterings from the API server
-    TODO make abstract class out of it
+    TODO use abstract class
     """
 
     permission_required = "dticlustering.monitor_dticlustering"

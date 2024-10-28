@@ -365,11 +365,8 @@ def AbstractAPITask(task_prefix: str):
 def AbstractAPITaskOnDataset(task_prefix: str):
     class AbstractAPITaskOnDataset(AbstractAPITask(task_prefix)):
         """
-        Abstract model for tasks that are sent to the API
+        Abstract model for tasks on dataset of images that are sent to the API
         """
-
-        api_endpoint_prefix = task_prefix
-        django_app_name = task_prefix
 
         zip_dataset = models.ForeignKey(
             ZippedDataset, null=True, on_delete=models.SET_NULL
