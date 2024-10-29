@@ -76,103 +76,6 @@ pre {
     text-indent: 0;
 }
 
-// FORMS AND INPUTS
-
-//form {
-//
-//    &.transparent {
-//        background: transparent;
-//    }
-//
-//    .field {
-//        border: 2px solid $grey;
-//        border-radius: $border-radius;
-//        margin: 5px 0;
-//        display: flex;
-//        background: $light-grey;
-//        padding: 10px;
-//
-//        & > label, & > .label {
-//            display:inline-block;
-//            width: 250px;
-//            text-align: right;
-//            margin-right: 12px;
-//            padding-top: 5px;
-//            flex-shrink: 0;
-//
-//            &.required:before {
-//                margin-right: 5px;
-//                content:"*";
-//                color: $red;
-//            }
-//        }
-//
-//        ul li{
-//            margin: 5px 0;
-//        }
-//
-//        &.field-CheckboxSelectMultiple, &.field-RadioSelect {
-//            .input {
-//                input {
-//                    position: relative;
-//                    z-index: 2;
-//                }
-//                li {
-//                    margin-top: 0.3em;
-//                    display: flex;
-//                    gap: 0.4em;
-//                    align-items: center;
-//                }
-//                label {
-//                    color: $bg-color;
-//                    border-radius: 2em;
-//                    margin-left: -2.2em;
-//                    padding: 0.35em 0.8em 0.35em 2.2em;
-//                }
-//                :checked+label {
-//                    background-color: $dark-color;
-//                    color: #fff;
-//                }
-//            }
-//        }
-//
-//        label {
-//            font-family: $headfont;
-//            font-weight: bold;
-//        }
-//        .help, &.field-PasswordInput ul li {
-//            font-style: italic;
-//            font-size: 0.9em;
-//            color: $faded-color;
-//        }
-//        .input {
-//            display:inline-block;
-//            flex-grow:1;
-//            margin-right:10px;
-//            label, .label {
-//                font-weight: 500;
-//            }
-//        }
-//    }
-//}
-//
-//
-//input[type='text'], input[type='password'],
-//input[type='email'], input[type='number'], textarea, select {
-//    font-family: $headfont;
-//    font-weight: normal;
-//    border: none;
-//    //border-bottom: 1px solid $border-color;
-//    width: 100%;
-//    max-width: 100%;
-//    padding: 0.6em 1em;
-//    transition: border 1s ease-out, background 1s ease-out;
-//    // background-color: $bg-color;
-//    //&:focus-visible {
-//    //    outline: 2px solid $border-color;
-//    //}
-//}
-
 .iconify {
     width: 1em;
     margin-right: 5px;
@@ -389,38 +292,7 @@ ul.messages {
     border-collapse: collapse;
     width: 100%;
     margin: 0.5em 0;
-    //border: 2px solid $main-color;
     overflow: hidden;
-    //background-color: lighten($bg-color, 5%);
-    //
-    //th, td {
-    //    padding: 0.5em 1em;
-    //    //border-bottom: 1px solid $main-color;
-    //    //border-right: 1px solid $main-color;
-    //    text-align: left;
-    //    vertical-align: top;
-    //    &:last-child {
-    //        border-right: none;
-    //    }
-    //}
-    //th {
-    //    //background-color: lighten($main-color, 10%);
-    //    font-weight: bold;
-    //}
-    //tr {
-    //    &:hover {
-    //        background-color: lighten($bg-color, 10%);
-    //    }
-    //}
-    //tr:nth-child(even) {
-    //    background-color: lighten($bg-color, 5%);
-    //}
-    //tr:nth-child(odd) {
-    //    background-color: $bg-color;
-    //}
-    //tr:last-child td {
-    //    border-bottom: none;
-    //}
 }
 
 
@@ -433,20 +305,42 @@ ul.messages {
     box-shadow: 0 0.5em 0.4em -0.125em hsla(var(--bulma-shadow-h), var(--bulma-shadow-s), 50%, 0.4);
 }
 
-.is-center {
-    margin: auto;
-    text-align: center;
-}
-
 .is-top {
     z-index: 1000;
 }
-
+.is-center {
+    margin: auto;
+    text-align: center;
+    justify-content: center;
+}
+.is-middle {
+    display: flex;
+    align-content: center;
+    align-items: center;
+}
 .is-left {
     display: flex;
-    justify-content: flex-end;
+    justify-content: flex-start !important;
 }
-
+.is-right {
+    display: flex;
+    justify-content: flex-end !important;
+}
+.is-bold {
+    font-weight: bold;
+}
+.is-wide {
+    width: 100%;
+}
+.is-tall {
+    height: 100%;
+}
+.smaller {
+    font-size: 0.75em;
+}
+.larger {
+    font-size: 1.25em;
+}
 
 @import "_progresstracking";
 @import "_clusterviewer";

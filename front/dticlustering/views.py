@@ -83,7 +83,7 @@ class DTIClusteringList(DTIClusteringMixin, TaskListView):
         return super().get_queryset().prefetch_related("dataset")
 
 
-class DTIClusteringByDatasetList(TaskByDatasetList):
+class DTIClusteringByDatasetList(DTIClusteringMixin, TaskByDatasetList):
     permission_see_all = "dticlustering.monitor_dticlustering"
 
     # """

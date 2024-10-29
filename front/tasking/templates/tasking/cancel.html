@@ -8,7 +8,10 @@
     <p>Are you sure you want to cancel the <span class="strong">{{ task_name }} task #{{ object.id }}</span>?</p>
     <form class="columns pt-5" action="" method="post" enctype="multipart/form-data">
         {% csrf_token %}
-        <input class="column is-2 button is-link is-light" type="submit" value="Cancel">
+        <button class="column is-2 button is-danger is-light is-middle" type="submit">
+            <span class="iconify" data-icon="mdi:delete"></span>
+            <span>Cancel task</span>
+        </button>
         <a class="button is-ghost column is-2" href="{{ object.get_absolute_url }}">Take me back</a>
     </form>
 </div>
