@@ -17,11 +17,18 @@ class Regions(AbstractAPITaskOnDataset("regions")):
 
     def on_task_success(self, data):
         self.status = "PROCESSING RESULTS"
+
+        # TODO unify and remove usage of zipped_dataset
+        self.result_full_path.mkdir(parents=True, exist_ok=True)
+        with open(self.result_full_path / f"{self.dataset.id}.json", "w") as f:
+            json.dump(data, f, indent=2)
+
         self.save()
 
         # TODO turn json files with regions into cropped images
         # TODO trace regions on original images
         # TODO make these actions a task
+        # TODO allow images to be downloaded
         return super().on_task_success(data)
 
     def get_task_kwargs(self):

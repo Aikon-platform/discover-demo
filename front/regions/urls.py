@@ -16,7 +16,7 @@ urlpatterns = [
     path(
         "dataset/<uuid:dataset_pk>",
         RegionsByDatasetList.as_view(),
-        name="dataset_regions",
+        name="list_perdataset",
     ),
     path("monitor", RegionsMonitor.as_view(), name="monitor"),
     path("monitor/clear/front", ClearOldRegions.as_view(), name="monitor_clear_front"),

@@ -39,7 +39,7 @@ class RegionsList(RegionsMixin, TaskListView):
     # permission_see_all = "dticlustering.monitor_dticlustering"
 
     def get_queryset(self):
-        return super().get_queryset().prefetch_related("zip_dataset")
+        return super().get_queryset().prefetch_related("dataset")
 
 
 class RegionsMonitor(RegionsMixin, TaskMonitoringView):

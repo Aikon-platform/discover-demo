@@ -231,7 +231,7 @@ def AbstractAPITask(task_prefix: str):
 
         def receive_notification(self, data: dict):
             """
-            Called by the API when tasks events happen
+            Called by the API when tasks events happen (@notifying)
             """
             event = data["event"]
             if event == "STARTED":
@@ -248,7 +248,7 @@ def AbstractAPITask(task_prefix: str):
             Queries the API to get the task progress
             """
             try:
-                api_query = requests.get(
+                api_res = requests.get(
                     f"{API_URL}/{self.api_endpoint_prefix}/{self.api_tracking_id}/status",
                 )
             except (ConnectionError, RequestException):
@@ -258,11 +258,9 @@ def AbstractAPITask(task_prefix: str):
                 }
 
             try:
-                return {"status": self.status, **api_query.json()}
+                return {"status": self.status, **api_res.json()}
             except:
-                self.write_log(
-                    f"Error when reading clustering progress: {api_query.text}"
-                )
+                self.write_log(f"Error when reading task progress: {api_res.text}")
                 return {
                     "status": "UNKNOWN",
                 }
@@ -368,10 +366,10 @@ def AbstractAPITaskOnDataset(task_prefix: str):
         Abstract model for tasks on dataset of images that are sent to the API
         """
 
-        zip_dataset = models.ForeignKey(
-            ZippedDataset, null=True, on_delete=models.SET_NULL
-        )
-        # dataset = models.ForeignKey(Dataset, null=True, on_delete=models.SET_NULL)
+        # zip_dataset = models.ForeignKey(
+        #     ZippedDataset, null=True, on_delete=models.SET_NULL
+        # )
+        dataset = models.ForeignKey(ZippedDataset, null=True, on_delete=models.SET_NULL)
         parameters = models.JSONField(null=True)
 
         class Meta:
@@ -380,5 +378,9 @@ def AbstractAPITaskOnDataset(task_prefix: str):
 
         def get_absolute_url(self):
             return reverse(f"{self.django_app_name}:status", kwargs={"pk": self.pk})
+
+        def get_dataset_id(self):
+            return self.dataset.id
+            # return self.zip_dataset.id
 
     return AbstractAPITaskOnDataset
