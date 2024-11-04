@@ -62,11 +62,25 @@ def AbstractAPITask(task_prefix: str):
 
         # Util URLs and Paths
         @property
+        def task_media_path(self) -> str:
+            """
+            Full path to the result folder
+            """
+            return f"{self.api_endpoint_prefix}/{self.id}"
+
+        @property
         def result_media_path(self) -> str:
             """
             Path to the result folder, relative to MEDIA_ROOT
             """
-            return f"{self.api_endpoint_prefix}/{self.id}/result"
+            return f"{self.task_media_path}/result"
+
+        @property
+        def task_full_path(self) -> Path:
+            """
+            Full path to the result folder
+            """
+            return Path(settings.MEDIA_ROOT) / self.task_media_path
 
         @property
         def result_full_path(self) -> Path:

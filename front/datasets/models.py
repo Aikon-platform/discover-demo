@@ -1,4 +1,7 @@
+from pathlib import Path
+
 from django.db import models
+from django.conf import settings
 import uuid
 
 from .utils import PathAndRename
@@ -20,6 +23,15 @@ class AbstractDataset(models.Model):
         help_text="An optional name to identify this dataset",
     )
     created_on = models.DateTimeField(auto_now_add=True, editable=False)
+
+    @property
+    def full_path(self) -> Path:
+        """
+        Full path to the dataset zip file
+        # TODO unify and remove usage of zipped_dataset
+        """
+        return Path(settings.MEDIA_ROOT) / "datasets" / f"{self.pk}.zip"
+        # return Path(settings.MEDIA_ROOT) / "datasets" / f"{self.id}.zip"
 
     class Meta:
         abstract = True
