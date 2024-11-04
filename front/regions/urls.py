@@ -11,6 +11,7 @@ urlpatterns = [
     path("<uuid:pk>/cancel", RegionsCancel.as_view(), name="cancel"),
     path("<uuid:pk>/watch", RegionsWatcher.as_view(), name="notify"),
     path("<uuid:pk>/restart", RegionsStartFrom.as_view(), name="restart"),
+    path("<uuid:pk>/download", RegionsDownload.as_view(), name="download"),
     path("<uuid:pk>/delete", RegionsDelete.as_view(), name="delete"),
     # Admin views
     path(

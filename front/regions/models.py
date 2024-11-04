@@ -1,9 +1,9 @@
 import json
-import shutil
 from pathlib import Path
-from zipfile import ZipFile
-
+import zipfile
 from PIL import Image
+
+from django.urls import reverse
 from django.contrib.auth import get_user_model
 from django.db import models
 from django.conf import settings
@@ -15,6 +15,8 @@ User = get_user_model()
 
 class Regions(AbstractAPITaskOnDataset("regions")):
     model = models.CharField(max_length=500)
+    # Results
+    regions = models.JSONField(null=True, blank=True)
 
     class Meta:
         verbose_name = "Regions Extraction"
@@ -23,77 +25,153 @@ class Regions(AbstractAPITaskOnDataset("regions")):
         self.status = "PROCESSING RESULTS"
         self.result_full_path.mkdir(parents=True, exist_ok=True)
 
-        with open(self.task_full_path / f"{self.dataset.id}.json", "w") as f:
-            json.dump(data, f, indent=2)
+        if data is not None:
+            self.regions = data.get("output", [])
+            with open(self.task_full_path / f"{self.dataset.id}.json", "w") as f:
+                json.dump(self.regions, f, indent=2)
 
-        self.save()
-        result = self.process_images(data)
-        if "error" in result:
-            self.on_task_error(result)
+            result = self.crop_regions()
+            if "error" in result:
+                # self.terminate_task(status="ERROR", error=traceback.format_exc())
+                self.on_task_error(result)
+                return
+        else:
+            self.on_task_error({"error": "No output data"})
             return
 
         return super().on_task_success(data)
 
-    def process_images(self, data):
+    def crop_regions(self):
         try:
-            task_ref = next(iter(data["output"]))
-            image_data = data["output"][task_ref]
+            img_path_map = self.dataset.images
+        except Exception as e:
+            return {"error": f"Error extracting images {e}"}
 
-            temp_dir = self.result_full_path / "temp"
-            temp_dir.mkdir(exist_ok=True)
-
+        try:
             try:
-                with ZipFile(self.dataset.full_path, "r") as zipped_data:
-                    zipped_data.extractall(temp_dir)
-
-                for page in image_data:
-                    image_info = page[0]
-                    source = image_info["source"]
-                    crops = image_info.get("crops", [])
+                for image in self.get_bounding_boxes():
+                    img_name, crops = image[0].get("source", ""), image[0].get(
+                        "crops", []
+                    )
 
                     if not crops:
                         continue
 
-                    image_paths = list(temp_dir.glob(f"**/{source}"))
-                    if not image_paths:
-                        return {"error": f"Could not find {source} in extracted files"}
+                    if img_name not in img_path_map:
+                        continue
 
-                    image_path = image_paths[0]
+                    img_path = img_path_map[img_name]
 
                     try:
-                        with Image.open(image_path) as img:
+                        with Image.open(img_path) as img:
                             for idx, crop in enumerate(crops):
                                 bbox = crop["absolute"]
-                                crop_coords = (
-                                    bbox["x1"],
-                                    bbox["y1"],
-                                    bbox["x2"],
-                                    bbox["y2"],
+                                cropped = img.crop(
+                                    (
+                                        bbox["x1"],
+                                        bbox["y1"],
+                                        bbox["x2"],
+                                        bbox["y2"],
+                                    )
                                 )
-
-                                cropped = img.crop(crop_coords)
                                 crop_filename = (
-                                    f"{Path(source).stem}_crop_{idx + 1}.jpg"
+                                    f"{Path(img_name).stem}_crop_{idx + 1}.jpg"
                                 )
-                                output_path = self.result_full_path / crop_filename
-                                cropped.save(output_path, "JPEG")
+                                cropped.save(
+                                    self.result_full_path / crop_filename, "JPEG"
+                                )
 
                     except Exception as e:
-                        return {"error": f"Error processing {source}: {e}"}
+                        return {"error": f"Error during {img_name} processing: {e}"}
+            except Exception as e:
+                return {"error": f"Error during images processing: {e}"}
 
-            finally:
-                if temp_dir.exists():
-                    shutil.rmtree(temp_dir)
+            # Check if any crops were created
+            if not list(self.result_full_path.glob("*_crop_*.jpg")):
+                return {"error": "No regions were successfully processed"}
+
         except Exception as e:
             return {"error": f"Error during image processing: {e}"}
+
         return {"success": "Regions processed successfully"}
 
+    @property
+    def crops(self) -> list:
+        return list(self.result_full_path.glob("*_crop_*.jpg"))
+
+    @property
+    def has_crops(self) -> bool:
+        return any(self.result_full_path.glob("*_crop_*.jpg"))
+
+    def zip_crops(self) -> Path:
+        zip_path = self.result_full_path / "crops.zip"
+        crop_files = self.crops
+
+        if not crop_files:
+            return None
+
+        with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as zipf:
+            for crop_file in crop_files:
+                zipf.write(crop_file, crop_file.name)
+
+        return zip_path
+
+    def get_download_url(self):
+        """Get the URL for downloading crops"""
+        if self.has_crops:
+            return reverse("regions:download", kwargs={"pk": self.pk})
+        return None
+
+    def get_bounding_boxes(self):
+        if self.regions is None:
+            return []
+        return self.regions[next(iter(self.regions))]
+
+    def get_bounding_boxes_for_display(self):
+        bbox = []
+        paths = self.dataset.images
+        for image in self.get_bounding_boxes():
+            img_name, crops = image[0].get("source", ""), image[0].get("crops", [])
+
+            source_path = paths[img_name]
+            source_url = f"/media/datasets/{self.dataset.id}/{img_name}"
+
+            formatted_crops = []
+            for idx, crop in enumerate(crops):
+                crop_filename = f"{Path(img_name).stem}_crop_{idx + 1}.jpg"
+                crop_url = f"/media/regions/{self.id}/result/{crop_filename}"
+                relative = crop["relative"]
+                formatted_crops.append(
+                    {
+                        "x": relative["x1"] * 100,
+                        "y": relative["y1"] * 100,
+                        "width": relative["width"] * 100,
+                        "height": relative["height"] * 100,
+                        "url": crop_url,
+                    }
+                )
+
+            bbox.append(
+                {
+                    "image": {
+                        "url": source_url,
+                        "path": source_path,
+                    },
+                    "crops": formatted_crops,
+                }
+            )
+
+        return bbox
+
     def get_task_kwargs(self):
-        dataset = {
-            str(self.dataset.id): f"{settings.BASE_URL}{self.dataset.zip_file.url}"
-        }
         return {
-            "documents": json.dumps(dataset),
+            "documents": json.dumps(
+                {
+                    str(
+                        self.dataset.id
+                    ): f"{settings.BASE_URL}{self.dataset.zip_file.url}"
+                }
+            ),
             "model": self.model,
             "parameters": json.dumps(self.parameters),
         }

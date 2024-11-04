@@ -1,10 +1,13 @@
+import shutil
 from pathlib import Path
+from typing import Dict
+from zipfile import ZipFile
 
 from django.db import models
 from django.conf import settings
 import uuid
 
-from .utils import PathAndRename
+from .utils import PathAndRename, IMG_EXTENSIONS
 
 path_datasets = PathAndRename("datasets/")
 
@@ -27,11 +30,9 @@ class AbstractDataset(models.Model):
     @property
     def full_path(self) -> Path:
         """
-        Full path to the dataset zip file
         # TODO unify and remove usage of zipped_dataset
         """
-        return Path(settings.MEDIA_ROOT) / "datasets" / f"{self.pk}.zip"
-        # return Path(settings.MEDIA_ROOT) / "datasets" / f"{self.id}.zip"
+        return Path(settings.MEDIA_ROOT) / "datasets" / f"{self.id}"
 
     class Meta:
         abstract = True
@@ -63,6 +64,64 @@ class ZippedDataset(AbstractDataset):
     """
 
     zip_file = models.FileField(upload_to=path_datasets, max_length=500)
+
+    def extract_images(self):
+        try:
+            temp_dir = Path(settings.MEDIA_ROOT) / "datasets" / "temp" / f"{self.id}"
+            temp_dir.mkdir(parents=True, exist_ok=True)
+
+            target_dir = self.full_path
+            is_new = not target_dir.exists()
+            if is_new:
+                target_dir.mkdir(parents=True, exist_ok=True)
+
+            zip_path = f"{self.full_path}.zip"
+            if not Path(zip_path).exists():
+                raise ValueError("Zip file not found")
+
+            try:
+                with ZipFile(zip_path, "r") as zip_ref:
+                    image_files = [
+                        f
+                        for f in zip_ref.namelist()
+                        if Path(f).suffix.lower() in IMG_EXTENSIONS
+                    ]
+                    if not image_files:
+                        raise ValueError("No image files found in zip")
+
+                    if not is_new and len(image_files) == len(
+                        list(target_dir.iterdir())
+                    ):
+                        return list(target_dir.iterdir())
+
+                    zip_ref.extractall(temp_dir)
+                    for img_path in image_files:
+                        source = temp_dir / img_path
+                        target = target_dir / Path(img_path).name
+                        if source.exists() and not target.exists():
+                            source.rename(target)
+            finally:
+                if temp_dir.exists():
+                    shutil.rmtree(temp_dir)
+
+        except Exception as e:
+            raise e
+        return list(target_dir.iterdir())
+
+    @property
+    def images(self) -> dict[str, Path]:
+        """
+        Check if images have been extracted
+        """
+        try:
+            dataset_dir = self.full_path
+            if not dataset_dir.exists() or not list(dataset_dir.iterdir()):
+                img_paths = self.extract_images()
+            else:
+                img_paths = list(dataset_dir.iterdir())
+        except Exception as e:
+            raise e
+        return {fullpath.name: fullpath for fullpath in img_paths}
 
 
 class CropList(models.Model):

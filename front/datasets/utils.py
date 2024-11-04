@@ -3,6 +3,9 @@ import os
 import uuid
 
 
+IMG_EXTENSIONS = {".jpg", ".jpeg", ".png", ".gif", ".tiff"}
+
+
 @deconstructible
 class PathAndRename(object):
     """

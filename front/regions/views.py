@@ -1,5 +1,3 @@
-from typing import Any
-
 from django.views.generic import (
     DetailView,
     ListView,
@@ -9,7 +7,7 @@ from django.views.generic import (
     View,
     TemplateView,
 )
-from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
+from django.http import FileResponse, Http404
 
 from .forms import RegionsForm
 from .models import Regions
@@ -80,3 +78,24 @@ class ClearOldRegions(RegionsMixin, ClearOldResultsView):
 
 class ClearAPIOldRegions(RegionsMixin, ClearAPIOldResultsView):
     pass
+
+
+class RegionsDownload(View):
+    def get(self, request, pk):
+        try:
+            region = Regions.objects.get(pk=pk)
+            zip_path = region.zip_crops()
+
+            if zip_path and zip_path.exists():
+                response = FileResponse(
+                    open(zip_path, "rb"), content_type="application/zip"
+                )
+                response[
+                    "Content-Disposition"
+                ] = f'attachment; filename="crops_{region.pk}.zip"'
+                return response
+
+        except Regions.DoesNotExist:
+            pass
+
+        raise Http404("Crops not found")

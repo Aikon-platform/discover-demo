@@ -341,6 +341,12 @@ ul.messages {
 .larger {
     font-size: 1.25em;
 }
+.center-flex {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
 
 @import "_progresstracking";
 @import "_clusterviewer";
