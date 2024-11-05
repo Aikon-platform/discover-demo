@@ -22718,18 +22718,57 @@ ul.messages li.warning, ul.messages li.error {
   box-shadow: 0 0.5em 0.4em -0.125em hsla(var(--bulma-shadow-h), var(--bulma-shadow-s), 50%, 0.4);
 }
 
-.is-center {
-  margin: auto;
-  text-align: center;
-}
-
 .is-top {
   z-index: 1000;
 }
 
+.is-center {
+  margin: auto;
+  text-align: center;
+  justify-content: center;
+}
+
+.is-middle {
+  display: flex;
+  align-content: center;
+  align-items: center;
+}
+
 .is-left {
   display: flex;
-  justify-content: flex-end;
+  justify-content: flex-start !important;
+}
+
+.is-right {
+  display: flex;
+  justify-content: flex-end !important;
+}
+
+.is-bold {
+  font-weight: bold;
+}
+
+.is-wide {
+  width: 100%;
+}
+
+.is-tall {
+  height: 100%;
+}
+
+.smaller {
+  font-size: 0.75em;
+}
+
+.larger {
+  font-size: 1.25em;
+}
+
+.center-flex {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
 }
 
 .tck-progress .tck-bar-list > * {

@@ -117,9 +117,9 @@ copy_env_values() {
             current_val=$(get_env_value "$param" "$target_env")
             default_val=$(echo "$line" | cut -d'=' -f2-)
             if [[ -n "$current_val" ]]; then
-                sed -i -e "s~^$param=.*~$param=\"$default_val\"~" "$target_env"
+                sed -i -e "s~^$param=.*~$param=$default_val~" "$target_env"
             else
-                echo "$param=\"$default_val\"" >> "$target_env"
+                echo "$param=$default_val" >> "$target_env"
             fi
         fi
     done

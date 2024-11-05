@@ -1,7 +1,4 @@
 import dramatiq
-import requests
-from zipfile import ZipFile
-import traceback
 
 from .models import DTIClustering
 

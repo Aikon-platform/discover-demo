@@ -309,7 +309,7 @@ class SavedClustering(models.Model):
     Model for saving clustering modifications made by user
     """
 
-    from_dti = models.ForeignKey(
+    from_task = models.ForeignKey(
         DTIClustering, on_delete=models.CASCADE, related_name="saved_clustering"
     )
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -332,7 +332,7 @@ class SavedClustering(models.Model):
     def get_absolute_url(self) -> str:
         return reverse(
             "dticlustering:saved",
-            kwargs={"pk": self.pk, "from_pk": self.from_dti_id},  # self.from_dti_id}
+            kwargs={"pk": self.pk, "from_pk": self.from_task_id},  # self.from_task_id}
         )
 
     def format_as_csv(self) -> str:
