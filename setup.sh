@@ -237,12 +237,12 @@ create_superuser() {
     User = get_user_model(); \
     User.objects.filter(username='$ADMIN_NAME').exists() or \
     User.objects.create_superuser('$ADMIN_NAME', '$ADMIN_EMAIL', '$DB_PASSWORD')" | \
-    "$FRONT_VENV"/python manage.py shell
+    "$FRONT_VENV"/python "$FRONT_DIR"/manage.py shell
 }
 
 color_echo yellow "\nCreating superuser\nusername: $ADMIN_NAME\nemail: $ADMIN_EMAIL\npassword: <same-as-db-password>..."
 # create_superuser
-echo "from django.contrib.auth.models import User; User.objects.create_superuser('$ADMIN_NAME', '$ADMIN_EMAIL', '$DB_PASSWORD')" | "$FRONT_VENV"/python manage.py shell
+echo "from django.contrib.auth.models import User; User.objects.create_superuser('$ADMIN_NAME', '$ADMIN_EMAIL', '$DB_PASSWORD')" | "$FRONT_VENV"/python "$FRONT_DIR"/manage.py shell
 
 echo_title "SETUP WEBPACK"
 curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.5/install.sh | bash
