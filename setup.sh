@@ -205,8 +205,8 @@ API_VENV="$API_DIR/venv/$([[ "$OS" == "Windows" ]] && echo "Scripts" || echo "bi
 FRONT_VENV="$FRONT_DIR/venv/$([[ "$OS" == "Windows" ]] && echo "Scripts" || echo "bin")"
 
 color_echo  "SET UP VIRTUAL ENVIRONMENTS"
-python3.10 -m venv "$API_DIR"/venv
-python3.10 -m venv "$FRONT_DIR"/venv
+python3 -m venv "$API_DIR"/venv
+python3 -m venv "$FRONT_DIR"/venv
 
 for venv in "$API_VENV" "$FRONT_VENV"; do
     "$venv"/pip install --upgrade pip
@@ -218,6 +218,7 @@ done
 
 echo_title "SET UP ENVIRONMENT VARIABLES"
 for env in "$API_DIR"/.env "$FRONT_DIR"/.env "$SCRIPT_DIR"/.env.dev; do
+    color_echo yellow "\nSetting up $env..."
     cp "$env".template "$env"
     update_env "$env"
 done
