@@ -1,8 +1,24 @@
 #!/bin/bash
+set -e  # Exit on error
 
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 API_DIR="$SCRIPT_DIR/api"
 FRONT_DIR="$SCRIPT_DIR/front"
+
+get_os() {
+    unameOut="$(uname -s)"
+    case "${unameOut}" in
+        Linux*)     os=Linux;;
+        Darwin*)    os=Mac;;
+        CYGWIN*)    os=Windows;;
+        MINGW*)     os=Windows;;
+        MSYS_NT*)   os=Git;;
+        *)          os="UNKNOWN:${unameOut}"
+    esac
+    echo "${os}"
+}
+
+OS=$(get_os)
 
 color_echo() {
     Color_Off="\033[0m"
@@ -74,6 +90,9 @@ get_env_value() {
     echo "$value"
 }
 
+#SED_CMD="sed -i -e"
+SED_CMD=$(case $(get_os) in Linux) echo "sed -i" ;; Mac) echo "sed -i ''" ;; *) echo "Unsupported OS"; exit 1 ;; esac)
+
 update_env() {
     env_file=$1
     IFS=$'\n' read -d '' -r -a lines < "$env_file"  # Read file into array
@@ -101,7 +120,7 @@ update_env() {
             esac
 
             new_value=$(prompt_user "$param" "$default_val" "$current_val" "$desc")
-            sed -i -e "s~^$param=.*~$param=\"$new_value\"~" "$env_file"
+            $SED_CMD "s~^$param=.*~$param=\"$new_value\"~" "$env_file"
         fi
         prev_line="$line"
     done
@@ -119,7 +138,7 @@ copy_env_values() {
             current_val=$(get_env_value "$param" "$target_env")
             default_val=$(echo "$line" | cut -d'=' -f2-)
             if [[ -n "$current_val" ]]; then
-                sed -i -e "s~^$param=.*~$param=$default_val~" "$target_env"
+                $SED_CMD "s~^$param=.*~$param=$default_val~" "$target_env"
             else
                 echo "$param=$default_val" >> "$target_env"
             fi
@@ -133,29 +152,16 @@ set_redis() {
     color_echo yellow "\n\nModifying Redis configuration file $REDIS_CONF..."
 
     # use the same redis password for api and front
-    sed -i '' -e "s~^REDIS_PASSWORD=.*~REDIS_PASSWORD=\"$redis_psw\"~" "$FRONT_ENV"
+    $SED_CMD "s~^REDIS_PASSWORD=.*~REDIS_PASSWORD=\"$redis_psw\"~" "$FRONT_ENV"
 
-    sudo sed -i -e "s/\nrequirepass [^ ]*/requirepass $redis_psw/" "$REDIS_CONF"
-    sudo sed -i -e "s/# requirepass [^ ]*/requirepass $redis_psw/" "$REDIS_CONF"
+    sudo $SED_CMD "s/\nrequirepass [^ ]*/requirepass $redis_psw/" "$REDIS_CONF"
+    sudo $SED_CMD "s/# requirepass [^ ]*/requirepass $redis_psw/" "$REDIS_CONF"
 
     case $OS in
         Linux)   sudo systemctl restart redis ;;
         Mac)     brew services restart redis ;;
         Windows) net start redis ;;
     esac
-}
-
-get_os() {
-    unameOut="$(uname -s)"
-    case "${unameOut}" in
-        Linux*)     os=Linux;;
-        Darwin*)    os=Mac;;
-        CYGWIN*)    os=Windows;;
-        MINGW*)     os=Windows;;
-        MSYS_NT*)   os=Git;;
-        *)          os="UNKNOWN:${unameOut}"
-    esac
-    echo "${os}"
 }
 
 echo_title "DOWNLOADING API SUBMODULE"
@@ -168,102 +174,66 @@ else
     cd api && git submodule init && git submodule update && cd ..
 fi
 
-OS=$(get_os)
-
 echo_title "REQUIREMENTS INSTALL"
 color_echo yellow "\nSystem packages..."
 
 install_packages() {
-    case $OS in
-        Linux)
-            sudo apt-get update
-            sudo apt-get install redis-server python3.10 python3.10-venv python3.10-dev curl npm
-            ;;
-        Mac)
-            if ! command -v brew &> /dev/null; then
-                color_echo yellow "\nHomebrew..."
-                /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-                if [[ -f /opt/homebrew/bin/brew ]]; then
-                    eval "$(/opt/homebrew/bin/brew shellenv)"  # Apple Silicon
-                else
-                    eval "$(/usr/local/bin/brew shellenv)"     # Intel
-                fi
-            fi
-            brew install wget redis-server python3.10 python3.10-venv python3.10-dev curl npm
-            ;;
-        Windows)
-            if ! command -v winget &> /dev/null; then
-                color_echo red "Winget is not installed. Please install App Installer from the Microsoft Store"
-                exit 1
-            fi
-
-            winget install -e --id Python.Python.3.10 Redis.Redis OpenJS.NodeJS cURL.cURL
-            pip3 install virtualenv
-            ;;
-        *)
-            color_echo red "Unsupported OS: $os"
-            exit 1
-            ;;
-    esac
+    if [[ "$OS" == "Linux" ]]; then
+        sudo apt-get update && sudo apt-get install -y redis-server python3.10 python3.10-venv curl npm
+    elif [[ "$OS" == "Mac" ]]; then
+        command -v brew &> /dev/null || {
+            /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+        }
+        brew install redis-server python3.10 curl npm
+    elif [[ "$OS" == "Windows" ]]; then
+        command -v winget &> /dev/null || { echo "Winget required" >&2; exit 1; }
+        winget install -e --id Python.Python.3.10 Redis.Redis OpenJS.NodeJS cURL.cURL
+        pip3 install virtualenv
+    fi
 }
 install_packages
 
-color_echo yellow "\nAPI virtual env..."
-python3.10 -m venv $API_DIR/venv
-
 API_VENV="$API_DIR/venv/$([[ "$OS" == "Windows" ]] && echo "Scripts" || echo "bin")"
-"$API_VENV"/pip install --upgrade pip
-"$API_VENV"/pip install -r $API_DIR/requirements.txt
+FRONT_VENV="$FRONT_DIR/venv/$([[ "$OS" == "Windows" ]] && echo "Scripts" || echo "bin")"
+
+color_echo  "SET UP VIRTUAL ENVIRONMENTS"
+python3.10 -m venv "$API_DIR"/venv
+python3.10 -m venv "$FRONT_DIR"/venv
+
+for venv in "$API_VENV" "$FRONT_VENV"; do
+    "$venv"/pip install --upgrade pip
+    "$venv"/pip install -r "${venv%/*/*/*}"/requirements.txt
+done
 "$API_VENV"/pip install python-dotenv
 
 # test connexion to CUDA
 
-color_echo yellow "\nFront virtual env..."
-python3.10 -m venv $FRONT_DIR/venv
-
-FRONT_VENV="$FRONT_DIR/venv/$([[ "$OS" == "Windows" ]] && echo "Scripts" || echo "bin")"
-"$FRONT_VENV"/pip install --upgrade pip
-"$FRONT_VENV"/pip install -r $FRONT_DIR/requirements.txt
-
-
 echo_title "SET UP ENVIRONMENT VARIABLES"
-API_ENV="$API_DIR"/.env
-API_DEV_ENV="$API_DIR"/.env.dev
-FRONT_ENV="$FRONT_DIR"/.env
-DEV_ENV="$SCRIPT_DIR"/.env.dev
-cp "$API_ENV".template "$API_ENV"
-cp "$FRONT_ENV".template "$FRONT_ENV"
-cp "$DEV_ENV".template "$DEV_ENV"
-cp "$API_DEV_ENV".template "$API_DEV_ENV"
-
-color_echo yellow "\nSetting $API_ENV..."
-update_env "$API_ENV"
-. "$API_ENV"
-if [ "$TARGET" == "dev" ]; then
-    echo_title "PRE-COMMIT INSTALL"
-    "$API_VENV"/pip install pre-commit
-    pre-commit install
-fi
-
-color_echo yellow "\nSetting $DEV_ENV file & $API_DEV_ENV..."
-update_env "$DEV_ENV"
-copy_env_values "$DEV_ENV" "$API_DEV_ENV"
-
-color_echo yellow "\nSetting $FRONT_ENV file..."
-update_env "$FRONT_ENV"
+for env in "$API_DIR"/.env "$FRONT_DIR"/.env "$SCRIPT_DIR"/.env.dev; do
+    cp "$env".template "$env"
+    update_env "$env"
+done
+cp "$API_DIR"/.env.dev.template "$API_DIR"/.env.dev
+copy_env_values "$SCRIPT_DIR"/.env.dev "$API_DIR"/.env.dev
 
 # NOTE uncomment to use Redis password
 # color_echo yellow "\nSetting Redis password..."
 # set_redis $REDIS_PASSWORD
 
-
 echo_title "INITIALIZE DJANGO"
 . "$FRONT_ENV"
 "$FRONT_VENV"/python manage.py migrate
 
-color_echo yellow "\nCreating superuser\nusername: $ADMIN_NAME\nemail: $ADMIN_EMAIL\npassword: <same-as-db-password>..."
-echo "from django.contrib.auth.models import User; User.objects.create_superuser('$ADMIN_NAME', '$ADMIN_EMAIL', '$DB_PASSWORD')" | "$FRONT_VENV"/python manage.py shell
+create_superuser() {
+    echo "from django.contrib.auth import get_user_model; \
+    User = get_user_model(); \
+    User.objects.filter(username='$ADMIN_NAME').exists() or \
+    User.objects.create_superuser('$ADMIN_NAME', '$ADMIN_EMAIL', '$DB_PASSWORD')" | \
+    "$FRONT_VENV"/python manage.py shell
+}
 
+color_echo yellow "\nCreating superuser\nusername: $ADMIN_NAME\nemail: $ADMIN_EMAIL\npassword: <same-as-db-password>..."
+create_superuser
 
 echo_title "SETUP WEBPACK"
 curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.5/install.sh | bash
@@ -272,14 +242,32 @@ export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
 
 # BUG not working from there
-nvm install node
-npm install -g webpack
-npm install -g sass
-npm install -D webpack-cli
-cd "$FRONT_DIR"/webpack
+setup_node() {
+    if ! command -v nvm &> /dev/null; then
+        curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.5/install.sh | bash
+        export NVM_DIR="$HOME/.nvm"
+        \. "$NVM_DIR/nvm.sh"
+    fi
+    nvm install node
+}
 
-color_echo yellow "\nInit npm project inside $(pwd)..."
-npm init
-npm install
-npm run start
-npm run production
+setup_webpack() {
+    cd "$FRONT_DIR"/webpack || exit 1
+    npm install
+    npm run production
+}
+
+setup_node
+setup_webpack
+
+# nvm install node
+# npm install -g webpack
+# npm install -g sass
+# npm install -D webpack-cli
+# cd "$FRONT_DIR"/webpack
+#
+# color_echo yellow "\nInit npm project inside $(pwd)..."
+# npm init
+# npm install
+# npm run start
+# npm run production
