@@ -91,7 +91,7 @@ get_env_value() {
 }
 
 #SED_CMD="sed -i -e"
-SED_CMD=$(case $(get_os) in Linux) echo "sed -i" ;; Mac) echo "sed -i ''" ;; *) echo "Unsupported OS"; exit 1 ;; esac)
+# SED_CMD=$(case $(get_os) in Linux) echo "sed -i" ;; Mac) echo "sed -i ''" ;; *) echo "Unsupported OS"; exit 1 ;; esac)
 
 update_env() {
     env_file=$1
@@ -120,7 +120,7 @@ update_env() {
             esac
 
             new_value=$(prompt_user "$param" "$default_val" "$current_val" "$desc")
-            $SED_CMD "s~^$param=.*~$param=\"$new_value\"~" "$env_file"
+            sed -i -e "s~^$param=.*~$param=\"$new_value\"~" "$env_file"
         fi
         prev_line="$line"
     done
@@ -138,9 +138,9 @@ copy_env_values() {
             current_val=$(get_env_value "$param" "$target_env")
             default_val=$(echo "$line" | cut -d'=' -f2-)
             if [[ -n "$current_val" ]]; then
-                $SED_CMD "s~^$param=.*~$param=$default_val~" "$target_env"
+                sed -i -e "s~^$param=.*~$param=\"$default_val\"~" "$target_env"
             else
-                echo "$param=$default_val" >> "$target_env"
+                echo "$param=\"$default_val\"" >> "$target_env"
             fi
         fi
     done
@@ -152,10 +152,10 @@ set_redis() {
     color_echo yellow "\n\nModifying Redis configuration file $REDIS_CONF..."
 
     # use the same redis password for api and front
-    $SED_CMD "s~^REDIS_PASSWORD=.*~REDIS_PASSWORD=\"$redis_psw\"~" "$FRONT_ENV"
+    sed -i '' -e "s~^REDIS_PASSWORD=.*~REDIS_PASSWORD=\"$redis_psw\"~" "$FRONT_ENV"
 
-    sudo $SED_CMD "s/\nrequirepass [^ ]*/requirepass $redis_psw/" "$REDIS_CONF"
-    sudo $SED_CMD "s/# requirepass [^ ]*/requirepass $redis_psw/" "$REDIS_CONF"
+    sudo sed -i -e "s/\nrequirepass [^ ]*/requirepass $redis_psw/" "$REDIS_CONF"
+    sudo sed -i -e "s/# requirepass [^ ]*/requirepass $redis_psw/" "$REDIS_CONF"
 
     case $OS in
         Linux)   sudo systemctl restart redis ;;
@@ -217,13 +217,30 @@ done
 # test connexion to CUDA
 
 echo_title "SET UP ENVIRONMENT VARIABLES"
-for env in "$API_DIR"/.env "$FRONT_DIR"/.env "$SCRIPT_DIR"/.env.dev; do
-    color_echo yellow "\nSetting up $env..."
+API_ENV="$SCRIPT_DIR"/api/.env
+API_DEV_ENV="$SCRIPT_DIR"/api/.env.dev
+FRONT_ENV="$SCRIPT_DIR"/front/.env
+DEV_ENV="$SCRIPT_DIR"/.env.dev
+
+for env in "$API_ENV" "$API_DEV_ENV" "$FRONT_ENV" "$DEV_ENV"; do
     cp "$env".template "$env"
-    update_env "$env"
 done
-cp "$API_DIR"/.env.dev.template "$API_DIR"/.env.dev
-copy_env_values "$SCRIPT_DIR"/.env.dev "$API_DIR"/.env.dev
+
+color_echo yellow "\nSetting $API_ENV..."
+update_env "$API_ENV"
+. "$API_ENV"
+if [ "$TARGET" == "dev" ]; then
+    echo_title "PRE-COMMIT INSTALL"
+    api/venv/bin/pip install pre-commit
+    pre-commit install
+fi
+
+color_echo yellow "\nSetting $DEV_ENV file & $API_DEV_ENV..."
+update_env "$DEV_ENV"
+copy_env_values "$DEV_ENV" "$API_DEV_ENV"
+
+color_echo yellow "\nSetting $FRONT_ENV file..."
+update_env "$FRONT_ENV"
 
 # NOTE uncomment to use Redis password
 # color_echo yellow "\nSetting Redis password..."
