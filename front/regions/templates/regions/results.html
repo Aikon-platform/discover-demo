@@ -10,7 +10,7 @@
             </details>
         </div>
     {% endif %}
-{% else %}g
+{% else %}
     <div class="centerwrap details-wrapper detailed">
         <h3>Regions extraction</h3>
         <div class="details-content">
@@ -24,34 +24,34 @@
             {% if object.status == "SUCCESS" and not object.get_bounding_boxes %}
                 <p class="status">No regions extracted</p>
             {% endif %}
-            {# TODO add download btn #}
+
             <table class="table is-fullwidth">
                 <tbody>
                 {% for item in object.get_bounding_boxes_for_display %}
-                    <tr>
-                        <th class="center-flex is-narrow is-4" style="width: 300px;">
+                    <tr class="is-fullwidth">
+                        <th class="center-flex is-narrow" style="width: 300px; margin-bottom: -1px;">
                             <div class="center-flex" style="position: relative">
                                 <img class="card" src="{{ item.image.url }}" alt="{{ item.image.name }}" style="max-width: 100%; display: block;">
                                 {% for crop in item.crops %}
                                     <div class="bbox" style="
-                                            position: absolute;
-                                            left: {{ crop.x }}%;
-                                            top: {{ crop.y }}%;
-                                            width: {{ crop.width }}%;
-                                            height: {{ crop.height }}%;
-                                            border: 2px solid #cc0000;
-                                            pointer-events: none;
-                                            "></div>
+                                        position: absolute;
+                                        left: {{ crop.x }}%;
+                                        top: {{ crop.y }}%;
+                                        width: {{ crop.width }}%;
+                                        height: {{ crop.height }}%;
+                                        border: 2px solid #cc0000;
+                                        pointer-events: none;
+                                        "></div>
                                 {% endfor %}
                             </div>
                         </th>
 
-                        <td class="p-5 is-fullwidth">
+                        <td style="width: 100%">
                             <div class="fixed-grid has-5-cols">
-                                <div class="grid is-gap-2">
+                                <div class="grid">
                                     {% for crop in item.crops %}
-                                        <div class="region is-center">
-                                            <figure class="image card region-image" tabindex="-1" style="height: 160px; min-width: 160px;">
+                                        <div class="region is-center p-4" style="width: 160px;">
+                                            <figure class="image card region-image" style="height: 160px;">
                                                 <img class="region-img" src="{{ crop.url }}" alt="Extracted region">
                                             </figure>
                                         </div>
@@ -63,6 +63,7 @@
                 {% endfor %}
                 </tbody>
             </table>
+
 
         </div>
     </div>
