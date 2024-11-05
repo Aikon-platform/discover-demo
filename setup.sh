@@ -245,17 +245,14 @@ color_echo yellow "\nCreating superuser\nusername: $ADMIN_NAME\nemail: $ADMIN_EM
 echo "from django.contrib.auth.models import User; User.objects.create_superuser('$ADMIN_NAME', '$ADMIN_EMAIL', '$DB_PASSWORD')" | "$FRONT_VENV"/python "$FRONT_DIR"/manage.py shell
 
 echo_title "SETUP WEBPACK"
-curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.5/install.sh | bash
-export NVM_DIR="$HOME/.nvm"
-[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
-[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
-
 # BUG not working from there
 setup_node() {
     if ! command -v nvm &> /dev/null; then
         curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.5/install.sh | bash
         export NVM_DIR="$HOME/.nvm"
         \. "$NVM_DIR/nvm.sh"
+        # [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
+        # [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
     fi
     nvm install node
 }
