@@ -1,6 +1,8 @@
 #!/bin/bash
 
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+API_DIR="$SCRIPT_DIR/api"
+FRONT_DIR="$SCRIPT_DIR/front"
 
 color_echo() {
     Color_Off="\033[0m"
@@ -136,38 +138,98 @@ set_redis() {
     sudo sed -i -e "s/\nrequirepass [^ ]*/requirepass $redis_psw/" "$REDIS_CONF"
     sudo sed -i -e "s/# requirepass [^ ]*/requirepass $redis_psw/" "$REDIS_CONF"
 
-    sudo systemctl restart redis
-    # brew services restart redis # MacOs
+    case $OS in
+        Linux)   sudo systemctl restart redis ;;
+        Mac)     brew services restart redis ;;
+        Windows) net start redis ;;
+    esac
+}
+
+get_os() {
+    unameOut="$(uname -s)"
+    case "${unameOut}" in
+        Linux*)     os=Linux;;
+        Darwin*)    os=Mac;;
+        CYGWIN*)    os=Windows;;
+        MINGW*)     os=Windows;;
+        MSYS_NT*)   os=Git;;
+        *)          os="UNKNOWN:${unameOut}"
+    esac
+    echo "${os}"
 }
 
 echo_title "DOWNLOADING API SUBMODULE"
-git submodule init
-git submodule update
-cd api && git submodule init && git submodule update && cd ..
+if ! (git submodule init && git submodule update); then
+    # If failed, remove api directory and clone it
+    rm -rf api
+    git clone https://github.com/Aikon-platform/discover-api.git api
+else
+    echo_title "UPDATING API SUB-SUBMODULES"
+    cd api && git submodule init && git submodule update && cd ..
+fi
 
+OS=$(get_os)
 
 echo_title "REQUIREMENTS INSTALL"
 color_echo yellow "\nSystem packages..."
-sudo apt-get install redis-server python3.10 python3.10-venv python3.10-dev curl
+
+install_packages() {
+    case $OS in
+        Linux)
+            sudo apt-get update
+            sudo apt-get install redis-server python3.10 python3.10-venv python3.10-dev curl npm
+            ;;
+        Mac)
+            if ! command -v brew &> /dev/null; then
+                color_echo yellow "\nHomebrew..."
+                /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+                if [[ -f /opt/homebrew/bin/brew ]]; then
+                    eval "$(/opt/homebrew/bin/brew shellenv)"  # Apple Silicon
+                else
+                    eval "$(/usr/local/bin/brew shellenv)"     # Intel
+                fi
+            fi
+            brew install wget redis-server python3.10 python3.10-venv python3.10-dev curl npm
+            ;;
+        Windows)
+            if ! command -v winget &> /dev/null; then
+                color_echo red "Winget is not installed. Please install App Installer from the Microsoft Store"
+                exit 1
+            fi
+
+            winget install -e --id Python.Python.3.10 Redis.Redis OpenJS.NodeJS cURL.cURL
+            pip3 install virtualenv
+            ;;
+        *)
+            color_echo red "Unsupported OS: $os"
+            exit 1
+            ;;
+    esac
+}
+install_packages
 
 color_echo yellow "\nAPI virtual env..."
-python3.10 -m venv api/venv
-api/venv/bin/pip install --upgrade pip
-api/venv/bin/pip install -r api/requirements.txt
-api/venv/bin/pip install python-dotenv
+python3.10 -m venv $API_DIR/venv
+
+API_VENV="$API_DIR/venv/$([[ "$OS" == "Windows" ]] && echo "Scripts" || echo "bin")"
+"$API_VENV"/pip install --upgrade pip
+"$API_VENV"/pip install -r $API_DIR/requirements.txt
+"$API_VENV"/pip install python-dotenv
 
 # test connexion to CUDA
 
 color_echo yellow "\nFront virtual env..."
-python3.10 -m venv front/venv
-front/venv/bin/pip install --upgrade pip
-front/venv/bin/pip install -r front/requirements.txt
+python3.10 -m venv $FRONT_DIR/venv
+
+FRONT_VENV="$FRONT_DIR/venv/$([[ "$OS" == "Windows" ]] && echo "Scripts" || echo "bin")"
+"$FRONT_VENV"/pip install --upgrade pip
+"$FRONT_VENV"/pip install -r $FRONT_DIR/requirements.txt
 
 
 echo_title "SET UP ENVIRONMENT VARIABLES"
-API_ENV="$SCRIPT_DIR"/api/.env
-API_DEV_ENV="$SCRIPT_DIR"/api/.env.dev
-FRONT_ENV="$SCRIPT_DIR"/front/.env
+API_ENV="$API_DIR"/.env
+API_DEV_ENV="$API_DIR"/.env.dev
+FRONT_ENV="$FRONT_DIR"/.env
 DEV_ENV="$SCRIPT_DIR"/.env.dev
 cp "$API_ENV".template "$API_ENV"
 cp "$FRONT_ENV".template "$FRONT_ENV"
@@ -179,7 +241,7 @@ update_env "$API_ENV"
 . "$API_ENV"
 if [ "$TARGET" == "dev" ]; then
     echo_title "PRE-COMMIT INSTALL"
-    api/venv/bin/pip install pre-commit
+    "$API_VENV"/pip install pre-commit
     pre-commit install
 fi
 
@@ -197,11 +259,10 @@ update_env "$FRONT_ENV"
 
 echo_title "INITIALIZE DJANGO"
 . "$FRONT_ENV"
-cd front
-./venv/bin/python manage.py migrate
+"$FRONT_VENV"/python manage.py migrate
 
 color_echo yellow "\nCreating superuser\nusername: $ADMIN_NAME\nemail: $ADMIN_EMAIL\npassword: <same-as-db-password>..."
-echo "from django.contrib.auth.models import User; User.objects.create_superuser('$ADMIN_NAME', '$ADMIN_EMAIL', '$DB_PASSWORD')" | ./venv/bin/python manage.py shell
+echo "from django.contrib.auth.models import User; User.objects.create_superuser('$ADMIN_NAME', '$ADMIN_EMAIL', '$DB_PASSWORD')" | "$FRONT_VENV"/python manage.py shell
 
 
 echo_title "SETUP WEBPACK"
@@ -212,11 +273,10 @@ export NVM_DIR="$HOME/.nvm"
 
 # BUG not working from there
 nvm install node
-sudo apt install npm
 npm install -g webpack
 npm install -g sass
 npm install -D webpack-cli
-cd webpack
+cd "$FRONT_DIR"/webpack
 
 color_echo yellow "\nInit npm project inside $(pwd)..."
 npm init
