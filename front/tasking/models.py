@@ -1,7 +1,3 @@
-from django.db import models
-from django.contrib.auth import get_user_model
-from django.core.mail import send_mail, mail_admins
-from django.utils.functional import cached_property
 import uuid
 import requests
 from requests.exceptions import RequestException
@@ -9,11 +5,16 @@ import traceback
 from typing import Dict, Any
 from pathlib import Path
 
+from django.db import models
+from django.contrib.auth import get_user_model
+from django.core.mail import send_mail, mail_admins
+from django.utils.functional import cached_property
 from django.db.models.signals import pre_delete, post_save
 from django.dispatch.dispatcher import receiver
-
 from django.urls import reverse
 from django.conf import settings
+
+from datasets.models import Dataset, ZippedDataset
 
 User = get_user_model()
 
@@ -33,14 +34,14 @@ def AbstractAPITask(task_prefix: str):
             # default=task_prefix,
             blank=True,
             verbose_name="Experiment name",
-            help_text="Optional name to identify this clustering experiment",
+            help_text=f"Optional name to identify this {task_prefix} experiment",
         )
 
         notify_email = models.BooleanField(
             default=True,
             verbose_name="Notify by email",
             blank=True,
-            help_text="Send an email when the clustering is finished",
+            help_text=f"Send an email when the {task_prefix} task is finished",
         )
 
         status = models.CharField(max_length=20, default="PENDING", editable=False)
@@ -50,7 +51,6 @@ def AbstractAPITask(task_prefix: str):
             User, null=True, on_delete=models.SET_NULL, editable=False
         )
 
-        # The clustering tracking id
         api_tracking_id = models.UUIDField(null=True, editable=False)
 
         api_endpoint_prefix = task_prefix
@@ -58,14 +58,29 @@ def AbstractAPITask(task_prefix: str):
 
         class Meta:
             abstract = True
+            ordering = ["-requested_on"]
 
         # Util URLs and Paths
+        @property
+        def task_media_path(self) -> str:
+            """
+            Full path to the result folder
+            """
+            return f"{self.api_endpoint_prefix}/{self.id}"
+
         @property
         def result_media_path(self) -> str:
             """
             Path to the result folder, relative to MEDIA_ROOT
             """
-            return f"{self.api_endpoint_prefix}/{self.id}/result"
+            return f"{self.task_media_path}/result"
+
+        @property
+        def task_full_path(self) -> Path:
+            """
+            Full path to the result folder
+            """
+            return Path(settings.MEDIA_ROOT) / self.task_media_path
 
         @property
         def result_full_path(self) -> Path:
@@ -230,7 +245,7 @@ def AbstractAPITask(task_prefix: str):
 
         def receive_notification(self, data: dict):
             """
-            Called by the API when tasks events happen
+            Called by the API when tasks events happen (@notifying)
             """
             event = data["event"]
             if event == "STARTED":
@@ -247,7 +262,7 @@ def AbstractAPITask(task_prefix: str):
             Queries the API to get the task progress
             """
             try:
-                api_query = requests.get(
+                api_res = requests.get(
                     f"{API_URL}/{self.api_endpoint_prefix}/{self.api_tracking_id}/status",
                 )
             except (ConnectionError, RequestException):
@@ -257,11 +272,9 @@ def AbstractAPITask(task_prefix: str):
                 }
 
             try:
-                return {"status": self.status, **api_query.json()}
+                return {"status": self.status, **api_res.json()}
             except:
-                self.write_log(
-                    f"Error when reading clustering progress: {api_query.text}"
-                )
+                self.write_log(f"Error when reading task progress: {api_res.text}")
                 return {
                     "status": "UNKNOWN",
                 }
@@ -359,3 +372,29 @@ def AbstractAPITask(task_prefix: str):
         return
 
     return AbstractAPITask
+
+
+def AbstractAPITaskOnDataset(task_prefix: str):
+    class AbstractAPITaskOnDataset(AbstractAPITask(task_prefix)):
+        """
+        Abstract model for tasks on dataset of images that are sent to the API
+        """
+
+        # zip_dataset = models.ForeignKey(
+        #     ZippedDataset, null=True, on_delete=models.SET_NULL
+        # )
+        dataset = models.ForeignKey(ZippedDataset, null=True, on_delete=models.SET_NULL)
+        parameters = models.JSONField(null=True)
+
+        class Meta:
+            abstract = True
+            ordering = ["-requested_on"]
+
+        def get_absolute_url(self):
+            return reverse(f"{self.django_app_name}:status", kwargs={"pk": self.pk})
+
+        def get_dataset_id(self):
+            return self.dataset.id
+            # return self.zip_dataset.id
+
+    return AbstractAPITaskOnDataset

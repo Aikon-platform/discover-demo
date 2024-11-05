@@ -6,7 +6,7 @@ import traceback
 from .models import Similarity
 
 """
-All dramatiq tasks related to the DTI clustering
+All dramatiq tasks related to Similarity retrieval
 """
 
 

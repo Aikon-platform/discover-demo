@@ -7,8 +7,10 @@ urlpatterns = [
     path("", include("shared.urls")),
     path("admin/", admin.site.urls),
     path("accounts/", include("django.contrib.auth.urls")),
+    # TODO make the following apps optional (set in .env)
     path("dti/", include("dticlustering.urls")),
     path("similarity/", include("similarity.urls")),
+    path("regions/", include("regions.urls")),
     path("watermarks/", include("watermarks.urls")),
 ]
 

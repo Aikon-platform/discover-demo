@@ -3,13 +3,13 @@
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
 color_echo() {
-    Color_Off="\[\033[0m\]"
-    Red="\[\033[1;91m\]"
-    Green="\[\033[1;92m\]"
-    Yellow="\[\033[1;93m\]"
-    Blue="\[\033[1;94m\]"
-    Purple="\[\033[1;95m\]"
-    Cyan="\[\033[1;96m\]"
+    Color_Off="\033[0m"
+    Red="\033[1;91m"
+    Green="\033[1;92m"
+    Yellow="\033[1;93m"
+    Blue="\033[1;94m"
+    Purple="\033[1;95m"
+    Cyan="\033[1;96m"
 
     case "$1" in
         "green") echo -e "$Green$2$Color_Off";;
@@ -105,6 +105,26 @@ update_env() {
     done
 }
 
+copy_env_values() {
+    source_env=$1
+    target_env=$2
+
+    IFS=$'\n' read -d '' -r -a lines < "$source_env"
+
+    for line in "${lines[@]}"; do
+        if [[ $line =~ ^[^#]*= ]]; then
+            param=$(echo "$line" | cut -d'=' -f1)
+            current_val=$(get_env_value "$param" "$target_env")
+            default_val=$(echo "$line" | cut -d'=' -f2-)
+            if [[ -n "$current_val" ]]; then
+                sed -i -e "s~^$param=.*~$param=$default_val~" "$target_env"
+            else
+                echo "$param=$default_val" >> "$target_env"
+            fi
+        fi
+    done
+}
+
 set_redis() {
     redis_psw="$1"
     REDIS_CONF=$(redis-cli INFO | grep config_file | awk -F: '{print $2}' | tr -d '[:space:]')
@@ -136,6 +156,8 @@ api/venv/bin/pip install --upgrade pip
 api/venv/bin/pip install -r api/requirements.txt
 api/venv/bin/pip install python-dotenv
 
+# test connexion to CUDA
+
 color_echo yellow "\nFront virtual env..."
 python3.10 -m venv front/venv
 front/venv/bin/pip install --upgrade pip
@@ -144,11 +166,13 @@ front/venv/bin/pip install -r front/requirements.txt
 
 echo_title "SET UP ENVIRONMENT VARIABLES"
 API_ENV="$SCRIPT_DIR"/api/.env
+API_DEV_ENV="$SCRIPT_DIR"/api/.env.dev
 FRONT_ENV="$SCRIPT_DIR"/front/.env
 DEV_ENV="$SCRIPT_DIR"/.env.dev
 cp "$API_ENV".template "$API_ENV"
 cp "$FRONT_ENV".template "$FRONT_ENV"
 cp "$DEV_ENV".template "$DEV_ENV"
+cp "$API_DEV_ENV".template "$API_DEV_ENV"
 
 color_echo yellow "\nSetting $API_ENV..."
 update_env "$API_ENV"
@@ -159,12 +183,16 @@ if [ "$TARGET" == "dev" ]; then
     pre-commit install
 fi
 
-# NOTE uncomment to use Redis password
-# color_echo yellow "\nSetting Redis password..."
-# set_redis $REDIS_PASSWORD
+color_echo yellow "\nSetting $DEV_ENV file & $API_DEV_ENV..."
+update_env "$DEV_ENV"
+copy_env_values "$DEV_ENV" "$API_DEV_ENV"
 
 color_echo yellow "\nSetting $FRONT_ENV file..."
 update_env "$FRONT_ENV"
+
+# NOTE uncomment to use Redis password
+# color_echo yellow "\nSetting Redis password..."
+# set_redis $REDIS_PASSWORD
 
 
 echo_title "INITIALIZE DJANGO"

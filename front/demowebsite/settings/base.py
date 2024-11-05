@@ -17,13 +17,15 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "django_dramatiq",
+    "django.contrib.admin",
     "shared",
     "tasking",
     "datasets",
+    # TODO make the following apps optional (set in .env)
     "dticlustering",
     "similarity",
     "watermarks",
-    "django.contrib.admin",
+    "regions",
 ]
 
 MIDDLEWARE = [
