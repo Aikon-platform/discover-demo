@@ -1,5 +1,5 @@
-# DTI-demo
-A web interface as demo for DTI clustering
+# Discover-demo
+A web interface to showcase demos of the Discover project.
 
 Please refer to [api/README](https://github.com/Aikon-platform/discover-api/blob/main/README.md) and [front/README](front/README.md) for installing and running each individual part.
 
