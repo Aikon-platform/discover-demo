@@ -179,15 +179,23 @@ color_echo yellow "\nSystem packages..."
 
 install_packages() {
     if [[ "$OS" == "Linux" ]]; then
-        sudo apt-get update && sudo apt-get install -y redis-server python3.10 python3.10-venv curl npm
+        # sudo apt install software-properties-common
+        # sudo add-apt-repository ppa:deadsnakes/ppa
+        # sudo apt-get update && sudo apt-get install -y python3.10 python3.10-venv python3.10-dev
+        # sudo apt-get install -y npm
+        sudo apt-get update && sudo apt-get install -y redis-server curl
     elif [[ "$OS" == "Mac" ]]; then
         command -v brew &> /dev/null || {
             /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
         }
-        brew install redis-server python3.10 curl npm
+        # brew install python@3.10
+        # brew install npm
+        brew install redis curl npm
     elif [[ "$OS" == "Windows" ]]; then
         command -v winget &> /dev/null || { echo "Winget required" >&2; exit 1; }
-        winget install -e --id Python.Python.3.10 Redis.Redis OpenJS.NodeJS cURL.cURL
+        # winget install -e --id Python.Python.3.10
+        # winget install -e --id OpenJS.NodeJS
+        winget install -e --id Redis.Redis cURL.cURL
         pip3 install virtualenv
     fi
 }
@@ -257,8 +265,8 @@ setup_webpack() {
     npm run production
 }
 
-setup_node
-setup_webpack
+# setup_node
+# setup_webpack
 
 # nvm install node
 # npm install -g webpack
