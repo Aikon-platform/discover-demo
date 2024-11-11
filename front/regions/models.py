@@ -2,6 +2,7 @@ import json
 from pathlib import Path
 import zipfile
 from PIL import Image
+import traceback
 
 from django.urls import reverse
 from django.contrib.auth import get_user_model
@@ -50,9 +51,8 @@ class Regions(AbstractAPITaskOnDataset("regions")):
         try:
             try:
                 for image in self.get_bounding_boxes():
-                    img_name, crops = image[0].get("source", ""), image[0].get(
-                        "crops", []
-                    )
+                    image = image.get(0, image)  # Old format : single-item lists
+                    img_name, crops = image.get("source", ""), image.get("crops", [])
 
                     if not crops:
                         continue
@@ -73,7 +73,7 @@ class Regions(AbstractAPITaskOnDataset("regions")):
                                         bbox["x2"],
                                         bbox["y2"],
                                     )
-                                )
+                                ).convert("RGB")
                                 crop_filename = (
                                     f"{Path(img_name).stem}_crop_{idx + 1}.jpg"
                                 )
@@ -84,14 +84,18 @@ class Regions(AbstractAPITaskOnDataset("regions")):
                     except Exception as e:
                         return {"error": f"Error during {img_name} processing: {e}"}
             except Exception as e:
-                return {"error": f"Error during images processing: {e}"}
+                return {
+                    "error": f"Error during images processing: {traceback.format_exc(limit=1)}"
+                }
 
             # Check if any crops were created
             if not list(self.result_full_path.glob("*_crop_*.jpg")):
                 return {"error": "No regions were successfully processed"}
 
         except Exception as e:
-            return {"error": f"Error during image processing: {e}"}
+            return {
+                "error": f"Error during image processing: {traceback.format_exc(limit=1)}"
+            }
 
         return {"success": "Regions processed successfully"}
 
@@ -131,7 +135,8 @@ class Regions(AbstractAPITaskOnDataset("regions")):
         bbox = []
         paths = self.dataset.images
         for image in self.get_bounding_boxes():
-            img_name, crops = image[0].get("source", ""), image[0].get("crops", [])
+            image = image.get(0, image)  # Old format : single-item lists
+            img_name, crops = image.get("source", ""), image.get("crops", [])
 
             source_path = paths[img_name]
             source_url = f"/media/datasets/{self.dataset.id}/{img_name}"

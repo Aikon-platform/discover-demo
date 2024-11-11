@@ -1,7 +1,7 @@
 from django import forms
 from django.conf import settings
 
-from datasets.fields import ContentRestrictedFileField
+from datasets.fields import ContentRestrictedFileField, URLListField
 from datasets.models import ZippedDataset
 
 
@@ -33,7 +33,11 @@ class AbstractTaskOnDatasetForm(AbstractTaskForm):
     class Meta(AbstractTaskForm.Meta):
         model = None
         abstract = True
-        fields = AbstractTaskForm.Meta.fields + ("dataset_zip", "dataset_name")
+        fields = AbstractTaskForm.Meta.fields + (
+            "dataset_zip",
+            "dataset_iiif_manifests",
+            "dataset_name",
+        )
         # fields = AbstractTaskForm.Meta.fields + ("dataset")
 
     # dataset_form = None
@@ -42,6 +46,12 @@ class AbstractTaskOnDatasetForm(AbstractTaskForm):
         help_text="A .zip file containing the dataset to be processed",
         accepted_types=["application/zip"],
         max_size=settings.MAX_UPLOAD_SIZE,
+        required=False,
+    )
+    dataset_iiif_manifests = URLListField(
+        label="IIIF Manifest URLs",
+        help_text="The URLs to the IIIF manifests of the dataset",
+        required=False,
     )
     dataset_name = forms.CharField(
         label="Dataset name",
@@ -57,6 +67,7 @@ class AbstractTaskOnDatasetForm(AbstractTaskForm):
         if self.__dataset:
             self.fields.pop("dataset_zip")
             self.fields.pop("dataset_name")
+            self.fields.pop("dataset_iiif_manifests")
 
         # super().__init__(*args, **kwargs)
         #
@@ -69,6 +80,19 @@ class AbstractTaskOnDatasetForm(AbstractTaskForm):
     # def is_valid(self):
     #     # Ensure both forms are valid
     #     return super().is_valid() and self.dataset_form.is_valid()
+
+    def is_valid(self) -> bool:
+        # ensure zip_dataset or iiif_manifests is provided
+        if not super().is_valid():
+            return False
+        if not self.cleaned_data.get("dataset_zip") and not self.cleaned_data.get(
+            "dataset_iiif_manifests"
+        ):
+            self.add_error(
+                "dataset_zip",
+                "Either a dataset zip file or a list of IIIF manifests is required.",
+            )
+            return False
 
     def _populate_instance(self, instance):
         super()._populate_instance(instance)
