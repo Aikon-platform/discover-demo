@@ -1,7 +1,7 @@
 from django import forms
 from django.conf import settings
 
-from .fields import ContentRestrictedFileField
+from .fields import ContentRestrictedFileField, URLListField
 from .models import Dataset
 
 
@@ -26,10 +26,9 @@ class DatasetForm(forms.ModelForm):
         accepted_types=["application/zip"],
         max_size=104857600,
     )
-    iiif_manifest = forms.URLField(
-        label="IIIF Manifest URL",
-        help_text="The URL to the IIIF manifest of the dataset to be processed",
-        max_length=500,
+    iiif_manifests = URLListField(
+        label="IIIF Manifest URLs",
+        help_text="The URLs to the IIIF manifests of the dataset",
         required=False,
     )
     pdf_file = ContentRestrictedFileField(

@@ -11,7 +11,9 @@ def field_type(obj):
 
 @register.filter
 def add_class(field, class_name):
-    return field.as_widget(attrs={"class": class_name})
+    attrs = field.field.widget.attrs
+    attrs["class"] = attrs.get("class", "") + " " + class_name
+    return field.as_widget(attrs=attrs)
 
 
 @register.filter

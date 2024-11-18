@@ -8,6 +8,7 @@ from django.conf import settings
 import uuid
 
 from .utils import PathAndRename, IMG_EXTENSIONS
+from .fields import URLListModelField
 
 path_datasets = PathAndRename("datasets/")
 
@@ -50,10 +51,9 @@ class Dataset(AbstractDataset):
     )
 
     zip_file = models.FileField(upload_to=path_datasets, max_length=500)
-    iiif_manifest = models.URLField(
-        max_length=500,
-        verbose_name="IIIF Manifest URL",
-        help_text="The URL to the IIIF manifest of the dataset",
+    iiif_manifests = URLListModelField(
+        verbose_name="IIIF Manifest URLs",
+        help_text="The URLs to the IIIF manifests of the dataset",
     )
     pdf_file = models.FileField(upload_to=path_datasets, max_length=500)
 

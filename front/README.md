@@ -67,7 +67,7 @@ You then need to initialize npm in the webpack folder, and install all required 
 
 ```bash
 cd webpack
-npm init
+npm install
 ```
 
 You can then start webpack compiler from the webpack folder:
