@@ -348,6 +348,12 @@ ul.messages {
     align-items: center;
 }
 
+.notification ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
 @import "_progresstracking";
 @import "_clusterviewer";
 @import "_watermarkmatches";

@@ -22771,6 +22771,12 @@ ul.messages li.warning, ul.messages li.error {
   align-items: center;
 }
 
+.notification ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
 .tck-progress .tck-bar-list > * {
   margin: 0.5em 0;
   background-color: #fff;
