@@ -1,7 +1,7 @@
 from django.apps import AppConfig
 
 """
-This App contains the models and views related to the DTI clustering
+This App contains the models and views related to the Region extraction demo
 """
 
 

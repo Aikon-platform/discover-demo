@@ -34,7 +34,7 @@ urlpatterns = [
         DTIClusteringByDatasetList.as_view(),
         name="list_perdataset",
     ),
-    path("monitor", MonitoringView.as_view(), name="monitor"),
+    path("monitor", DTIClusteringMonitoring.as_view(), name="monitor"),
     path(
         "monitor/clear/front", ClearOldClusterings.as_view(), name="monitor_clear_front"
     ),

@@ -1,3 +1,4 @@
+import shutil
 import uuid
 import requests
 from requests.exceptions import RequestException
@@ -9,6 +10,7 @@ from django.db import models
 from django.contrib.auth import get_user_model
 from django.core.mail import send_mail, mail_admins
 from django.utils.functional import cached_property
+from django.utils import timezone
 from django.db.models.signals import pre_delete, post_save
 from django.dispatch.dispatcher import receiver
 from django.urls import reverse
@@ -303,14 +305,56 @@ def AbstractAPITask(task_prefix: str):
             """
             Returns a dict with the monitoring data
             """
-            raise NotImplementedError()
+            total_size = 0
+            for f in Path(settings.MEDIA_ROOT).glob("**/*"):
+                if f.is_file():
+                    total_size += f.stat().st_size
+            # n_datasets = ZippedDataset.objects.count()
+            n_datasets = Dataset.objects.count()
+            n_experiments = cls.objects.count()
+
+            return {
+                "total_size": total_size,
+                "n_datasets": n_datasets,
+                "n_experiments": n_experiments,
+            }
 
         @classmethod
         def clear_old_tasks(cls, days_before: int = 30) -> Dict[str, int]:
             """
             Clears all tasks older than days_before days
             """
-            raise NotImplementedError()
+            # remove all tasks and datasets except those younger than days_before days
+            from_date = timezone.now() - timezone.timedelta(days=days_before)
+
+            cleared_data = {
+                "cleared_experiments": 0,
+                "cleared_datasets": 0,
+            }
+
+            try:
+                # TODO change to not retrieve all objects inheriting from this class
+                old_exp = cls.objects.filter(requested_on__lte=from_date)
+
+                for exp in old_exp:
+                    shutil.rmtree(exp.result_full_path, ignore_errors=True)
+                    cleared_data["cleared_experiments"] += 1
+
+                # TODO change that to fit to new Dataset
+                old_datasets = ZippedDataset.objects.exclude(
+                    dticlustering__requested_on__gt=from_date
+                )
+                for d in old_datasets:
+                    d.zip_file.delete()
+                    cleared_data["cleared_datasets"] += 1
+
+                # remove records
+                old_exp.delete()
+                old_datasets.delete()
+            except Exception as e:
+                cleared_data["error"] = f"Error when clearing old tasks: {e}"
+
+            return cleared_data
 
         @classmethod
         def clear_api_old_tasks(cls, days_before: int = 30) -> Dict[str, Any]:
@@ -333,7 +377,7 @@ def AbstractAPITask(task_prefix: str):
                 return api_query.json()
             except:
                 return {
-                    "error": "Error when output from API server",
+                    "error": "Error when retrieving output from API server",
                     "output": api_query.text,
                 }
 

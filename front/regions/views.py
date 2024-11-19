@@ -1,19 +1,13 @@
-from django.views.generic import (
-    DetailView,
-    ListView,
-    CreateView,
-    UpdateView,
-    DeleteView,
-    View,
-    TemplateView,
-)
+from django.views.generic import View
 from django.http import FileResponse, Http404
 
 from .forms import RegionsForm
 from .models import Regions
-from tasking.views import *
+from tasking.views import task_view_set
 
 
+# instanciate all views from tasking.views, override to add custom behavior
+@task_view_set
 class RegionsMixin:
     """
     Mixin for Regions extractions views
@@ -25,59 +19,9 @@ class RegionsMixin:
     app_name = "regions"
 
 
-class RegionsStart(RegionsMixin, TaskStartView):
-    pass
-
-
-class RegionsStartFrom(RegionsMixin, TaskStartFromView):
-    pass
-
-
-class RegionsList(RegionsMixin, TaskListView):
-    # permission_see_all = "dticlustering.monitor_dticlustering"
-
+class RegionsList(RegionsMixin.List):
     def get_queryset(self):
         return super().get_queryset().prefetch_related("dataset")
-
-
-class RegionsMonitor(RegionsMixin, TaskMonitoringView):
-    """
-    Monitoring view
-    """
-
-    permission_required = "regions.monitor_regions"
-
-
-class RegionsStatus(RegionsMixin, TaskStatusView):
-    pass
-
-
-class RegionsProgress(RegionsMixin, TaskProgressView):
-    pass
-
-
-class RegionsCancel(RegionsMixin, TaskCancelView):
-    pass
-
-
-class RegionsWatcher(RegionsMixin, TaskWatcherView):
-    pass
-
-
-class RegionsDelete(RegionsMixin, TaskDeleteView):
-    pass
-
-
-class RegionsByDatasetList(RegionsMixin, TaskByDatasetList):
-    pass
-
-
-class ClearOldRegions(RegionsMixin, ClearOldResultsView):
-    pass
-
-
-class ClearAPIOldRegions(RegionsMixin, ClearAPIOldResultsView):
-    pass
 
 
 class RegionsDownload(View):

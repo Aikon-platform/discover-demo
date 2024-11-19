@@ -1,13 +1,8 @@
-from django import forms
+from .models import Similarity
+from tasking.forms import AbstractTaskOnDatasetForm
 
-from .models import Similarity, SavedSimilarity
 
-
-# class SimilarityForm(forms.ModelForm):
-#     class Meta:
-#         model = Similarity
-#
-#
-# class SavedSimilarityForm(forms.ModelForm):
-#     class Meta:
-#         model = SavedSimilarity
+class SimilarityForm(AbstractTaskOnDatasetForm):
+    class Meta:
+        model = Similarity
+        fields = AbstractTaskOnDatasetForm.Meta.fields

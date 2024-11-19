@@ -17,7 +17,7 @@ from typing import Dict
 
 from datasets.models import ZippedDataset
 
-from tasking.models import AbstractAPITask, API_URL, BASE_URL
+from tasking.models import AbstractAPITask
 
 User = get_user_model()
 

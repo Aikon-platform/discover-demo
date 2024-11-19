@@ -1,29 +1,15 @@
-from django.views.generic import (
-    DetailView,
-    ListView,
-    CreateView,
-    UpdateView,
-    DeleteView,
-    View,
-    TemplateView,
-)
-from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
-
+from .forms import SimilarityForm
 from .models import Similarity
+from tasking.views import task_view_set
 
 
-class SimilarityStart(LoginRequiredMixin, CreateView):
+@task_view_set
+class SimilarityMixin:
+    """
+    Mixin for Similarity views
+    """
+
     model = Similarity
-    template_name = "demowebsite/start.html"
-
-
-class SimilarityList(LoginRequiredMixin, ListView):
-    model = Similarity
-    template_name = "demowebsite/list.html"
-    paginate_by = 40
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context["app_name"] = "similarity"
-        context["task_name"] = "Similarity"
-        return context
+    form_class = SimilarityForm
+    task_name = "Similarity"
+    app_name = "similarity"
