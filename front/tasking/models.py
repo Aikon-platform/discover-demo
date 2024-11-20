@@ -61,8 +61,14 @@ def AbstractAPITask(task_prefix: str):
         class Meta:
             abstract = True
             ordering = ["-requested_on"]
+            permissions = [
+                (f"monitor_{task_prefix}", f"Can monitor {task_prefix} task"),
+            ]
 
         # Util URLs and Paths
+        def get_absolute_url(self):
+            return reverse(f"{self.django_app_name}:status", kwargs={"pk": self.pk})
+
         @property
         def task_media_path(self) -> str:
             """
@@ -434,8 +440,8 @@ def AbstractAPITaskOnDataset(task_prefix: str):
             abstract = True
             ordering = ["-requested_on"]
 
-        def get_absolute_url(self):
-            return reverse(f"{self.django_app_name}:status", kwargs={"pk": self.pk})
+        # def get_absolute_url(self):
+        #     return reverse(f"{self.django_app_name}:status", kwargs={"pk": self.pk})
 
         def get_dataset_id(self):
             return self.dataset.id

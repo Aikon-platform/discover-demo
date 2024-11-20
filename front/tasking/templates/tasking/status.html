@@ -33,9 +33,11 @@
             </a>
         {% endif %}
         {% if object.dataset %}
-        <a class="button is-link is-light" href="{{ object.dataset.zip_file.url }}">
-            <span class="iconify" data-icon="mdi:folder-download"></span> <span>Download dataset</span>
-        </a>
+            {% if object.dataset.zip_file %}
+                <a class="button is-link is-light" href="{{ object.dataset.zip_file.url }}">
+                    <span class="iconify" data-icon="mdi:folder-download"></span> <span>Download dataset</span>
+                </a>
+            {% endif %}
         {% endif %}
         {% if object.is_finished %}
             {% if object.dataset %}

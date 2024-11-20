@@ -16,17 +16,6 @@ from .models import AbstractAPITask
 LOGIN_REQUIRED = getattr(settings, "LOGIN_REQUIRED", True)
 
 
-class LoginRequiredIfConfProtectedMixin(AccessMixin):
-    """
-    Mixin for views that require login if LOGIN_REQUIRED is True
-    """
-
-    def dispatch(self, request, *args, **kwargs):
-        if self.request.user.is_authenticated or not LOGIN_REQUIRED:
-            return super().dispatch(request, *args, **kwargs)
-        return self.handle_no_permission()
-
-
 class TaskMixin:
     app_name = None
     task_name = None
@@ -38,6 +27,62 @@ class TaskMixin:
         context["task_name"] = getattr(self, "task_name", self.model._meta.verbose_name)
         context["app_name"] = self.model.django_app_name
         return context
+
+
+def task_view_set(mixin):
+    """Decorator to create all task views from a mixin class of a given demo app"""
+    model_name = mixin.model.__name__
+    app_name = mixin.model.django_app_name
+    permission = f"{app_name}.monitor_{app_name}"
+
+    def create_view(base_view, view_name, extra_attrs=None):
+        attrs = extra_attrs or {}
+        view_class = type(view_name, (mixin, base_view), attrs)
+        return view_class
+
+    mixin.Start = create_view(TaskStartView, f"{model_name}Start")
+    mixin.StartFrom = create_view(TaskStartFromView, f"{model_name}StartFrom")
+    mixin.Status = create_view(TaskStatusView, f"{model_name}Status")
+    mixin.Progress = create_view(TaskProgressView, f"{model_name}Progress")
+    mixin.Cancel = create_view(TaskCancelView, f"{model_name}Cancel")
+    mixin.Watcher = create_view(TaskWatcherView, f"{model_name}Watcher")
+    mixin.Delete = create_view(TaskDeleteView, f"{model_name}Delete")
+
+    mixin.List = create_view(
+        TaskListView, f"{model_name}List", {"permission_see_all": permission}
+    )
+    mixin.ByDatasetList = create_view(
+        TaskByDatasetList,
+        f"{model_name}ByDatasetList",
+        {"permission_see_all": permission},
+    )
+
+    mixin.Monitor = create_view(
+        TaskMonitoringView, f"{model_name}Monitor", {"permission_required": permission}
+    )
+    mixin.ClearOld = create_view(
+        ClearOldResultsView,
+        f"ClearOld{model_name}",
+        {"permission_required": permission},
+    )
+    mixin.ClearAPIOld = create_view(
+        ClearAPIOldResultsView,
+        f"ClearAPIOld{model_name}",
+        {"permission_required": permission},
+    )
+
+    return mixin
+
+
+class LoginRequiredIfConfProtectedMixin(AccessMixin):
+    """
+    Mixin for views that require login if LOGIN_REQUIRED is True
+    """
+
+    def dispatch(self, request, *args, **kwargs):
+        if self.request.user.is_authenticated or not LOGIN_REQUIRED:
+            return super().dispatch(request, *args, **kwargs)
+        return self.handle_no_permission()
 
 
 class TaskStartView(LoginRequiredIfConfProtectedMixin, TaskMixin, CreateView):
@@ -194,7 +239,7 @@ class TaskListView(LoginRequiredIfConfProtectedMixin, TaskMixin, ListView):
             super()
             .get_queryset()
             .order_by("-requested_on")
-            .prefetch_related("requested_by")  # "dataset"
+            .prefetch_related("requested_by")  # "dataset" for AbstractAPITaskOnDataset
         )
         if not self.request.user.is_authenticated:
             return qset.none()
@@ -293,47 +338,3 @@ class ClearAPIOldResultsView(LoginRequiredIfConfProtectedMixin, TaskMixin, View)
         # messages.error(self.request, "API task clearing not implemented")
 
         return redirect(f"{self.app_name}:monitor")
-
-
-def task_view_set(mx_cls):
-    """Decorator to create all task views from a mixin class of a given demo app"""
-    model_name = mx_cls.model.__name__
-    permission = f"{mx_cls.app_name.lower()}.monitor_{model_name.lower()}"
-
-    def create_view(base_view, view_name, extra_attrs=None):
-        attrs = extra_attrs or {}
-        view_class = type(view_name, (mx_cls, base_view), attrs)
-        return view_class
-
-    mx_cls.Start = create_view(TaskStartView, f"{model_name}Start")
-    mx_cls.StartFrom = create_view(TaskStartFromView, f"{model_name}StartFrom")
-    mx_cls.Status = create_view(TaskStatusView, f"{model_name}Status")
-    mx_cls.Progress = create_view(TaskProgressView, f"{model_name}Progress")
-    mx_cls.Cancel = create_view(TaskCancelView, f"{model_name}Cancel")
-    mx_cls.Watcher = create_view(TaskWatcherView, f"{model_name}Watcher")
-    mx_cls.Delete = create_view(TaskDeleteView, f"{model_name}Delete")
-
-    mx_cls.List = create_view(
-        TaskListView, f"{model_name}List", {"permission_see_all": permission}
-    )
-    mx_cls.ByDatasetList = create_view(
-        TaskByDatasetList,
-        f"{model_name}ByDatasetList",
-        {"permission_see_all": permission},
-    )
-
-    mx_cls.Monitor = create_view(
-        TaskMonitoringView, f"{model_name}Monitor", {"permission_required": permission}
-    )
-    mx_cls.ClearOld = create_view(
-        ClearOldResultsView,
-        f"ClearOld{model_name}",
-        {"permission_required": permission},
-    )
-    mx_cls.ClearAPIOld = create_view(
-        ClearAPIOldResultsView,
-        f"ClearAPIOld{model_name}",
-        {"permission_required": permission},
-    )
-
-    return mx_cls
