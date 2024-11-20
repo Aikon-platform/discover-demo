@@ -2,7 +2,7 @@ from django import forms
 from django.conf import settings
 
 from datasets.fields import ContentRestrictedFileField, URLListField
-from datasets.models import ZippedDataset
+from datasets.models import Dataset
 
 
 class AbstractTaskForm(forms.ModelForm):
@@ -38,7 +38,6 @@ class AbstractTaskOnDatasetForm(AbstractTaskForm):
             "dataset_iiif_manifests",
             "dataset_name",
         )
-        # fields = AbstractTaskForm.Meta.fields + ("dataset")
 
     # dataset_form = None
     dataset_zip = ContentRestrictedFileField(
@@ -85,6 +84,8 @@ class AbstractTaskOnDatasetForm(AbstractTaskForm):
         # ensure zip_dataset or iiif_manifests is provided
         if not super().is_valid():
             return False
+        if self.__dataset:
+            return True
         if not self.cleaned_data.get("dataset_zip") and not self.cleaned_data.get(
             "dataset_iiif_manifests"
         ):
@@ -93,20 +94,19 @@ class AbstractTaskOnDatasetForm(AbstractTaskForm):
                 "Either a dataset zip file or a list of IIIF manifests is required.",
             )
             return False
+        return True
 
     def _populate_instance(self, instance):
         super()._populate_instance(instance)
         if self.__dataset:
             instance.dataset = self.__dataset
         else:
-            # TODO use Dataset instead
-            instance.dataset = ZippedDataset.objects.create(
+            instance.dataset = Dataset.objects.create(
                 zip_file=self.cleaned_data["dataset_zip"],
+                iiif_manifests=self.cleaned_data["dataset_iiif_manifests"],
                 name=self.cleaned_data["dataset_name"],
             )
-
-        # dataset = self.dataset_form.save(commit=True)
-        # instance.dataset = dataset
+            instance.dataset.save()  # TODO not clean to force-save here?
 
 
 class AbstractTaskOnImageForm(AbstractTaskForm):

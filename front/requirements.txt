@@ -4,3 +4,4 @@ django-dramatiq
 django-environ
 requests
 Pillow
+stream-unzip

@@ -14,7 +14,7 @@ from django.dispatch.dispatcher import receiver
 from django.urls import reverse
 from django.conf import settings
 
-from datasets.models import Dataset, ZippedDataset
+from datasets.models import Dataset
 
 User = get_user_model()
 
@@ -380,10 +380,7 @@ def AbstractAPITaskOnDataset(task_prefix: str):
         Abstract model for tasks on dataset of images that are sent to the API
         """
 
-        # zip_dataset = models.ForeignKey(
-        #     ZippedDataset, null=True, on_delete=models.SET_NULL
-        # )
-        dataset = models.ForeignKey(ZippedDataset, null=True, on_delete=models.SET_NULL)
+        dataset = models.ForeignKey(Dataset, null=True, on_delete=models.SET_NULL)
         parameters = models.JSONField(null=True)
 
         class Meta:

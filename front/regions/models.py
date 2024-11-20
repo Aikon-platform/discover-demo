@@ -27,9 +27,19 @@ class Regions(AbstractAPITaskOnDataset("regions")):
         self.result_full_path.mkdir(parents=True, exist_ok=True)
 
         if data is not None:
-            self.regions = data.get("output", [])
+            output = data.get("output", {})
+            if not output:
+                self.on_task_error({"error": "No output data"})
+                return
+
+            self.regions = output.get("annotations", {})
             with open(self.task_full_path / f"{self.dataset.id}.json", "w") as f:
                 json.dump(self.regions, f, indent=2)
+
+            dataset_url = output.get("dataset_url")
+            if dataset_url:
+                self.dataset.api_url = dataset_url
+                self.dataset.save()
 
             result = self.crop_regions()
             if "error" in result:
@@ -46,21 +56,26 @@ class Regions(AbstractAPITaskOnDataset("regions")):
         try:
             img_path_map = self.dataset.images
         except Exception as e:
-            return {"error": f"Error extracting images {e}"}
+            return {
+                "error": f"Error extracting images " + traceback.format_exc(limit=2)
+            }
 
         try:
             try:
                 for image in self.get_bounding_boxes():
                     image = image.get(0, image)  # Old format : single-item lists
                     img_name, crops = image.get("source", ""), image.get("crops", [])
+                    doc_uid = image.get("doc_uid", None)
 
                     if not crops:
                         continue
 
-                    if img_name not in img_path_map:
-                        continue
+                    img_path = img_path_map.get(doc_uid, {}).get(
+                        img_name, [None, None]
+                    )[0]
 
-                    img_path = img_path_map[img_name]
+                    if img_path is None:
+                        return {"error": f"Image {img_name} not found"}
 
                     try:
                         with Image.open(img_path) as img:
@@ -74,6 +89,8 @@ class Regions(AbstractAPITaskOnDataset("regions")):
                                         bbox["y2"],
                                     )
                                 ).convert("RGB")
+                                if cropped.size[0] == 0 or cropped.size[1] == 0:
+                                    continue
                                 crop_filename = (
                                     f"{Path(img_name).stem}_crop_{idx + 1}.jpg"
                                 )
@@ -82,10 +99,12 @@ class Regions(AbstractAPITaskOnDataset("regions")):
                                 )
 
                     except Exception as e:
-                        return {"error": f"Error during {img_name} processing: {e}"}
+                        return {
+                            "error": f"Error during {img_name} processing: {traceback.format_exc(limit=2)}"
+                        }
             except Exception as e:
                 return {
-                    "error": f"Error during images processing: {traceback.format_exc(limit=1)}"
+                    "error": f"Error during images processing: {traceback.format_exc(limit=2)}"
                 }
 
             # Check if any crops were created
@@ -94,7 +113,7 @@ class Regions(AbstractAPITaskOnDataset("regions")):
 
         except Exception as e:
             return {
-                "error": f"Error during image processing: {traceback.format_exc(limit=1)}"
+                "error": f"Error during image processing: {traceback.format_exc(limit=2)}"
             }
 
         return {"success": "Regions processed successfully"}
@@ -129,7 +148,7 @@ class Regions(AbstractAPITaskOnDataset("regions")):
     def get_bounding_boxes(self):
         if self.regions is None:
             return []
-        return self.regions[next(iter(self.regions))]
+        return sum(self.regions.values(), [])
 
     def get_bounding_boxes_for_display(self):
         bbox = []
@@ -137,9 +156,12 @@ class Regions(AbstractAPITaskOnDataset("regions")):
         for image in self.get_bounding_boxes():
             image = image.get(0, image)  # Old format : single-item lists
             img_name, crops = image.get("source", ""), image.get("crops", [])
+            doc_uid = image.get("doc_uid", {})
 
-            source_path = paths[img_name]
-            source_url = f"/media/datasets/{self.dataset.id}/{img_name}"
+            source_path = Path(paths[doc_uid][img_name][0])
+            source_url = settings.MEDIA_URL + str(
+                source_path.relative_to(settings.MEDIA_ROOT)
+            )
 
             formatted_crops = []
             for idx, crop in enumerate(crops):
@@ -170,13 +192,7 @@ class Regions(AbstractAPITaskOnDataset("regions")):
 
     def get_task_kwargs(self):
         return {
-            "documents": json.dumps(
-                {
-                    str(
-                        self.dataset.id
-                    ): f"{settings.BASE_URL}{self.dataset.zip_file.url}"
-                }
-            ),
+            "documents": json.dumps(self.dataset.documents_for_api()),
             "model": self.model,
             "parameters": json.dumps(self.parameters),
         }
