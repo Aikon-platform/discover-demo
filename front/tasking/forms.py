@@ -95,6 +95,7 @@ class AbstractTaskOnDatasetForm(AbstractTaskForm):
                 "Either a dataset zip file or a list of IIIF manifests is required.",
             )
             return False
+        return True
 
     def _populate_instance(self, instance):
         super()._populate_instance(instance)

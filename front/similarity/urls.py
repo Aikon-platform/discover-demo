@@ -5,7 +5,7 @@ app_name = "similarity"
 
 urlpatterns = [
     path("", SimilarityMixin.List.as_view(), name="list"),
-    path("start", SimilarityMixin.Start.as_view(), name="start"),
+    path("start", SimilarityStart.as_view(), name="start"),
     path("<uuid:pk>", SimilarityMixin.Status.as_view(), name="status"),
     path("<uuid:pk>/progress", SimilarityMixin.Progress.as_view(), name="progress"),
     path("<uuid:pk>/cancel", SimilarityMixin.Cancel.as_view(), name="cancel"),

@@ -22,6 +22,13 @@ def add_str(arg1, arg2):
 
 
 @register.filter
+def startswith(text, starts):
+    if isinstance(text, str):
+        return text.startswith(starts)
+    return False
+
+
+@register.filter
 def uuid_prefix(uid: str):
     return str(uid)[:8]
 

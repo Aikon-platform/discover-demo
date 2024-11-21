@@ -1,0 +1,96 @@
+{% extends "demowebsite/base.html" %}
+{% load i18n shared_tags %}
+
+{% block title %}Start a new {{ task_name }} task{% endblock %}
+
+{% block extra_head %}
+<style>
+    .algorithm-section {
+        transition: opacity 0.3s ease-out;
+    }
+
+    .algorithm-section:not(.is-active) {
+        display: none;
+        opacity: 0;
+    }
+
+    .algorithm-section.is-active {
+        display: block;
+        opacity: 1;
+    }
+
+    .subsection-title {
+        font-size: 1.1em;
+        font-weight: 600;
+        margin: 1.5rem 0 0.75rem 0;
+    }
+
+    .field-group {
+        padding: 1rem;
+        margin: 1rem 0;
+        border: 1px solid #dbdbdb;
+        border-radius: 4px;
+        background-color: #fafafa;
+    }
+
+    .field-group:hover {
+        background-color: #f5f5f5;
+    }
+
+    /* Animate sections */
+    .section-enter {
+        animation: fadeIn 0.3s ease-out;
+    }
+
+    .section-leave {
+        animation: fadeOut 0.3s ease-out;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+
+    @keyframes fadeOut {
+        from { opacity: 1; }
+        to { opacity: 0; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="centerwrap">
+    {% include "includes/breadcrumbs.html" %}
+
+    <h1 class="is-title is-size-2 py-3">Start a new {{ task_name }}</h1>
+    {% if from_task %}
+        <p>Using same dataset as {{ task_name }} <a href="{{ from_task.get_absolute_url }}">#{{ from_task.id }}</a></p>
+    {% endif %}
+
+    <form action="" method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+
+        {% if form.non_field_errors %}
+            <div class="notification is-danger is-light py-3 px-4">
+                {{ form.non_field_errors }}
+            </div>
+        {% endif %}
+
+        {# Basic Information Fields #}
+        <div class="field-group">
+            {% for field in form %}
+                {% if field.name not in special_fields and not field.name|startswith:'algo_' and not field.name|startswith:'preprocessing_' %}
+                    {% include "includes/form/form_field.html" with field=field %}
+                {% endif %}
+            {% endfor %}
+        </div>
+
+        <p class="has-text-centered">
+            <input class="button is-link" type="submit" value="Start processing">
+        </p>
+    </form>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+{% endblock %}
