@@ -5,14 +5,14 @@
 {{ form.media }}
 
 {% if form.non_field_errors %}
-<div class="notification is-danger">
+<div class="notification is-danger is-light py-3 px-4">
     {{ form.non_field_errors }}
 </div>
 {% endif %}
 
 {% for field in form %}
     {% if field.errors %}
-    <div class="notification is-danger">
+    <div class="notification is-danger is-light py-3 px-4 mt-5 mb-2">
         {{ field.errors }}
     </div>
     {% endif %}

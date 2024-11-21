@@ -157,11 +157,11 @@ class WatermarksSource(models.Model):
     size = models.PositiveIntegerField()
 
     def __str__(self):
-        return "Watermark source: " + self.name
+        return f"Watermark source: {self.name}"
 
     @property
     def data_folder(self):
-        return "watermarks/sources/" + self.uid
+        return f"watermarks/sources/{self.uid}"
 
     @property
     def data_folder_path(self):

@@ -11,7 +11,67 @@ from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 import json
 
+from .models import AbstractAPITask
+
 LOGIN_REQUIRED = getattr(settings, "LOGIN_REQUIRED", True)
+
+
+class TaskMixin:
+    app_name = None
+    task_name = None
+    model: AbstractAPITask = None
+    form_class = None
+
+    def get_context_data(self, **kwargs) -> dict[str, Any]:
+        context = super().get_context_data(**kwargs)
+        context["task_name"] = getattr(self, "task_name", self.model._meta.verbose_name)
+        context["app_name"] = self.model.django_app_name
+        return context
+
+
+def task_view_set(mixin):
+    """Decorator to create all task views from a mixin class of a given demo app"""
+    model_name = mixin.model.__name__
+    app_name = mixin.model.django_app_name
+    permission = f"{app_name}.monitor_{app_name}"
+
+    def create_view(base_view, view_name, extra_attrs=None):
+        attrs = extra_attrs or {}
+        view_class = type(view_name, (mixin, base_view), attrs)
+        return view_class
+
+    mixin.Start = create_view(TaskStartView, f"{model_name}Start")
+    mixin.StartFrom = create_view(TaskStartFromView, f"{model_name}StartFrom")
+    mixin.Status = create_view(TaskStatusView, f"{model_name}Status")
+    mixin.Progress = create_view(TaskProgressView, f"{model_name}Progress")
+    mixin.Cancel = create_view(TaskCancelView, f"{model_name}Cancel")
+    mixin.Watcher = create_view(TaskWatcherView, f"{model_name}Watcher")
+    mixin.Delete = create_view(TaskDeleteView, f"{model_name}Delete")
+
+    mixin.List = create_view(
+        TaskListView, f"{model_name}List", {"permission_see_all": permission}
+    )
+    mixin.ByDatasetList = create_view(
+        TaskByDatasetList,
+        f"{model_name}ByDatasetList",
+        {"permission_see_all": permission},
+    )
+
+    mixin.Monitor = create_view(
+        TaskMonitoringView, f"{model_name}Monitor", {"permission_required": permission}
+    )
+    mixin.ClearOld = create_view(
+        ClearOldResultsView,
+        f"ClearOld{model_name}",
+        {"permission_required": permission},
+    )
+    mixin.ClearAPIOld = create_view(
+        ClearAPIOldResultsView,
+        f"ClearAPIOld{model_name}",
+        {"permission_required": permission},
+    )
+
+    return mixin
 
 
 class LoginRequiredIfConfProtectedMixin(AccessMixin):
@@ -23,19 +83,6 @@ class LoginRequiredIfConfProtectedMixin(AccessMixin):
         if self.request.user.is_authenticated or not LOGIN_REQUIRED:
             return super().dispatch(request, *args, **kwargs)
         return self.handle_no_permission()
-
-
-class TaskMixin:
-    app_name = None
-    task_name = None
-    model = None
-    form_class = None
-
-    def get_context_data(self, **kwargs) -> dict[str, Any]:
-        context = super().get_context_data(**kwargs)
-        context["task_name"] = getattr(self, "task_name", self.model._meta.verbose_name)
-        context["app_name"] = self.model.django_app_name
-        return context
 
 
 class TaskStartView(LoginRequiredIfConfProtectedMixin, TaskMixin, CreateView):
@@ -59,9 +106,6 @@ class TaskStartFromView(TaskStartView):
     """
     Request a task using same dataset as a previous one
     """
-
-    # def __init__(self):
-    #     self.from_task = None
 
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
@@ -158,7 +202,7 @@ class TaskWatcherView(SingleObjectMixin, View):
 
 class TaskDeleteView(LoginRequiredIfConfProtectedMixin, TaskMixin, DetailView):
     """
-    Delete a clustering
+    Delete a task
     """
 
     template_name = "tasking/delete.html"
@@ -168,6 +212,7 @@ class TaskDeleteView(LoginRequiredIfConfProtectedMixin, TaskMixin, DetailView):
         if not hasattr(self, "object"):
             self.object = self.get_object()
 
+        self.object.clear_task()
         self.object.delete()
         return redirect(self.get_success_url())
 
@@ -185,7 +230,8 @@ class TaskListView(LoginRequiredIfConfProtectedMixin, TaskMixin, ListView):
 
     template_name = "tasking/list.html"
     paginate_by = 40
-    permission_see_all = "notimplemented"
+    # overriden in tasking.views.task_view_set
+    permission_see_all = None
 
     def get_queryset(self):
         # if user doesn't have task.monitor right, only show their own experiments
@@ -193,7 +239,7 @@ class TaskListView(LoginRequiredIfConfProtectedMixin, TaskMixin, ListView):
             super()
             .get_queryset()
             .order_by("-requested_on")
-            .prefetch_related("requested_by")
+            .prefetch_related("requested_by")  # "dataset" for AbstractAPITaskOnDataset
         )
         if not self.request.user.is_authenticated:
             return qset.none()
@@ -206,6 +252,9 @@ class TaskByDatasetList(TaskListView):
     """
     List of all task results for a given dataset
     """
+
+    # overriden in tasking.views.task_view_set
+    permission_see_all = None
 
     def get_queryset(self):
         return super().get_queryset().filter(dataset__id=self.kwargs["dataset_pk"])
@@ -224,34 +273,68 @@ class TaskMonitoringView(LoginRequiredIfConfProtectedMixin, TaskMixin, TemplateV
     """
 
     template_name = "tasking/monitoring.html"
+    # overriden in tasking.views.task_view_set
     permission_required = None
 
     def get_context_data(self, **kwargs) -> dict[str, Any]:
         context = super().get_context_data(**kwargs)
-        # context["api"] = self.model.get_api_monitoring()
-        # context["frontend"] = self.model.get_frontend_monitoring()
+        context["api"] = self.model.get_api_monitoring()
+        context["frontend"] = self.model.get_frontend_monitoring()
         return context
 
 
 class ClearOldResultsView(LoginRequiredIfConfProtectedMixin, TaskMixin, View):
-    # permission_required = f"{self.app_name}.monitor_{self.app_name}"
+    # overriden in tasking.views.task_view_set
     permission_required = None
 
     def post(self, *args, **kwargs):
-        messages.error(
-            self.request,
-            "Front task clearing not implemented",
-        )
+        output = self.model.clear_old_tasks()
+
+        if output is None or output.get("error"):
+            messages.error(
+                self.request,
+                output["error"]
+                if output
+                else "Unknown error when clearing old experiments",
+            )
+        else:
+            output_str = " / ".join(
+                [f"Deleted {k}: {v}" for k, v in output.items() if k != "error"]
+            )
+            messages.success(
+                self.request,
+                output_str,
+            )
+
+        # messages.error(self.request, "Front task clearing not implemented")
+
         return redirect(f"{self.app_name}:monitor")
 
 
 class ClearAPIOldResultsView(LoginRequiredIfConfProtectedMixin, TaskMixin, View):
-    # permission_required = f"{self.app_name}.monitor_{self.app_name}"
+    # overriden in tasking.views.task_view_set
     permission_required = None
 
     def post(self, *args, **kwargs):
-        messages.error(
-            self.request,
-            "API clearing not implemented",
-        )
+        output = self.model.clear_api_old_tasks()
+
+        if output is None or output.get("error"):
+            msg = (
+                f"{output['error']}: {output['output']}"
+                if output
+                else "Unknown error when clearing old experiments on API server"
+            )
+            messages.error(self.request, msg)
+        else:
+            # stringify output "Deleted {key}: {value} ..."
+            output_str = " / ".join(
+                [f"Deleted {k}: {v}" for k, v in output.items() if k != "error"]
+            )
+            messages.success(
+                self.request,
+                f"Deleted {output_str}",
+            )
+
+        # messages.error(self.request, "API task clearing not implemented")
+
         return redirect(f"{self.app_name}:monitor")

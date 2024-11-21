@@ -48,6 +48,7 @@ class Dataset(AbstractDataset):
     iiif_manifests = URLListModelField(
         verbose_name="IIIF Manifest URLs",
         help_text="The URLs to the IIIF manifests of the dataset",
+        blank=True,
         null=True,
     )
     pdf_file = models.FileField(upload_to=path_datasets, max_length=500, null=True)

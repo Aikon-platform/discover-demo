@@ -17,7 +17,7 @@ from typing import Dict
 
 from datasets.models import ZippedDataset
 
-from tasking.models import AbstractAPITask, API_URL, BASE_URL
+from tasking.models import AbstractAPITaskOnDataset
 
 User = get_user_model()
 
@@ -25,7 +25,7 @@ API_URL = getattr(settings, "API_URL", "http://localhost:5000")
 BASE_URL = getattr(settings, "BASE_URL", "http://localhost:8000")
 
 
-class DTIClustering(AbstractAPITask("dti")):
+class DTIClustering(AbstractAPITaskOnDataset("dti")):
     """
     Main model for a clustering query and result
     """
@@ -33,19 +33,19 @@ class DTIClustering(AbstractAPITask("dti")):
     api_endpoint_prefix = "clustering"
     django_app_name = "dticlustering"
 
-    # The clustering parameters
-    dataset = models.ForeignKey(ZippedDataset, null=True, on_delete=models.SET_NULL)
-    parameters = models.JSONField(null=True)
+    # # The clustering parameters
+    # dataset = models.ForeignKey(ZippedDataset, null=True, on_delete=models.SET_NULL)
+    # parameters = models.JSONField(null=True)
 
     class Meta:
         verbose_name = "DTI Clustering"
-        ordering = ["-requested_on"]
-        permissions = [
-            ("monitor_dticlustering", "Can monitor DTI Clustering"),
-        ]
+        # ordering = ["-requested_on"]
+        # permissions = [
+        #     ("monitor_dticlustering", "Can monitor DTI Clustering"),
+        # ]
 
-    def get_absolute_url(self):
-        return reverse("dticlustering:status", kwargs={"pk": self.pk})
+    # def get_absolute_url(self):
+    #     return reverse("dticlustering:status", kwargs={"pk": self.pk})
 
     @property
     def result_zip_exists(self) -> bool:

@@ -243,7 +243,7 @@ ul.messages {
 .status {
     background-color: $main-color;
     color: #fff;
-    padding: 0.3em 0.5em 0.25em;
+    padding: 0.32em 0.5em 0.2em;
     font-size: 0.8em;
     margin: 0;
     border-radius: $border-radius;
@@ -346,6 +346,12 @@ ul.messages {
     flex-direction: column;
     justify-content: center;
     align-items: center;
+}
+
+.notification ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
 }
 
 @import "_progresstracking";

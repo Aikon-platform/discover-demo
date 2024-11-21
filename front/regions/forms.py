@@ -25,7 +25,8 @@ class RegionsForm(AbstractTaskOnDatasetForm):
         super().__init__(*args, **kwargs)
         self.fields["model"].choices = self.get_available_models()
 
-    def get_available_models(self):
+    @staticmethod
+    def get_available_models():
         try:
             response = requests.get(f"{REGIONS_API_URL}/models")
             response.raise_for_status()
