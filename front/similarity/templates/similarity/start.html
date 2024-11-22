@@ -1,62 +1,7 @@
 {% extends "demowebsite/base.html" %}
-{% load i18n shared_tags %}
+{% load shared_tags %}
 
 {% block title %}Start a new {{ task_name }} task{% endblock %}
-
-{% block extra_head %}
-<style>
-    .algorithm-section {
-        transition: opacity 0.3s ease-out;
-    }
-
-    .algorithm-section:not(.is-active) {
-        display: none;
-        opacity: 0;
-    }
-
-    .algorithm-section.is-active {
-        display: block;
-        opacity: 1;
-    }
-
-    .subsection-title {
-        font-size: 1.1em;
-        font-weight: 600;
-        margin: 1.5rem 0 0.75rem 0;
-    }
-
-    .field-group {
-        padding: 1rem;
-        margin: 1rem 0;
-        border: 1px solid #dbdbdb;
-        border-radius: 4px;
-        background-color: #fafafa;
-    }
-
-    .field-group:hover {
-        background-color: #f5f5f5;
-    }
-
-    /* Animate sections */
-    .section-enter {
-        animation: fadeIn 0.3s ease-out;
-    }
-
-    .section-leave {
-        animation: fadeOut 0.3s ease-out;
-    }
-
-    @keyframes fadeIn {
-        from { opacity: 0; }
-        to { opacity: 1; }
-    }
-
-    @keyframes fadeOut {
-        from { opacity: 1; }
-        to { opacity: 0; }
-    }
-</style>
-{% endblock %}
 
 {% block content %}
 <div class="centerwrap">
@@ -76,14 +21,26 @@
             </div>
         {% endif %}
 
-        {# Basic Information Fields #}
+        {# Base Fields #}
         <div class="field-group">
             {% for field in form %}
-                {% if field.name not in special_fields and not field.name|startswith:'algo_' and not field.name|startswith:'preprocessing_' %}
+                {% if not field.name|startswith:available_algorithms %}
                     {% include "includes/form/form_field.html" with field=field %}
                 {% endif %}
             {% endfor %}
         </div>
+
+        {# Similarity algorithm fields #}
+        {% for algo in available_algorithms %}
+            <div id="algo-{{ algo }}" class="algorithms mt-5 box has-background-light" style="display: none;">
+                <h3>{{ algo|capfirst }} Settings</h3>
+                {% for field in form %}
+                    {% if field.name|startswith:algo %}
+                        {% include "includes/form/form_field.html" with field=field %}
+                    {% endif %}
+                {% endfor %}
+            </div>
+        {% endfor %}
 
         <p class="has-text-centered">
             <input class="button is-link" type="submit" value="Start processing">
@@ -92,5 +49,24 @@
 </div>
 {% endblock %}
 
-{% block extra_scripts %}
+{% block extra_js %}
+    <script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const algorithmSelect = document.getElementById("id_algorithm");
+        const algorithmDivs = document.querySelectorAll(".algorithms");
+
+        function toggleAlgorithmFields() {
+            const selectedAlgo = algorithmSelect.value;
+            algorithmDivs.forEach(div => {
+                div.style.display = div.id === `algo-${selectedAlgo}` ? "block" : "none";
+            });
+
+        }
+
+        if (algorithmSelect) {
+            algorithmSelect.addEventListener("change", toggleAlgorithmFields);
+            toggleAlgorithmFields();
+        }
+    });
+    </script>
 {% endblock %}

@@ -1,4 +1,4 @@
-from .forms import SimilarityForm
+from .forms import SimilarityForm, AVAILABLE_SIMILARITY_ALGORITHMS
 from .models import Similarity
 from tasking.views import task_view_set
 
@@ -20,7 +20,5 @@ class SimilarityStart(SimilarityMixin.Start):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["special_fields"] = [
-            "algorithm"
-        ]  # Add any fields that need special handling
+        context["available_algorithms"] = AVAILABLE_SIMILARITY_ALGORITHMS
         return context
