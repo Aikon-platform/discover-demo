@@ -35,7 +35,7 @@ class AbstractTaskOnDatasetForm(AbstractTaskForm):
         abstract = True
         fields = AbstractTaskForm.Meta.fields + (
             "dataset_zip",
-            # "dataset_iiif_manifests",
+            "dataset_iiif_manifests",
             "dataset_name",
         )
 
@@ -47,11 +47,11 @@ class AbstractTaskOnDatasetForm(AbstractTaskForm):
         max_size=settings.MAX_UPLOAD_SIZE,
         required=False,
     )
-    # dataset_iiif_manifests = URLListField(
-    #     label="IIIF Manifest URLs",
-    #     help_text="The URLs to the IIIF manifests of the dataset",
-    #     required=False,
-    # )
+    dataset_iiif_manifests = URLListField(
+        label="IIIF Manifest URLs",
+        help_text="The URLs to the IIIF manifests of the dataset",
+        required=False,
+    )
     dataset_name = forms.CharField(
         label="Dataset name",
         help_text="An optional name to identify this dataset",
@@ -66,7 +66,7 @@ class AbstractTaskOnDatasetForm(AbstractTaskForm):
         if self.__dataset:
             self.fields.pop("dataset_zip")
             self.fields.pop("dataset_name")
-            # self.fields.pop("dataset_iiif_manifests")
+            self.fields.pop("dataset_iiif_manifests")
 
         # TODO use following when we use Dataset instead of ZippedDataset
         # super().__init__(*args, **kwargs)

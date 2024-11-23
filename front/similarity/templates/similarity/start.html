@@ -1,0 +1,72 @@
+{% extends "demowebsite/base.html" %}
+{% load shared_tags %}
+
+{% block title %}Start a new {{ task_name }} task{% endblock %}
+
+{% block content %}
+<div class="centerwrap">
+    {% include "includes/breadcrumbs.html" %}
+
+    <h1 class="is-title is-size-2 py-3">Start a new {{ task_name }}</h1>
+    {% if from_task %}
+        <p>Using same dataset as {{ task_name }} <a href="{{ from_task.get_absolute_url }}">#{{ from_task.id }}</a></p>
+    {% endif %}
+
+    <form action="" method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+
+        {% if form.non_field_errors %}
+            <div class="notification is-danger is-light py-3 px-4">
+                {{ form.non_field_errors }}
+            </div>
+        {% endif %}
+
+        {# Base Fields #}
+        <div class="field-group">
+            {% for field in form %}
+                {% if not field.name|startswith:available_algorithms %}
+                    {% include "includes/form/form_field.html" with field=field %}
+                {% endif %}
+            {% endfor %}
+        </div>
+
+        {# Similarity algorithm fields #}
+        {% for algo in available_algorithms %}
+            <div id="algo-{{ algo }}" class="algorithms mt-5 box has-background-light" style="display: none;">
+                <h3>{{ algo|capfirst }} Settings</h3>
+                {% for field in form %}
+                    {% if field.name|startswith:algo %}
+                        {% include "includes/form/form_field.html" with field=field %}
+                    {% endif %}
+                {% endfor %}
+            </div>
+        {% endfor %}
+
+        <p class="has-text-centered">
+            <input class="button is-link" type="submit" value="Start processing">
+        </p>
+    </form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+    <script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const algorithmSelect = document.getElementById("id_algorithm");
+        const algorithmDivs = document.querySelectorAll(".algorithms");
+
+        function toggleAlgorithmFields() {
+            const selectedAlgo = algorithmSelect.value;
+            algorithmDivs.forEach(div => {
+                div.style.display = div.id === `algo-${selectedAlgo}` ? "block" : "none";
+            });
+
+        }
+
+        if (algorithmSelect) {
+            algorithmSelect.addEventListener("change", toggleAlgorithmFields);
+            toggleAlgorithmFields();
+        }
+    });
+    </script>
+{% endblock %}
