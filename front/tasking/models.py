@@ -55,7 +55,7 @@ def AbstractAPITask(task_prefix: str):
 
         api_tracking_id = models.UUIDField(null=True, editable=False)
 
-        api_endpoint_prefix = task_prefix
+        api_endpoint_prefix = f"{API_URL}/{task_prefix}"
         django_app_name = task_prefix
 
         class Meta:
@@ -74,7 +74,7 @@ def AbstractAPITask(task_prefix: str):
             """
             Full path to the result folder
             """
-            return f"{self.api_endpoint_prefix}/{self.id}"
+            return f"{self.django_app_name}/{self.id}"
 
         @property
         def result_media_path(self) -> str:
@@ -160,8 +160,8 @@ def AbstractAPITask(task_prefix: str):
             }
             try:
                 api_query = requests.post(
-                    f"{API_URL}/{self.api_endpoint_prefix}/{endpoint}",
-                    data=data,
+                    f"{self.api_endpoint_prefix}/{endpoint}",
+                    json=data,
                     files=self.get_task_files(),
                 )
             except (ConnectionError, RequestException):
@@ -200,7 +200,7 @@ def AbstractAPITask(task_prefix: str):
             """
             try:
                 api_query = requests.post(
-                    f"{API_URL}/{self.api_endpoint_prefix}/{self.api_tracking_id}/{endpoint}",
+                    f"{self.api_endpoint_prefix}/{self.api_tracking_id}/{endpoint}",
                 )
             except (ConnectionError, RequestException):
                 self.write_log("Connection error when cancelling task")
@@ -271,7 +271,7 @@ def AbstractAPITask(task_prefix: str):
             """
             try:
                 api_res = requests.get(
-                    f"{API_URL}/{self.api_endpoint_prefix}/{self.api_tracking_id}/status",
+                    f"{self.api_endpoint_prefix}/{self.api_tracking_id}/status",
                 )
             except (ConnectionError, RequestException):
                 return {
@@ -294,7 +294,7 @@ def AbstractAPITask(task_prefix: str):
             """
             try:
                 api_query = requests.get(
-                    f"{API_URL}/{cls.api_endpoint_prefix}/monitor",
+                    f"{cls.api_endpoint_prefix}/monitor",
                 )
             except (ConnectionError, RequestException):
                 return {
@@ -330,6 +330,7 @@ def AbstractAPITask(task_prefix: str):
             """
             Clears all tasks older than days_before days
             """
+            raise NotImplementedError()  # Needs to be adapted to the new Dataset model
             # remove all tasks and datasets except those younger than days_before days
             from_date = timezone.now() - timezone.timedelta(days=days_before)
 
@@ -347,9 +348,10 @@ def AbstractAPITask(task_prefix: str):
                     cleared_data["cleared_experiments"] += 1
 
                 # TODO change that to fit to new Dataset
-                old_datasets = ZippedDataset.objects.exclude(
-                    dticlustering__requested_on__gt=from_date
-                )
+                # old_datasets = ZippedDataset.objects.exclude(
+                #     dticlustering__requested_on__gt=from_date
+                # )
+                old_datasets = []
                 for d in old_datasets:
                     d.zip_file.delete()
                     cleared_data["cleared_datasets"] += 1
@@ -369,7 +371,7 @@ def AbstractAPITask(task_prefix: str):
             """
             try:
                 api_query = requests.post(
-                    f"{API_URL}/{cls.api_endpoint_prefix}/monitor/clear",
+                    f"{cls.api_endpoint_prefix}/monitor/clear",
                     data={
                         "days_before": days_before,
                     },
@@ -401,7 +403,7 @@ def AbstractAPITask(task_prefix: str):
             """
             try:
                 api_query = requests.post(
-                    f"{API_URL}/{cls.api_endpoint_prefix}/monitor/clear/{tracking_id}",
+                    f"{cls.api_endpoint_prefix}/monitor/clear/{tracking_id}",
                 )
             except (ConnectionError, RequestException):
                 return {"error": "Connection error when clearing task from the worker"}
@@ -443,5 +445,15 @@ def AbstractAPITaskOnDataset(task_prefix: str):
         def get_dataset_id(self):
             return self.dataset.id
             # return self.zip_dataset.id
+
+        def get_task_kwargs(self):
+            kwargs = super().get_task_kwargs()
+            kwargs.update(
+                {
+                    "documents": self.dataset.documents_for_api(),
+                    "parameters": self.parameters,
+                }
+            )
+            return kwargs
 
     return AbstractAPITaskOnDataset

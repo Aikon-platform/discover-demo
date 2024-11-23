@@ -28,7 +28,7 @@ class PathAndRename(object):
 
 
 def unzip_on_the_fly(
-    zip_url: str, target_path: str, allowed_extensions=None
+    zip_url_or_path: str | Path, target_path: str, allowed_extensions=None
 ) -> List[Path]:
     """
     Unzip an internet file in a streaming fashion
@@ -44,11 +44,23 @@ def unzip_on_the_fly(
         A list of all the files extracted
     """
 
-    def zipped_chunks():
-        with requests.get(zip_url, stream=True) as r:
-            r.raise_for_status()
-            for chunk in r.iter_content(chunk_size=8192):
-                yield chunk
+    if isinstance(zip_url_or_path, str) and "://" in zip_url_or_path:
+
+        def zipped_chunks():
+            with requests.get(zip_url_or_path, stream=True) as r:
+                r.raise_for_status()
+                for chunk in r.iter_content(chunk_size=8192):
+                    yield chunk
+
+    else:
+
+        def zipped_chunks():
+            with open(zip_url_or_path, "rb") as f:
+                while True:
+                    chunk = f.read(8192)
+                    if not chunk:
+                        break
+                    yield chunk
 
     target_path = Path(target_path)
     all_files = []

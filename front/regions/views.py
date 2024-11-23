@@ -1,5 +1,5 @@
 from django.views.generic import View
-from django.http import FileResponse, Http404
+from django.http import FileResponse, Http404, HttpResponse
 
 from .forms import RegionsForm
 from .models import Regions
@@ -28,16 +28,13 @@ class RegionsDownload(View):
     def get(self, request, pk):
         try:
             region = Regions.objects.get(pk=pk)
-            zip_path = region.zip_crops()
-
-            if zip_path and zip_path.exists():
-                response = FileResponse(
-                    open(zip_path, "rb"), content_type="application/zip"
-                )
-                response[
-                    "Content-Disposition"
-                ] = f'attachment; filename="crops_{region.pk}.zip"'
-                return response
+            zip_content = region.zip_crops()
+            return FileResponse(
+                zip_content,
+                content_type="application/zip",
+                filename=f"crops_{region.pk}.zip",
+                as_attachment=True,
+            )
 
         except Regions.DoesNotExist:
             pass

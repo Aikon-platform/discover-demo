@@ -13,6 +13,13 @@
 {% else %}
     <div class="centerwrap details-wrapper detailed">
         <h3>Similarity results</h3>
+        <div id="matches" class="watermark-matches"></div>
+
+        <script type="text/javascript">
+            DemoTools.initSimilaritySimBrowser(
+                document.getElementById("matches"), "{{ object.index_url|escapejs }}",
+                "{{ object.similarity_matrix_url|escapejs }}");
+        </script>
     </div>
 {% endif %}
 

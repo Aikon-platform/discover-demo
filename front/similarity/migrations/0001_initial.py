@@ -11,7 +11,7 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
-        ("datasets", "0005_remove_dataset_iiif_manifest_dataset_iiif_manifests"),
+        ("datasets", "0005_better_dataset_model"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 

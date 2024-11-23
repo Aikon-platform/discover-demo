@@ -8,7 +8,6 @@ from tasking.forms import AbstractTaskOnDatasetForm
 
 
 AVAILABLE_SIMILARITY_ALGORITHMS = ["cosine", "segswap"]
-AVAILABLE_MODELS = Similarity.get_available_models()
 
 
 class BaseFeatureExtractionForm(forms.Form):
@@ -28,7 +27,7 @@ class BaseFeatureExtractionForm(forms.Form):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields["feat_net"].choices = AVAILABLE_MODELS
+        self.fields["feat_net"].choices = Similarity.get_available_models()
 
 
 class CosinePreprocessing(BaseFeatureExtractionForm):
@@ -97,7 +96,10 @@ class SimilarityForm(AbstractTaskOnDatasetForm):
 
     class Meta(AbstractTaskOnDatasetForm.Meta):
         model = Similarity
-        fields = AbstractTaskOnDatasetForm.Meta.fields + ("algorithm",)
+        fields = AbstractTaskOnDatasetForm.Meta.fields + (
+            "algorithm",
+            "crops",
+        )
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -122,6 +124,20 @@ class SimilarityForm(AbstractTaskOnDatasetForm):
                 self.fields[full_field_name] = field
                 field.widget.attrs.update({"data-algorithm": name})
 
+        self.fields["crops"].queryset = self.fields["crops"].queryset.filter(
+            regions__isnull=False,
+            requested_by=self._user,
+        )
+        self.fields[
+            "crops"
+        ].help_text = "If using crops from a previous task, also set the dataset to be the same (and ignore the dataset upload fields)."
+
+    def check_dataset(self):
+        # Hook to set the dataset from the crops
+        if self.cleaned_data.get("crops"):
+            self._dataset = self.cleaned_data["crops"].dataset
+        return super().check_dataset()
+
     def clean(self):
         cleaned_data = super().clean()
         algorithm = cleaned_data.get("algorithm")
@@ -135,12 +151,13 @@ class SimilarityForm(AbstractTaskOnDatasetForm):
     def save(self, commit=True):
         instance = super().save(commit=False)
         algorithm = self.cleaned_data["algorithm"]
-        instance.algorithm = algorithm
 
         parameters = {
             name: self.cleaned_data[f"{algorithm}_{name}"]
             for name in self.algorithm_forms[algorithm].fields
         }
+        parameters["algorithm"] = algorithm
+
         # TODO make something more dynamic using AVAILABLE_SIMILARITY_ALGORITHMS
         if algorithm == "segswap":
             parameters.update(

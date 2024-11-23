@@ -30,7 +30,7 @@ class DTIClustering(AbstractAPITaskOnDataset("dti")):
     Main model for a clustering query and result
     """
 
-    api_endpoint_prefix = "clustering"
+    api_endpoint_prefix = f"{API_URL}/clustering"
     django_app_name = "dticlustering"
 
     # # The clustering parameters

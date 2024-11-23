@@ -22,6 +22,9 @@
         {% endif %}
 
         {# Base Fields #}
+
+        {{ form.media }}
+
         <div class="field-group">
             {% for field in form %}
                 {% if not field.name|startswith:available_algorithms %}

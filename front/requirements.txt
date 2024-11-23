@@ -5,3 +5,5 @@ django-environ
 requests
 Pillow
 stream-unzip
+stream-zip
+orjson

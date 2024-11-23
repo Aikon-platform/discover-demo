@@ -12,12 +12,12 @@ class AbstractTaskForm(forms.ModelForm):
         fields = ("name", "notify_email")
 
     def __init__(self, *args, **kwargs):
-        self.__user = kwargs.pop("user", None)
+        self._user = kwargs.pop("user", None)
 
         super().__init__(*args, **kwargs)
 
     def _populate_instance(self, instance):
-        instance.requested_by = self.__user
+        instance.requested_by = self._user
 
     def save(self, commit=True):
         instance = super().save(commit=False)
@@ -60,10 +60,10 @@ class AbstractTaskOnDatasetForm(AbstractTaskForm):
     )
 
     def __init__(self, *args, **kwargs):
-        self.__dataset = kwargs.pop("dataset", None)
+        self._dataset = kwargs.pop("dataset", None)
         super().__init__(*args, **kwargs)
 
-        if self.__dataset:
+        if self._dataset:
             self.fields.pop("dataset_zip")
             self.fields.pop("dataset_name")
             self.fields.pop("dataset_iiif_manifests")
@@ -81,11 +81,11 @@ class AbstractTaskOnDatasetForm(AbstractTaskForm):
     #     # Ensure both forms are valid
     #     return super().is_valid() and self.dataset_form.is_valid()
 
-    def is_valid(self) -> bool:
-        # ensure zip_dataset or iiif_manifests is provided
-        if not super().is_valid():
-            return False
-        if self.__dataset:
+    def check_dataset(self):
+        """
+        Check if the dataset was provided
+        """
+        if self._dataset:
             return True
         if not self.cleaned_data.get("dataset_zip") and not self.cleaned_data.get(
             "dataset_iiif_manifests"
@@ -97,10 +97,13 @@ class AbstractTaskOnDatasetForm(AbstractTaskForm):
             return False
         return True
 
+    def is_valid(self) -> bool:
+        return super().is_valid() and self.check_dataset()
+
     def _populate_instance(self, instance):
         super()._populate_instance(instance)
-        if self.__dataset:
-            instance.dataset = self.__dataset
+        if self._dataset:
+            instance.dataset = self._dataset
         else:
             instance.dataset = Dataset.objects.create(
                 zip_file=self.cleaned_data["dataset_zip"],
