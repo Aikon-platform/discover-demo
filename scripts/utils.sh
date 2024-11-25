@@ -4,6 +4,9 @@ ROOT_DIR="$(dirname "$SCRIPT_DIR")"
 API_DIR="$ROOT_DIR/api"
 FRONT_DIR="$ROOT_DIR/front"
 
+API_VENV="$API_DIR/venv/$([[ "$OS" == "Windows" ]] && echo "Scripts" || echo "bin")"
+FRONT_VENV="$FRONT_DIR/venv/$([[ "$OS" == "Windows" ]] && echo "Scripts" || echo "bin")"
+
 get_os() {
     unameOut="$(uname -s)"
     case "${unameOut}" in

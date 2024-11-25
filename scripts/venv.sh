@@ -2,9 +2,6 @@
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 source "$SCRIPT_DIR/utils.sh"
 
-API_VENV="$API_DIR/venv/$([[ "$OS" == "Windows" ]] && echo "Scripts" || echo "bin")"
-FRONT_VENV="$FRONT_DIR/venv/$([[ "$OS" == "Windows" ]] && echo "Scripts" || echo "bin")"
-
 color_echo  "SET UP VIRTUAL ENVIRONMENTS"
 python3 -m venv "$API_DIR"/venv
 python3 -m venv "$FRONT_DIR"/venv
