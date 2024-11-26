@@ -19,19 +19,6 @@ class Similarity(AbstractAPITaskOnDataset("similarity")):
         on_delete=models.SET_NULL,
         related_name="similarity_crops",
     )
-    # def get_task_kwargs(self) -> Dict[str, Any]:
-    #     """Returns kwargs for the API task"""
-    #     kwargs = super().get_task_kwargs()
-    #     kwargs.update(self.parameters)
-
-    #     # TODO make it return API request parameters
-    #     # params = {
-    #     #     "feat_net": self.cleaned_data['feat_net'],
-    #     #     "feat_set": self.cleaned_data['feat_set'],
-    #     #     "feat_layer": self.cleaned_data['feat_layer']
-    #     #
-    #     # }
-    #     return kwargs
 
     def get_task_kwargs(self) -> Dict[str, Any]:
         """Returns kwargs for the API task"""

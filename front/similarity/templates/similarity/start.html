@@ -27,16 +27,19 @@
 
         <div class="field-group">
             {% for field in form %}
-                {% if not field.name|startswith:available_algorithms %}
+                {% if not field.name|startswith:available_algorithms.keys %}
                     {% include "includes/form/form_field.html" with field=field %}
                 {% endif %}
             {% endfor %}
         </div>
 
         {# Similarity algorithm fields #}
-        {% for algo in available_algorithms %}
-            <div id="algo-{{ algo }}" class="algorithms mt-5 box has-background-light" style="display: none;">
-                <h3>{{ algo|capfirst }} Settings</h3>
+        {% for algo, desc in available_algorithms.items %}
+            <div id="algo-{{ algo }}" class="algorithms mt-5 message box is-light has-background-light" style="display: none;">
+                <h3 class="title is-spaced">{{ algo|capfirst }} Settings</h3>
+                <p class="message-body has-background-light-soft">
+                    {{ desc }}
+                </p>
                 {% for field in form %}
                     {% if field.name|startswith:algo %}
                         {% include "includes/form/form_field.html" with field=field %}
@@ -57,18 +60,32 @@
     document.addEventListener("DOMContentLoaded", function () {
         const algorithmSelect = document.getElementById("id_algorithm");
         const algorithmDivs = document.querySelectorAll(".algorithms");
+        const usePreprocessing = document.querySelectorAll(".use-preprocessing");
 
         function toggleAlgorithmFields() {
             const selectedAlgo = algorithmSelect.value;
             algorithmDivs.forEach(div => {
                 div.style.display = div.id === `algo-${selectedAlgo}` ? "block" : "none";
             });
+        }
 
+        function togglePreprocessing(checkbox) {
+            const checked = checkbox.checked;
+            const preprocessingFields = checkbox.closest(".algorithms").querySelectorAll(".preprocessing-field");
+            preprocessingFields.forEach(div => {
+                div.style.display = checked ? "block" : "none";
+            })
         }
 
         if (algorithmSelect) {
             algorithmSelect.addEventListener("change", toggleAlgorithmFields);
             toggleAlgorithmFields();
+        }
+        if (usePreprocessing) {
+            usePreprocessing.forEach(checkbox => {
+                checkbox.addEventListener("change", function() {togglePreprocessing(this)});
+                togglePreprocessing(checkbox)
+            });
         }
     });
     </script>

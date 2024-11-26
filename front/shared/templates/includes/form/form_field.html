@@ -9,7 +9,7 @@
 {% if field|field_type == "HiddenInput" %}
     {{ field }}
 {% else %}
-    <div class="field">
+    <div class="field {{ field|field_classes }}">
         <div class="py-1">
             {# LABEL #}
             <label for="{{ field.id_for_label }}" class="label {% if field.field.required %}required{% endif %}">

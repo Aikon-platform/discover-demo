@@ -9,6 +9,14 @@ def field_type(obj):
     return obj.field.widget.__class__.__name__
 
 
+@register.filter("field_classes")
+def field_classes(obj):
+    classes = obj.field.widget.attrs.get("classes", "")
+    if type(classes) is list:
+        return " ".join(classes)
+    return classes
+
+
 @register.filter
 def add_class(field, class_name):
     attrs = field.field.widget.attrs
@@ -23,13 +31,18 @@ def add_str(arg1, arg2):
 
 @register.filter
 def startswith(text, starts):
-    if isinstance(text, str):
-        if isinstance(starts, list):
-            for start in starts:
-                if text.startswith(start):
-                    return True
-            return False
+    if not isinstance(text, str):
+        return False
+    if isinstance(starts, str):
         return text.startswith(starts)
+
+    if isinstance(starts, dict):
+        starts = starts.keys()
+    starts = list(starts)
+
+    for start in starts:
+        if text.startswith(start):
+            return True
     return False
 
 

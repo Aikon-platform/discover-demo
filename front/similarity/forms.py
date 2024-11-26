@@ -1,29 +1,34 @@
 from enum import Enum
-from typing import Type
 from django import forms
 
-from dataclasses import dataclass
 from .models import Similarity
 from tasking.forms import AbstractTaskOnDatasetForm
+from shared.forms import FormConfig
 
-
-AVAILABLE_SIMILARITY_ALGORITHMS = ["cosine", "segswap"]
+AVAILABLE_SIMILARITY_ALGORITHMS = {
+    "cosine": "Similarity using cosine distance between feature vectors",
+    "segswap": "Similarity using correspondence matching between part of images",
+}
 
 
 class BaseFeatureExtractionForm(forms.Form):
     """Base form for feature extraction settings."""
 
+    class Meta:
+        fields = ("feat_net",)
+
     feat_net = forms.ChoiceField(
         label="Feature Extraction Model",
         help_text="Select the model to use for feature extraction",
+        widget=forms.Select(attrs={"classes": "preprocessing-field"}),
     )
-    feat_set = forms.ChoiceField(
-        label="Image dataset on which the model was trained",
-        choices=[("imagenet", "ImageNet")],
-    )
-    feat_layer = forms.ChoiceField(
-        label="Feature Extraction Layer", choices=[("conv4", "Convolutional Layer 4")]
-    )
+    # feat_set = forms.ChoiceField(
+    #     label="Image dataset on which the model was trained",
+    #     choices=[("imagenet", "ImageNet")],
+    # )
+    # feat_layer = forms.ChoiceField(
+    #     label="Feature Extraction Layer", choices=[("conv4", "Convolutional Layer 4")]
+    # )
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -38,13 +43,32 @@ class CosinePreprocessing(BaseFeatureExtractionForm):
         initial=True,
         label="Use Preprocessing",
         help_text="Filter less similar images before running SegSwap",
+        widget=forms.CheckboxInput(attrs={"class": "use-preprocessing"}),
     )
     cosine_threshold = forms.FloatField(
-        min_value=0.1, max_value=0.99, initial=0.6, label="Cosine Threshold"
+        min_value=0.1,
+        max_value=0.99,
+        initial=0.6,
+        label="Cosine Threshold",
+        widget=forms.NumberInput(attrs={"classes": "preprocessing-field"}),
     )
     cosine_n_filter = forms.IntegerField(
-        min_value=2, initial=10, label="Number of images to keep"
+        min_value=2,
+        initial=10,
+        label="Number of images to keep",
+        widget=forms.NumberInput(attrs={"classes": "preprocessing-field"}),
     )
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.order_fields(
+            [
+                "cosine_preprocessing",
+            ]
+            + list(BaseFeatureExtractionForm.Meta.fields)
+            + ["cosine_threshold", "cosine_n_filter"]
+        )
 
 
 class CosineSimilarityForm(BaseFeatureExtractionForm):
@@ -55,20 +79,13 @@ class SegSwapForm(CosinePreprocessing):
     """Form for SegSwap-specific settings."""
 
 
-@dataclass
-class AlgorithmConfig:
-    display_name: str
-    description: str
-    form_class: Type[forms.Form]
-
-
 class SimilarityAlgorithm(Enum):
-    cosine = AlgorithmConfig(
+    cosine = FormConfig(
         display_name="Cosine Similarity",
         description="Compute similarity using cosine distance",
         form_class=CosineSimilarityForm,
     )
-    segswap = AlgorithmConfig(
+    segswap = FormConfig(
         display_name="SegSwap",
         description="Use segmentation and matching",
         form_class=SegSwapForm,
@@ -91,23 +108,30 @@ class SimilarityForm(AbstractTaskOnDatasetForm):
         choices=[("", "-")],  # Will be dynamically set in __init__
         initial="",
         label="Similarity Algorithm",
-        widget=forms.Select(attrs={"class": "algorithm-selector"}),
     )
 
     class Meta(AbstractTaskOnDatasetForm.Meta):
         model = Similarity
         fields = AbstractTaskOnDatasetForm.Meta.fields + (
-            "algorithm",
             "crops",
+            "algorithm",
         )
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
+        self.fields["crops"].queryset = self.fields["crops"].queryset.filter(
+            regions__isnull=False,
+            requested_by=self._user,
+        )
+        self.fields[
+            "crops"
+        ].help_text = "If using crops from a previous task, also set the dataset to be the same (and ignore the dataset upload fields)."
+
         available_algos = [
             algo
             for algo in SimilarityAlgorithm
-            if algo.name in AVAILABLE_SIMILARITY_ALGORITHMS
+            if algo.name in list(AVAILABLE_SIMILARITY_ALGORITHMS.keys())
         ]
         self.fields["algorithm"].choices += [
             (algo.name, algo.config.display_name) for algo in available_algos
@@ -122,15 +146,6 @@ class SimilarityForm(AbstractTaskOnDatasetForm):
             for field_name, field in form.fields.items():
                 full_field_name = f"{name}_{field_name}"
                 self.fields[full_field_name] = field
-                field.widget.attrs.update({"data-algorithm": name})
-
-        self.fields["crops"].queryset = self.fields["crops"].queryset.filter(
-            regions__isnull=False,
-            requested_by=self._user,
-        )
-        self.fields[
-            "crops"
-        ].help_text = "If using crops from a previous task, also set the dataset to be the same (and ignore the dataset upload fields)."
 
     def check_dataset(self):
         # Hook to set the dataset from the crops
