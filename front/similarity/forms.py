@@ -20,7 +20,7 @@ class BaseFeatureExtractionForm(forms.Form):
     feat_net = forms.ChoiceField(
         label="Feature Extraction Model",
         help_text="Select the model to use for feature extraction",
-        widget=forms.Select(attrs={"classes": "preprocessing-field"}),
+        widget=forms.Select(attrs={"extra-class": "preprocessing-field"}),
     )
     # feat_set = forms.ChoiceField(
     #     label="Image dataset on which the model was trained",
@@ -50,13 +50,13 @@ class CosinePreprocessing(BaseFeatureExtractionForm):
         max_value=0.99,
         initial=0.6,
         label="Cosine Threshold",
-        widget=forms.NumberInput(attrs={"classes": "preprocessing-field"}),
+        widget=forms.NumberInput(attrs={"extra-class": "preprocessing-field"}),
     )
     cosine_n_filter = forms.IntegerField(
         min_value=2,
         initial=10,
         label="Number of images to keep",
-        widget=forms.NumberInput(attrs={"classes": "preprocessing-field"}),
+        widget=forms.NumberInput(attrs={"extra-class": "preprocessing-field"}),
     )
 
     def __init__(self, *args, **kwargs):

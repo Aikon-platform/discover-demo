@@ -13,29 +13,11 @@
     {% endif %}
 
     <form action="" method="post" enctype="multipart/form-data">
-        {% csrf_token %}
-
-        {% if form.non_field_errors %}
-            <div class="notification is-danger is-light py-3 px-4">
-                {{ form.non_field_errors }}
-            </div>
-        {% endif %}
-
-        {# Base Fields #}
-
-        {{ form.media }}
-
-        <div class="field-group">
-            {% for field in form %}
-                {% if not field.name|startswith:available_algorithms.keys %}
-                    {% include "includes/form/form_field.html" with field=field %}
-                {% endif %}
-            {% endfor %}
-        </div>
+        {% include "demowebsite/dataset_baseform.html" with excluded_fields=available_algorithms.keys %}
 
         {# Similarity algorithm fields #}
         {% for algo, desc in available_algorithms.items %}
-            <div id="algo-{{ algo }}" class="algorithms mt-5 message box is-light has-background-light" style="display: none;">
+            <div id="algo-{{ algo }}" class="algorithms mt-5 message box has-background-light" style="display: none;">
                 <h3 class="title is-spaced">{{ algo|capfirst }} Settings</h3>
                 <p class="message-body has-background-light-soft">
                     {{ desc }}

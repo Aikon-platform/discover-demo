@@ -1,0 +1,48 @@
+{% load shared_tags %}
+
+{% include "includes/form/base.html" %}
+
+{% include "includes/form/field_group.html" with included_fields="name,notify_email" %}
+
+<div class="box has-background-light mt-5">
+    <h3 class="title">Dataset</h3>
+    {% include "includes/form/field_group.html" with included_fields=dataset_fields %}
+</div>
+
+{% include "includes/form/field_group.html" with excluded_fields=excluded_fields|add_to_list:dataset_fields|add_to_list:"name,notify_email" %}
+
+{% block extra_js %}
+    <script>
+    {#document.addEventListener("DOMContentLoaded", function () {#}
+    {#    const algorithmSelect = document.getElementById("id_algorithm");#}
+    {#    const algorithmDivs = document.querySelectorAll(".algorithms");#}
+    {#    const usePreprocessing = document.querySelectorAll(".use-preprocessing");#}
+    {##}
+    {#    function toggleAlgorithmFields() {#}
+    {#        const selectedAlgo = algorithmSelect.value;#}
+    {#        algorithmDivs.forEach(div => {#}
+    {#            div.style.display = div.id === `algo-${selectedAlgo}` ? "block" : "none";#}
+    {#        });#}
+    {#    }#}
+    {##}
+    {#    function togglePreprocessing(checkbox) {#}
+    {#        const checked = checkbox.checked;#}
+    {#        const preprocessingFields = checkbox.closest(".algorithms").querySelectorAll(".preprocessing-field");#}
+    {#        preprocessingFields.forEach(div => {#}
+    {#            div.style.display = checked ? "block" : "none";#}
+    {#        })#}
+    {#    }#}
+    {##}
+    {#    if (algorithmSelect) {#}
+    {#        algorithmSelect.addEventListener("change", toggleAlgorithmFields);#}
+    {#        toggleAlgorithmFields();#}
+    {#    }#}
+    {#    if (usePreprocessing) {#}
+    {#        usePreprocessing.forEach(checkbox => {#}
+    {#            checkbox.addEventListener("change", function() {togglePreprocessing(this)});#}
+    {#            togglePreprocessing(checkbox)#}
+    {#        });#}
+    {#    }#}
+    {# });#}
+    </script>
+{% endblock %}

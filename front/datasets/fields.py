@@ -109,3 +109,24 @@ class URLListModelField(models.JSONField):
     def formfield(self, **kwargs):
         kwargs["form_class"] = URLListField
         return super().formfield(**kwargs)
+
+
+class MultipleFileInput(forms.ClearableFileInput):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+    allow_multiple_selected = True
+
+
+class MultipleFileField(forms.FileField):
+    def __init__(self, *args, **kwargs):
+        kwargs.setdefault("widget", MultipleFileInput(*args, **kwargs))
+        super().__init__(
+            *args,
+        )
+
+    def clean(self, data, initial=None):
+        single_file_clean = super().clean
+        if isinstance(data, (list, tuple)):
+            return [single_file_clean(d, initial) for d in data]
+        return single_file_clean(data, initial)

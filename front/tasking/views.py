@@ -12,6 +12,7 @@ from django.views.decorators.csrf import csrf_exempt
 import json
 
 from .models import AbstractAPITask
+from datasets.forms import DATASET_FIELDS
 
 LOGIN_REQUIRED = getattr(settings, "LOGIN_REQUIRED", True)
 
@@ -87,6 +88,11 @@ class LoginRequiredIfConfProtectedMixin(AccessMixin):
 
 class TaskStartView(LoginRequiredIfConfProtectedMixin, TaskMixin, CreateView):
     template_name = "tasking/start.html"
+
+    def get_context_data(self, **kwargs) -> dict[str, Any]:
+        context = super().get_context_data(**kwargs)
+        context["dataset_fields"] = DATASET_FIELDS
+        return context
 
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()

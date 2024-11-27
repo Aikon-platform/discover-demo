@@ -1,8 +1,8 @@
 from django import forms
-from django.conf import settings
 
 from datasets.fields import ContentRestrictedFileField, URLListField
 from datasets.models import Dataset
+from datasets.forms import DatasetForm
 
 
 class AbstractTaskForm(forms.ModelForm):
@@ -29,53 +29,54 @@ class AbstractTaskForm(forms.ModelForm):
         return instance
 
 
-class AbstractTaskOnDatasetForm(AbstractTaskForm):
-    class Meta(AbstractTaskForm.Meta):
+class AbstractTaskOnDatasetForm(AbstractTaskForm, DatasetForm):
+    class Meta(AbstractTaskForm.Meta, DatasetForm.Meta):
         model = None
         abstract = True
-        fields = AbstractTaskForm.Meta.fields + (
-            "dataset_zip",
-            "dataset_iiif_manifests",
-            "dataset_name",
-        )
+        # fields = AbstractTaskForm.Meta.fields + (
+        #     "dataset_zip",
+        #     "dataset_iiif_manifests",
+        #     "dataset_name",
+        # )
+        fields = AbstractTaskForm.Meta.fields + DatasetForm.Meta.fields
 
-    # dataset_form = None
-    dataset_zip = ContentRestrictedFileField(
-        label="Zipped Dataset",
-        help_text="A .zip file containing the dataset to be processed",
-        accepted_types=["application/zip"],
-        max_size=settings.MAX_UPLOAD_SIZE,
-        required=False,
-    )
-    dataset_iiif_manifests = URLListField(
-        label="IIIF Manifest URLs",
-        help_text="The URLs to the IIIF manifests of the dataset",
-        required=False,
-    )
-    dataset_name = forms.CharField(
-        label="Dataset name",
-        help_text="An optional name to identify this dataset",
-        max_length=64,
-        required=False,
-    )
+    dataset_form = DatasetForm
+    # dataset_zip = ContentRestrictedFileField(
+    #     label="Zipped Dataset",
+    #     help_text="A .zip file containing the dataset to be processed",
+    #     accepted_types=["application/zip"],
+    #     max_size=settings.MAX_UPLOAD_SIZE,
+    #     required=False,
+    # )
+    # dataset_iiif_manifests = URLListField(
+    #     label="IIIF Manifest URLs",
+    #     help_text="The URLs to the IIIF manifests of the dataset",
+    #     required=False,
+    # )
+    # dataset_name = forms.CharField(
+    #     label="Dataset name",
+    #     help_text="An optional name to identify this dataset",
+    #     max_length=64,
+    #     required=False,
+    # )
 
     def __init__(self, *args, **kwargs):
-        self._dataset = kwargs.pop("dataset", None)
-        super().__init__(*args, **kwargs)
-
-        if self._dataset:
-            self.fields.pop("dataset_zip")
-            self.fields.pop("dataset_name")
-            self.fields.pop("dataset_iiif_manifests")
-
-        # TODO use following when we use Dataset instead of ZippedDataset
+        # self._dataset = kwargs.pop("dataset", None)
         # super().__init__(*args, **kwargs)
         #
-        # # If the instance has a dataset, initialize the DatasetForm with its instance
-        # if self.instance and self.instance.dataset:
-        #     self.dataset_form = DatasetForm(instance=self.instance.dataset)
-        # else:
-        #     self.dataset_form = DatasetForm()  # Empty form if no dataset exists
+        # if self._dataset:
+        #     self.fields.pop("dataset_zip")
+        #     self.fields.pop("dataset_name")
+        #     self.fields.pop("dataset_iiif_manifests")
+
+        # TODO use following when we use Dataset instead of ZippedDataset
+        super().__init__(*args, **kwargs)
+
+        # If the instance has a dataset, initialize the DatasetForm with its instance
+        if self.instance and self.instance.dataset:
+            self.dataset_form = DatasetForm(instance=self.instance.dataset)
+        else:
+            self.dataset_form = DatasetForm()  # Empty form if no dataset exists
 
     # def is_valid(self):
     #     # Ensure both forms are valid

@@ -11,7 +11,7 @@ def field_type(obj):
 
 @register.filter("field_classes")
 def field_classes(obj):
-    classes = obj.field.widget.attrs.get("classes", "")
+    classes = obj.field.widget.attrs.get("extra-class", "")
     if type(classes) is list:
         return " ".join(classes)
     return classes
@@ -29,21 +29,31 @@ def add_str(arg1, arg2):
     return str(arg1) + str(arg2)
 
 
+def val_to_list(value):
+    if isinstance(value, int):
+        return [value]
+    if isinstance(value, str):
+        return value.split(",") if "," in value else [value]
+    if isinstance(value, dict):
+        value = value.keys()
+    return list(value)
+
+
 @register.filter
 def startswith(text, starts):
     if not isinstance(text, str):
         return False
-    if isinstance(starts, str):
-        return text.startswith(starts)
 
-    if isinstance(starts, dict):
-        starts = starts.keys()
-    starts = list(starts)
-
+    starts = val_to_list(starts)
     for start in starts:
-        if text.startswith(start):
+        if text.startswith(str(start)):
             return True
     return False
+
+
+@register.filter
+def add_to_list(value, arg):
+    return val_to_list(value) + val_to_list(arg)
 
 
 @register.filter
