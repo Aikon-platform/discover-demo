@@ -190,7 +190,7 @@ class ClearOldClusterings(DTIClusteringMixin, ClearOldResultsView):
     permission_required = "dticlustering.monitor_dticlustering"
 
     def post(self, *args, **kwargs):
-        output = DTIClustering.clear_old_clusterings()
+        output = DTIClustering.clear_old_tasks()
 
         if output is None or output.get("error"):
             messages.error(

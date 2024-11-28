@@ -13,36 +13,21 @@
 
 {% block extra_js %}
     <script>
-    {#document.addEventListener("DOMContentLoaded", function () {#}
-    {#    const algorithmSelect = document.getElementById("id_algorithm");#}
-    {#    const algorithmDivs = document.querySelectorAll(".algorithms");#}
-    {#    const usePreprocessing = document.querySelectorAll(".use-preprocessing");#}
-    {##}
-    {#    function toggleAlgorithmFields() {#}
-    {#        const selectedAlgo = algorithmSelect.value;#}
-    {#        algorithmDivs.forEach(div => {#}
-    {#            div.style.display = div.id === `algo-${selectedAlgo}` ? "block" : "none";#}
-    {#        });#}
-    {#    }#}
-    {##}
-    {#    function togglePreprocessing(checkbox) {#}
-    {#        const checked = checkbox.checked;#}
-    {#        const preprocessingFields = checkbox.closest(".algorithms").querySelectorAll(".preprocessing-field");#}
-    {#        preprocessingFields.forEach(div => {#}
-    {#            div.style.display = checked ? "block" : "none";#}
-    {#        })#}
-    {#    }#}
-    {##}
-    {#    if (algorithmSelect) {#}
-    {#        algorithmSelect.addEventListener("change", toggleAlgorithmFields);#}
-    {#        toggleAlgorithmFields();#}
-    {#    }#}
-    {#    if (usePreprocessing) {#}
-    {#        usePreprocessing.forEach(checkbox => {#}
-    {#            checkbox.addEventListener("change", function() {togglePreprocessing(this)});#}
-    {#            togglePreprocessing(checkbox)#}
-    {#        });#}
-    {#    }#}
-    {# });#}
+    document.addEventListener("DOMContentLoaded", function () {
+        const formatSelect = document.getElementById("id_format");
+        const formatFields = document.querySelectorAll(".format-field");
+
+        function toggleFormatField() {
+            const selectedFormat = formatSelect.value;
+            formatFields.forEach(div => {
+                div.style.display = div.classList.contains(`format-${selectedFormat}`) ? "block" : "none";
+            });
+        }
+
+        if (formatSelect) {
+            formatSelect.addEventListener("change", toggleFormatField);
+            toggleFormatField();
+        }
+     });
     </script>
 {% endblock %}

@@ -1,32 +1,11 @@
-from typing import Dict, Any
 import requests
 import orjson
 import traceback
 
-from django.db import models
-
-from tasking.models import AbstractAPITaskOnDataset
-
-from regions.models import Regions
+from regions.models import AbstractAPITaskOnCrops
 
 
-class Similarity(AbstractAPITaskOnDataset("similarity")):
-    crops = models.ForeignKey(
-        Regions,
-        verbose_name="Use crops from...",
-        null=True,
-        blank=True,
-        on_delete=models.SET_NULL,
-        related_name="similarity_crops",
-    )
-
-    def get_task_kwargs(self) -> Dict[str, Any]:
-        """Returns kwargs for the API task"""
-        kwargs = super().get_task_kwargs()
-        if self.crops:
-            kwargs["crops"] = self.crops.get_bounding_boxes()
-        return kwargs
-
+class Similarity(AbstractAPITaskOnCrops("similarity")):
     @classmethod
     def get_available_models(cls):
         try:

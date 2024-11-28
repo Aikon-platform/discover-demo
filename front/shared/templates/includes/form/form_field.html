@@ -27,7 +27,7 @@
             {% include "includes/form/select.html" %}
         {% elif field|field_type == "RadioSelect" %}
             {% include "includes/form/radio.html" %}
-        {% elif field|field_type == "ClearableFileInput" or field|field_type == "FileInput" %}
+        {% elif field|field_type == "ClearableFileInput" or "FileInput" in field|field_type %}
             {% include "includes/form/file.html" %}
         {% else %}
             {% include "includes/form/input.html" %}

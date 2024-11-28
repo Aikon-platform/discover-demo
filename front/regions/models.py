@@ -3,7 +3,7 @@ from pathlib import Path
 import zipfile
 from PIL import Image
 import traceback
-from typing import List, Dict, Iterable
+from typing import List, Dict, Iterable, Any
 
 from django.urls import reverse
 from django.db import models
@@ -141,3 +141,31 @@ class Regions(AbstractAPITaskOnDataset("regions")):
         return [
             (model, f"{model} (last update: {date})") for model, date in models.items()
         ]
+
+
+def AbstractAPITaskOnCrops(task_prefix: str):
+    class AbstractAPITaskOnCrops(AbstractAPITaskOnDataset(task_prefix)):
+        """
+        Abstract model for tasks on dataset of images that are sent to the API
+        """
+
+        class Meta:
+            abstract = True
+
+        crops = models.ForeignKey(
+            Regions,
+            verbose_name="Use crops from...",
+            null=True,
+            blank=True,
+            on_delete=models.SET_NULL,
+            related_name="task_crops",
+        )
+
+        def get_task_kwargs(self) -> Dict[str, Any]:
+            """Returns kwargs for the API task"""
+            kwargs = super().get_task_kwargs()
+            if self.crops:
+                kwargs["crops"] = self.crops.get_bounding_boxes()
+            return kwargs
+
+    return AbstractAPITaskOnCrops

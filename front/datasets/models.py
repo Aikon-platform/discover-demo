@@ -1,21 +1,27 @@
 import shutil
+import requests
+import uuid
+import json
+import traceback
+
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Dict, List, Tuple
 from zipfile import ZipFile
-import requests
 from PIL import Image as PImage
-import traceback
-from dataclasses import dataclass
 
 from django.db import models
 from django.conf import settings
-import uuid
-import json
+from django.db.models.signals import pre_delete
+from django.dispatch.dispatcher import receiver
 
 from .utils import PathAndRename, IMG_EXTENSIONS, unzip_on_the_fly, sanitize_str
 from .fields import URLListModelField
 
 path_datasets = PathAndRename("datasets/")
+
+
+# TODO create methods to delete the files when the object is deleted
 
 
 class AbstractDataset(models.Model):
@@ -133,18 +139,26 @@ class Dataset(AbstractDataset):
 
     zip_file = models.FileField(upload_to=path_datasets, max_length=500, null=True)
     iiif_manifests = URLListModelField(
-        verbose_name="IIIF Manifest URLs",
-        help_text="The URLs to the IIIF manifests of the dataset",
         blank=True,
         null=True,
     )
     pdf_file = models.FileField(upload_to=path_datasets, max_length=500, null=True)
+    img_files = models.FileField(upload_to=path_datasets, max_length=500, null=True)
 
     api_url = models.URLField(
         null=True,
         blank=True,
         help_text="The URL where the dataset can be accessed through the API",
     )
+
+    def __str__(self) -> str:
+        return self.name
+
+    def save(self):
+        if not self.name:
+            self.name = self.id
+
+        super().save()
 
     @property
     def crops_path(self) -> Path:
@@ -175,6 +189,14 @@ class Dataset(AbstractDataset):
                 Document(dtype="iiif", src=url) for url in self.iiif_manifests
             ]
         return self._iiif_documents
+
+    @property
+    def img_documents(self) -> List[Document]:
+        if not hasattr(self, "_img_documents"):
+            self._img_documents = [
+                Document(dtype="img", src=f"{settings.BASE_URL}{self.img_files.url}")
+            ]
+        return self._img_documents
 
     @property
     def documents(self) -> List[Document]:
@@ -367,8 +389,17 @@ class Dataset(AbstractDataset):
         return {"success": "Regions processed successfully"}
 
 
+@receiver(pre_delete, sender=Dataset)
+def pre_delete_digit(sender, instance: Dataset, **kwargs):
+    """
+    Delete the dataset files (crops included)
+    """
+    shutil.rmtree(instance.full_path, ignore_errors=True)
+
+
 class ZippedDataset(AbstractDataset):
     """
+    TODO remove to put in Dataset
     This class is used to store simple datasets made of a single uploaded .zip file
     """
 
@@ -435,6 +466,7 @@ class ZippedDataset(AbstractDataset):
 
 class CropList(models.Model):
     """
+    TODO delete ? for now Regions is used
     DB instance + json file to define zones coordinates in a dataset
     base of clustering/similarity/vectorization task
     bounding boxes / full images

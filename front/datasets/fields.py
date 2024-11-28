@@ -27,10 +27,11 @@ class ContentRestrictedFileField(FileField):
         file_type, _ = mimetypes.guess_type(data.name)
 
         if self.__accepted_types and file_type:
+            print(file_type)
             if file_type not in self.__accepted_types:
                 raise ValidationError(
                     "File type not supported. "
-                    "Supported types are: {}".format(", ".join(self.__accepted_types))
+                    f"Supported types are: {', '.join(self.__accepted_types)}"
                 )
 
         if self.__max_size:
@@ -43,11 +44,29 @@ class ContentRestrictedFileField(FileField):
         return data
 
 
+class MultipleFileInput(forms.ClearableFileInput):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+    allow_multiple_selected = True
+
+
+class ContentRestrictedMultipleFileField(ContentRestrictedFileField):
+    def __init__(self, *args, **kwargs):
+        kwargs.setdefault("widget", MultipleFileInput(*args, **kwargs))
+        super().__init__(*args, **kwargs)
+
+    def clean(self, *args, **kwargs):
+        clean_one_file = super().clean
+        if isinstance(data, (list, tuple)):
+            return [clean_one_file(d, initial) for d in data]
+        return clean_one_file(data, initial)
+
+
 class URLListWidget(forms.Textarea):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.attrs["class"] = self.attrs.get("class", "") + " urllistfield"
-        print(self.attrs)
 
     class Media:
         js = ("js/url_list_field.js",)
@@ -62,7 +81,7 @@ class URLListField(forms.JSONField):
     widget = URLListWidget
 
     def __init__(self, *args, **kwargs):
-        kwargs.setdefault("help_text", ("List of URLs"))
+        kwargs.setdefault("help_text", ("List of URLs",))
         super().__init__(*args, **kwargs)
 
     def prepare_value(self, value):
@@ -109,24 +128,3 @@ class URLListModelField(models.JSONField):
     def formfield(self, **kwargs):
         kwargs["form_class"] = URLListField
         return super().formfield(**kwargs)
-
-
-class MultipleFileInput(forms.ClearableFileInput):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
-    allow_multiple_selected = True
-
-
-class MultipleFileField(forms.FileField):
-    def __init__(self, *args, **kwargs):
-        kwargs.setdefault("widget", MultipleFileInput(*args, **kwargs))
-        super().__init__(
-            *args,
-        )
-
-    def clean(self, data, initial=None):
-        single_file_clean = super().clean
-        if isinstance(data, (list, tuple)):
-            return [single_file_clean(d, initial) for d in data]
-        return single_file_clean(data, initial)

@@ -5,6 +5,8 @@ from .models import Similarity
 from tasking.forms import AbstractTaskOnDatasetForm
 from shared.forms import FormConfig
 
+from tasking.forms import AbstractTaskOnCropsForm
+
 AVAILABLE_SIMILARITY_ALGORITHMS = {
     "cosine": "Similarity using cosine distance between feature vectors",
     "segswap": "Similarity using correspondence matching between part of images",
@@ -22,6 +24,15 @@ class BaseFeatureExtractionForm(forms.Form):
         help_text="Select the model to use for feature extraction",
         widget=forms.Select(attrs={"extra-class": "preprocessing-field"}),
     )
+    # # NOTE NOT USED for now
+    # cosine_threshold = forms.FloatField(
+    #     min_value=0.1,
+    #     max_value=0.99,
+    #     initial=0.6,
+    #     label="Cosine Threshold",
+    #     widget=forms.NumberInput(attrs={"extra-class": "preprocessing-field"}),
+    # )
+
     # feat_set = forms.ChoiceField(
     #     label="Image dataset on which the model was trained",
     #     choices=[("imagenet", "ImageNet")],
@@ -42,15 +53,8 @@ class CosinePreprocessing(BaseFeatureExtractionForm):
         required=False,
         initial=True,
         label="Use Preprocessing",
-        help_text="Filter less similar images before running SegSwap",
+        help_text="Filter less similar images before running algorithm",
         widget=forms.CheckboxInput(attrs={"class": "use-preprocessing"}),
-    )
-    cosine_threshold = forms.FloatField(
-        min_value=0.1,
-        max_value=0.99,
-        initial=0.6,
-        label="Cosine Threshold",
-        widget=forms.NumberInput(attrs={"extra-class": "preprocessing-field"}),
     )
     cosine_n_filter = forms.IntegerField(
         min_value=2,
@@ -63,16 +67,23 @@ class CosinePreprocessing(BaseFeatureExtractionForm):
         super().__init__(*args, **kwargs)
 
         self.order_fields(
-            [
-                "cosine_preprocessing",
-            ]
+            ["cosine_preprocessing"]
             + list(BaseFeatureExtractionForm.Meta.fields)
-            + ["cosine_threshold", "cosine_n_filter"]
+            + ["cosine_n_filter"]
         )
 
 
 class CosineSimilarityForm(BaseFeatureExtractionForm):
     """Form for cosine similarity-specific settings."""
+
+    # # NOTE NOT USED for now
+    # top_k = forms.IntegerField(
+    #     min_value=1,
+    #     max_value=100,
+    #     initial=10,
+    #     label="Number of similar images to keep",
+    #     widget=forms.NumberInput(attrs={"extra-class": "preprocessing-field"}),
+    # )
 
 
 class SegSwapForm(CosinePreprocessing):
@@ -100,7 +111,7 @@ class SimilarityAlgorithm(Enum):
         return [(algo.name, algo.config.display_name) for algo in cls]
 
 
-class SimilarityForm(AbstractTaskOnDatasetForm):
+class SimilarityForm(AbstractTaskOnCropsForm):
     """Form for creating similarity analysis tasks."""
 
     # add default empty value for algorithm
@@ -110,23 +121,12 @@ class SimilarityForm(AbstractTaskOnDatasetForm):
         label="Similarity Algorithm",
     )
 
-    class Meta(AbstractTaskOnDatasetForm.Meta):
+    class Meta(AbstractTaskOnCropsForm.Meta):
         model = Similarity
-        fields = AbstractTaskOnDatasetForm.Meta.fields + (
-            "crops",
-            "algorithm",
-        )
+        fields = AbstractTaskOnCropsForm.Meta.fields + ("algorithm",)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-
-        self.fields["crops"].queryset = self.fields["crops"].queryset.filter(
-            regions__isnull=False,
-            requested_by=self._user,
-        )
-        self.fields[
-            "crops"
-        ].help_text = "If using crops from a previous task, also set the dataset to be the same (and ignore the dataset upload fields)."
 
         available_algos = [
             algo
@@ -146,12 +146,6 @@ class SimilarityForm(AbstractTaskOnDatasetForm):
             for field_name, field in form.fields.items():
                 full_field_name = f"{name}_{field_name}"
                 self.fields[full_field_name] = field
-
-    def check_dataset(self):
-        # Hook to set the dataset from the crops
-        if self.cleaned_data.get("crops"):
-            self._dataset = self.cleaned_data["crops"].dataset
-        return super().check_dataset()
 
     def clean(self):
         cleaned_data = super().clean()

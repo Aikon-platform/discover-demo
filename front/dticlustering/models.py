@@ -15,8 +15,7 @@ import shutil
 
 from typing import Dict
 
-from datasets.models import ZippedDataset
-
+from datasets.models import Dataset
 from tasking.models import AbstractAPITaskOnDataset
 
 User = get_user_model()
@@ -33,19 +32,8 @@ class DTIClustering(AbstractAPITaskOnDataset("dti")):
     api_endpoint_prefix = f"{API_URL}/clustering"
     django_app_name = "dticlustering"
 
-    # # The clustering parameters
-    # dataset = models.ForeignKey(ZippedDataset, null=True, on_delete=models.SET_NULL)
-    # parameters = models.JSONField(null=True)
-
     class Meta:
         verbose_name = "DTI Clustering"
-        # ordering = ["-requested_on"]
-        # permissions = [
-        #     ("monitor_dticlustering", "Can monitor DTI Clustering"),
-        # ]
-
-    # def get_absolute_url(self):
-    #     return reverse("dticlustering:status", kwargs={"pk": self.pk})
 
     @property
     def result_zip_exists(self) -> bool:
@@ -70,7 +58,7 @@ class DTIClustering(AbstractAPITaskOnDataset("dti")):
 
     def get_task_kwargs(self):
         return {
-            "dataset_url": f"{settings.BASE_URL}{self.dataset.zip_file.url}",
+            "dataset_url": f"{settings.BASE_URL}{self.dataset.zip_file.url}",  # TODO not only zip_file
             "dataset_id": str(self.dataset.id),
             "parameters": json.dumps(self.parameters),
         }
@@ -127,7 +115,7 @@ class DTIClustering(AbstractAPITaskOnDataset("dti")):
     @classmethod
     def clear_old_tasks(cls, days_before: int = 30) -> Dict[str, int]:
         """
-        Clear old clusterings
+        Clear old clusterings (TODO use abstract cls method?)
         """
         old_clusterings = cls.objects.filter(
             requested_on__lte=timezone.now() - timezone.timedelta(days=days_before)
@@ -138,9 +126,11 @@ class DTIClustering(AbstractAPITaskOnDataset("dti")):
             shutil.rmtree(c.result_full_path, ignore_errors=True)
 
         # remove all datasets except those who have a clustering younger than days_before days
-        old_datasets = ZippedDataset.objects.exclude(
-            dticlustering__requested_on__gt=timezone.now()
-            - timezone.timedelta(days=days_before)
+        old_datasets = (
+            Dataset.objects.exclude(  # TODO here delete DATASET + associated crops
+                dticlustering__requested_on__gt=timezone.now()
+                - timezone.timedelta(days=days_before)
+            )
         )
         for d in old_datasets:
             d.zip_file.delete()
@@ -172,28 +162,15 @@ class DTIClustering(AbstractAPITaskOnDataset("dti")):
 
     @classmethod
     def get_frontend_monitoring(cls):
-        """
-        Returns a dict with the monitoring data
-        """
-        total_size = 0
-        for f in Path(settings.MEDIA_ROOT).glob("**/*"):
-            if f.is_file():
-                total_size += f.stat().st_size
-        n_datasets = ZippedDataset.objects.count()
-        n_clusterings = DTIClustering.objects.count()
+        # TODO delete
+        return cls.get_frontend_monitoring()
 
-        return {
-            "total_size": total_size,
-            "n_datasets": n_datasets,
-            "n_experiments": n_clusterings,
-        }
-
-    @classmethod
-    def clear_old_clusterings(cls, days_before: int = 30) -> Dict[str, int]:
-        """
-        Clear old clusterings
-        """
-        return cls.clear_old_tasks(days_before)
+    # @classmethod
+    # def clear_old_clusterings(cls, days_before: int = 30) -> Dict[str, int]:
+    #     """
+    #     Clear old clusterings
+    #     """
+    #     return cls.clear_old_tasks(days_before)
 
     @cached_property
     def expanded_results(self):
@@ -283,7 +260,7 @@ class DTIClustering(AbstractAPITaskOnDataset("dti")):
                 continue
 
             for img in cluster_dir.glob("*_raw.*"):
-                if not img.suffix in [".jpg", ".png"]:
+                if img.suffix not in [".jpg", ".png"]:
                     continue
                 img_id = int(img.stem[: -len("_raw")])
                 img_data = {

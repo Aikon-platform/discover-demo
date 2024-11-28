@@ -315,8 +315,9 @@ def AbstractAPITask(task_prefix: str):
             for f in Path(settings.MEDIA_ROOT).glob("**/*"):
                 if f.is_file():
                     total_size += f.stat().st_size
-            # n_datasets = ZippedDataset.objects.count()
-            n_datasets = Dataset.objects.count()
+            n_datasets = (
+                Dataset.objects.count()
+            )  # TODO filter to keep only Datasets used by tasks
             n_experiments = cls.objects.count()
 
             return {
@@ -347,18 +348,20 @@ def AbstractAPITask(task_prefix: str):
                     shutil.rmtree(exp.result_full_path, ignore_errors=True)
                     cleared_data["cleared_experiments"] += 1
 
-                # TODO change that to fit to new Dataset
-                # old_datasets = ZippedDataset.objects.exclude(
+                # TODO change that to fit to new Dataset / delete even crops of the dataset
+                # old_datasets = Dataset.objects.exclude(
                 #     dticlustering__requested_on__gt=from_date
                 # )
                 old_datasets = []
                 for d in old_datasets:
-                    d.zip_file.delete()
-                    cleared_data["cleared_datasets"] += 1
+                    try:
+                        d.delete()
+                        cleared_data["cleared_datasets"] += 1
+                    except Exception as e:
+                        cleared_data["error"] = f"Error when clearing old datasets: {e}"
 
                 # remove records
                 old_exp.delete()
-                old_datasets.delete()
             except Exception as e:
                 cleared_data["error"] = f"Error when clearing old tasks: {e}"
 
