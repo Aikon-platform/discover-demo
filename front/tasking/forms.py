@@ -2,7 +2,7 @@ from django import forms
 
 from datasets.fields import ContentRestrictedFileField, URLListField
 from datasets.models import Dataset
-from datasets.forms import DatasetForm
+from datasets.forms import AbstractDatasetForm
 
 
 class AbstractTaskForm(forms.ModelForm):
@@ -37,51 +37,43 @@ field_format_map = {
 }
 
 
-class AbstractTaskOnDatasetForm(AbstractTaskForm, DatasetForm):
-    class Meta(AbstractTaskForm.Meta, DatasetForm.Meta):
+class AbstractTaskOnDatasetForm(AbstractTaskForm, AbstractDatasetForm):
+    class Meta(AbstractTaskForm.Meta, AbstractDatasetForm.Meta):
         # model = AbstractAPITaskOnDataset
         abstract = True
-        fields = AbstractTaskForm.Meta.fields + DatasetForm.Meta.fields
+        fields = AbstractTaskForm.Meta.fields + AbstractDatasetForm.Meta.fields
+
+    _dataset = None
 
     # TODO add "use existing dataset"
-
-    def __init__(self, *args, **kwargs):
-        self._dataset = kwargs.pop("dataset", None)
-        super().__init__(*args, **kwargs)
-
-        # If the instance has a dataset, initialize the DatasetForm with its instance
-        if self.instance and self.instance.dataset:
-            self.dataset_form = DatasetForm(instance=self.instance.dataset)
-        else:
-            self.dataset_form = DatasetForm()  # Empty form if no dataset exists
+    # dataset = forms.ModelField(
+    #     queryset=Dataset.objects.all(),
+    #     required=False,
+    #
+    # )
+    # dataset = models.ForeignKey(
+    #     Regions,
+    #     verbose_name="Existing dataset",
+    #     help_text="Use an existing dataset",
+    #     null=True,
+    #     blank=True,
+    #     on_delete=models.SET_NULL,
+    #     related_name="task_crops",
+    # )
 
     def check_dataset(self):
         """
         Check if the dataset was provided
-        TODO use field_format_map
         """
         data_format = self.cleaned_data.get("format", None)
         if not data_format:
             self.add_error("format", "A dataset format is required.")
             return False
 
-        if data_format == "img":
-            if not self.cleaned_data.get("img_files"):
-                self.add_error("img_files", "An image file is required.")
-                return False
-        elif data_format == "zip":
-            if not self.cleaned_data.get("zip_file"):
-                self.add_error("zip_file", "A zip file is required.")
-                return False
-        elif data_format == "iiif":
-            if not self.cleaned_data.get("iiif_manifests"):
-                self.add_error(
-                    "iiif_manifests", "At least one IIIF manifest is required."
-                )
-                return False
-        elif data_format == "pdf":
-            if not self.cleaned_data.get("pdf_file"):
-                self.add_error("pdf_file", "A PDF file is required.")
+        if data_format in field_format_map:
+            field_name = field_format_map[data_format]
+            if not self.cleaned_data.get(field_name):
+                self.add_error(field_name, "An file is required.")
                 return False
         else:
             self.add_error("format", "Invalid dataset format.")
@@ -91,24 +83,6 @@ class AbstractTaskOnDatasetForm(AbstractTaskForm, DatasetForm):
 
     def is_valid(self) -> bool:
         return super().is_valid() and self.check_dataset()
-
-    def _populate_instance(self, instance):
-        super()._populate_instance(instance)
-        #
-        # if self._dataset:
-        #     # instance.dataset = self._dataset
-        #     return
-        #
-        # dataset_fields = {
-        #     "name": self.cleaned_data.get("dataset_name", None)
-        # }
-        # data_format = self.cleaned_data.get("format", None)
-        # if data_format in field_format_map:
-        #     field_name = field_format_map[data_format]
-        #     dataset_fields[field_name] = self.cleaned_data[field_name]
-        #
-        # dataset = Dataset(**dataset_fields)
-        # self._dataset = dataset
 
     def _populate_dataset(self):
         if self._dataset:
@@ -120,20 +94,15 @@ class AbstractTaskOnDatasetForm(AbstractTaskForm, DatasetForm):
             field_name = field_format_map[data_format]
             dataset_fields[field_name] = self.cleaned_data[field_name]
 
-        dataset = Dataset(**dataset_fields)
-        self._dataset = dataset
+        self._dataset = Dataset.objects.create(**dataset_fields)
 
     def save(self, commit=True):
         self._populate_dataset()
-        if commit:
-            if self._dataset and self._dataset.pk is None:
-                self._dataset.save()
-
         instance = super().save(commit=False)
-        self._populate_instance(instance)
+        instance.dataset = self._dataset
+        super()._populate_instance(instance)
 
         if commit:
-            instance.dataset = self._dataset
             instance.save()
 
         return instance
@@ -141,7 +110,8 @@ class AbstractTaskOnDatasetForm(AbstractTaskForm, DatasetForm):
 
 class AbstractTaskOnCropsForm(AbstractTaskOnDatasetForm):
     class Meta:
-        # model = AbstractAPITaskOnCrops
+        model = None
+        abstract = True
         fields = AbstractTaskOnDatasetForm.Meta.fields + ("crops",)
 
     # crops = forms.ModelField(
@@ -149,6 +119,7 @@ class AbstractTaskOnCropsForm(AbstractTaskOnDatasetForm):
     #     required=False,  # Adjust as needed
     #     help_text="If using crops from a previous task, also set the dataset to be the same (and ignore the dataset upload fields)."
     # )
+    # TODO replace dataset by crops field
 
     def __init__(self, *args, **kwargs):
         self._crops = kwargs.pop("crops", None)

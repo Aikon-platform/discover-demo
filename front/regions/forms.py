@@ -1,6 +1,4 @@
-import requests
 from django import forms
-from django.conf import settings
 
 from .models import Regions
 from tasking.forms import AbstractTaskOnDatasetForm

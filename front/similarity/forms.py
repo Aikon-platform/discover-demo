@@ -2,7 +2,6 @@ from enum import Enum
 from django import forms
 
 from .models import Similarity
-from tasking.forms import AbstractTaskOnDatasetForm
 from shared.forms import FormConfig
 
 from tasking.forms import AbstractTaskOnCropsForm
@@ -114,16 +113,16 @@ class SimilarityAlgorithm(Enum):
 class SimilarityForm(AbstractTaskOnCropsForm):
     """Form for creating similarity analysis tasks."""
 
+    class Meta(AbstractTaskOnCropsForm.Meta):
+        model = Similarity
+        fields = AbstractTaskOnCropsForm.Meta.fields + ("algorithm",)
+
     # add default empty value for algorithm
     algorithm = forms.ChoiceField(
         choices=[("", "-")],  # Will be dynamically set in __init__
         initial="",
         label="Similarity Algorithm",
     )
-
-    class Meta(AbstractTaskOnCropsForm.Meta):
-        model = Similarity
-        fields = AbstractTaskOnCropsForm.Meta.fields + ("algorithm",)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

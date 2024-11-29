@@ -65,6 +65,11 @@ def AbstractAPITask(task_prefix: str):
                 (f"monitor_{task_prefix}", f"Can monitor {task_prefix} task"),
             ]
 
+        def __str__(self):
+            if self.name:
+                return f"{self.name} ({self.id})"
+            return f"{self.name}"
+
         # Util URLs and Paths
         def get_absolute_url(self):
             return reverse(f"{self.django_app_name}:status", kwargs={"pk": self.pk})

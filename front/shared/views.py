@@ -169,7 +169,7 @@ class AccountsDeleteView(AccountsAdminMixin, DeleteView):
                 if isinstance(i, list):
                     ret += pprint(i, " " + prefix) + "\n"
                 else:
-                    ret += prefix + i.__class__.__name__ + " " + str(i) + "\n"
+                    ret += f"{prefix}{i.__class__.__name__} {i}\n"
             return ret
 
         context["deleting"] = pprint(nested.nested())

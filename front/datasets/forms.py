@@ -36,9 +36,10 @@ ACCEPTED_IMG_TYPES = [
 ]
 
 
-class DatasetForm(forms.ModelForm):
+class AbstractDatasetForm(forms.ModelForm):
     class Meta:
-        model = Dataset
+        abstract = True
+        # model = Dataset
         fields = ("dataset_name",)
 
     dataset_name = forms.CharField(
@@ -88,20 +89,21 @@ class DatasetForm(forms.ModelForm):
         ),
     )
 
-    # TODO add "use existing dataset"
-    # todo custom save method for different formats
-
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields["format"].choices = AVAILABLE_FORMATS
 
     def save(self, commit=True):
-        # TODO create the function
         instance = super().save(commit=False)
-        # instance.format = self.cleaned_data.get("format")
-        # instance.save()
-        #
-        # if commit:
-        #     instance.save()
+        # todo custom save method for different formats
+
+        instance.format = self.cleaned_data.get("format")
+        if commit:
+            instance.save()
 
         return instance
+
+
+class DatasetForm(AbstractDatasetForm):
+    class Meta:
+        model = Dataset

@@ -154,10 +154,11 @@ class Dataset(AbstractDataset):
     def __str__(self) -> str:
         return self.name
 
-    def save(self):
+    def save(self, *args, **kwargs):
         if not self.name:
-            self.name = self.id
+            self.name = f"Dataset #{self.id}"
 
+        # TODO create saving logic
         super().save()
 
     @property
