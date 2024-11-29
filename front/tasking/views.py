@@ -22,11 +22,13 @@ class TaskMixin:
     task_name = None
     model: AbstractAPITask = None
     form_class = None
+    task_data = None
 
     def get_context_data(self, **kwargs) -> dict[str, Any]:
         context = super().get_context_data(**kwargs)
         context["task_name"] = getattr(self, "task_name", self.model._meta.verbose_name)
         context["app_name"] = self.model.django_app_name
+        context["task_data"] = self.task_data
         return context
 
 

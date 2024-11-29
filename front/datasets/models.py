@@ -208,6 +208,8 @@ class Dataset(AbstractDataset):
             docs.append(self.pdf_document)
         if self.iiif_manifests:
             docs.extend(self.iiif_documents)
+        if self.img_documents:
+            docs.extend(self.img_documents)
         return docs
 
     def documents_for_api(self) -> List[Dict]:

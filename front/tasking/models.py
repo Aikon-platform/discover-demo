@@ -33,7 +33,6 @@ def AbstractAPITask(task_prefix: str):
         id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
         name = models.CharField(
             max_length=64,
-            # default=task_prefix,
             blank=True,
             verbose_name="Experiment name",
             help_text=f"Optional name to identify this {task_prefix} experiment",
@@ -54,7 +53,6 @@ def AbstractAPITask(task_prefix: str):
         )
 
         api_tracking_id = models.UUIDField(null=True, editable=False)
-
         api_endpoint_prefix = f"{API_URL}/{task_prefix}"
         django_app_name = task_prefix
 
@@ -67,8 +65,8 @@ def AbstractAPITask(task_prefix: str):
 
         def __str__(self):
             if self.name:
-                return f"{self.name} ({self.id})"
-            return f"{self.name}"
+                return f"{self.name}"
+            return f"{self.__class__.__name__} task"
 
         # Util URLs and Paths
         def get_absolute_url(self):
@@ -336,7 +334,7 @@ def AbstractAPITask(task_prefix: str):
             """
             Clears all tasks older than days_before days
             """
-            raise NotImplementedError()  # Needs to be adapted to the new Dataset model
+            # TODO Needs to be adapted to the new Dataset model
             # remove all tasks and datasets except those younger than days_before days
             from_date = timezone.now() - timezone.timedelta(days=days_before)
 

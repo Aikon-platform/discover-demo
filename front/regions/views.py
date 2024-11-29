@@ -17,6 +17,8 @@ class RegionsMixin:
     form_class = RegionsForm
     task_name = "Regions Extraction"
     app_name = "regions"
+    # NOTE: set task_data to "dataset" in order to use dataset form template
+    task_data = "dataset"
 
 
 class RegionsList(RegionsMixin.List):

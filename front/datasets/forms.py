@@ -105,5 +105,6 @@ class AbstractDatasetForm(forms.ModelForm):
 
 
 class DatasetForm(AbstractDatasetForm):
-    class Meta:
+    class Meta(AbstractDatasetForm.Meta):
         model = Dataset
+        fields = AbstractDatasetForm.Meta.fields

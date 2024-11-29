@@ -30,6 +30,8 @@ class DTIClusteringMixin:
     form_class = DTIClusteringForm
     task_name = "DTI Clustering"
     app_name = "dticlustering"
+    # NOTE: set task_data to "dataset" in order to use dataset form template
+    task_data = "dataset"
 
 
 class DTIClusteringStart(DTIClusteringMixin, TaskStartView):
@@ -174,12 +176,6 @@ class SavedClusteringCSVExport(LoginRequiredMixin, SingleObjectMixin, View):
 # SuperUser views
 class DTIClusteringMonitoring(DTIClusteringMixin, TaskMonitoringView):
     permission_required = "dticlustering.monitor_dticlustering"
-
-    # def get_context_data(self, **kwargs) -> dict[str, Any]:
-    #     context = super().get_context_data(**kwargs)
-    #     context["api"] = DTIClustering.get_api_monitoring()
-    #     context["frontend"] = DTIClustering.get_frontend_monitoring()
-    #     return context
 
 
 class ClearOldClusterings(DTIClusteringMixin, ClearOldResultsView):

@@ -1,3 +1,5 @@
+from typing import Any
+
 from .forms import SimilarityForm, AVAILABLE_SIMILARITY_ALGORITHMS
 from .models import Similarity
 from tasking.views import task_view_set
@@ -13,6 +15,7 @@ class SimilarityMixin:
     form_class = SimilarityForm
     task_name = "Similarity"
     app_name = "similarity"
+    task_data = "dataset"
 
 
 class SimilarityStart(SimilarityMixin.Start):
