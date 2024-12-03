@@ -6,9 +6,9 @@ import traceback
 
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Dict, List, Tuple
-from zipfile import ZipFile
+from typing import Dict, List
 from PIL import Image as PImage
+from django.contrib.auth import get_user_model
 
 from django.db import models
 from django.conf import settings
@@ -18,6 +18,8 @@ from django.dispatch.dispatcher import receiver
 from .utils import PathAndRename, IMG_EXTENSIONS, unzip_on_the_fly, sanitize_str
 from .fields import URLListModelField
 
+
+User = get_user_model()
 path_datasets = PathAndRename("datasets/")
 
 
@@ -38,12 +40,12 @@ class AbstractDataset(models.Model):
         help_text="An optional name to identify this dataset",
     )
     created_on = models.DateTimeField(auto_now_add=True, editable=False)
+    created_by = models.ForeignKey(
+        User, null=True, on_delete=models.SET_NULL, editable=False
+    )
 
     @property
     def full_path(self) -> Path:
-        """
-        # TODO unify and remove usage of zipped_dataset
-        """
         return Path(settings.MEDIA_ROOT) / "datasets" / f"{self.id}"
 
     class Meta:
@@ -54,22 +56,16 @@ class Document:
     """
     A document is a set of images that can be processed together
 
-    NOT A MODEL (for now ?)
+    NOTE NOT A MODEL (for now ?)
     """
 
     def __init__(
         self, dtype: str = None, uid: str = None, src: str = None, path: Path = None
     ):
         self.dtype = dtype
-        self.src = src
-        if uid is None:
-            self.uid = sanitize_str(src)
-        else:
-            self.uid = uid
-
-        if path is None:
-            path = Path(settings.MEDIA_ROOT) / "documents" / self.uid
-        self.path = path
+        self.src = src or ""
+        self.uid = uid or sanitize_str(src)
+        self.path = path or Path(settings.MEDIA_ROOT) / "documents" / self.uid
 
     def to_dict(self) -> Dict:
         return {
@@ -90,7 +86,6 @@ class Document:
             return
 
         unzip_on_the_fly(source_zip, self.path, [".json", *IMG_EXTENSIONS])
-
         extracted_touch.touch()
 
     @property
@@ -137,10 +132,11 @@ class Image:
 class Dataset(AbstractDataset):
     """Set of images to be processed"""
 
+    # TODO upload to documents instead??
     zip_file = models.FileField(upload_to=path_datasets, max_length=500, null=True)
     iiif_manifests = URLListModelField(
         blank=True,
-        null=True,
+        null=True,  # keep manifest url somewhere?
     )
     pdf_file = models.FileField(upload_to=path_datasets, max_length=500, null=True)
     img_files = models.FileField(upload_to=path_datasets, max_length=500, null=True)
@@ -151,12 +147,36 @@ class Dataset(AbstractDataset):
         help_text="The URL where the dataset can be accessed through the API",
     )
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._images = None
+        # self._zip_document = None
+        # self._pdf_document = None
+        # self._iiif_documents = None
+        # self._img_documents = None
+
     def __str__(self) -> str:
         return self.name
+
+    @property
+    def format(self):
+        if self.zip_file:
+            return "zip"
+        if self.pdf_file:
+            return "pdf"
+        if self.iiif_manifests:
+            return "iiif"
+        if self.img_files:
+            return "img"
+        return "unknown"
 
     def save(self, *args, **kwargs):
         if not self.name:
             self.name = f"Dataset #{self.id}"
+
+        if self.iiif_manifests:
+            # TODO create saving logic
+            pass
 
         # TODO create saving logic
         super().save()
@@ -195,7 +215,8 @@ class Dataset(AbstractDataset):
     def img_documents(self) -> List[Document]:
         if not hasattr(self, "_img_documents"):
             self._img_documents = [
-                Document(dtype="img", src=f"{settings.BASE_URL}{self.img_files.url}")
+                # Document(dtype="img", src=f"{settings.BASE_URL}{img.url}")
+                # for img in self.img_files
             ]
         return self._img_documents
 
@@ -247,17 +268,24 @@ class Dataset(AbstractDataset):
         if self.pdf_file:
             raise NotImplementedError("PDF extraction not implemented yet")
 
+        if self.img_documents:
+            raise NotImplementedError("Image not implemented yet")
+
     def get_images(self) -> List[Document]:
         """
         Check if images have been extracted, download and extract if needed
         """
-        self.download_and_extract()
-        return self.documents
+        if not self._images:
+            self.download_and_extract()
+            self._images = [im for doc in self.documents for im in doc.images]
+        return self._images
 
     def get_path_for_crop(self, crop: Dict, i: int = 0, doc_uid: str = None) -> Path:
         """
         Args:
             crop: A dictionary with the following format: {source: str, crop_id: str}
+            i: Index of the crop
+            doc_uid: The uid of the document
         """
         crop_id = (
             crop["crop_id"]
@@ -270,6 +298,8 @@ class Dataset(AbstractDataset):
         """
         Args:
             crop: A dictionary with the following format: {source: str, crop_id: str}
+            i: Index of the crop
+            doc_uid: The uid of the document
         """
         return f"{settings.MEDIA_URL}{self.get_path_for_crop(crop, i, doc_uid).relative_to(settings.MEDIA_ROOT)}"
 
@@ -288,6 +318,8 @@ class Dataset(AbstractDataset):
         """
         Returns a dictionary of the form {doc_uid: {image_id: Image}}
         """
+        if not self._images:
+            self.get_images()
         return {doc.uid: {im.id: im for im in doc.images} for doc in self.documents}
 
     def apply_cropping(self, crops: List[Dict]) -> Dict:
@@ -310,7 +342,6 @@ class Dataset(AbstractDataset):
 
         """
         try:
-            self.get_images()
             docs = self.get_doc_image_mapping()
         except Exception as e:
             return {
@@ -393,78 +424,22 @@ class Dataset(AbstractDataset):
 
 
 @receiver(pre_delete, sender=Dataset)
-def pre_delete_digit(sender, instance: Dataset, **kwargs):
+def delete_dataset_files(sender, instance: Dataset, **kwargs):
     """
     Delete the dataset files (crops included)
     """
+    if zipf := instance.zip_file:
+        zipf.delete(save=False)
+    if pdf := instance.pdf_file:
+        pdf.delete(save=False)
+    if imgs := instance.img_files:
+        # TODO check if it works
+        [img.delete(save=False) for img in imgs]
+
+    for doc in instance.documents:
+        shutil.rmtree(doc.path, ignore_errors=True)
+
     shutil.rmtree(instance.full_path, ignore_errors=True)
-
-
-class ZippedDataset(AbstractDataset):
-    """
-    TODO remove to put in Dataset
-    This class is used to store simple datasets made of a single uploaded .zip file
-    """
-
-    zip_file = models.FileField(upload_to=path_datasets, max_length=500)
-
-    def extract_images(self):
-        try:
-            temp_dir = Path(settings.MEDIA_ROOT) / "datasets" / "temp" / f"{self.id}"
-            temp_dir.mkdir(parents=True, exist_ok=True)
-
-            target_dir = self.full_path
-            is_new = not target_dir.exists()
-            if is_new:
-                target_dir.mkdir(parents=True, exist_ok=True)
-
-            zip_path = f"{self.full_path}.zip"
-            if not Path(zip_path).exists():
-                raise ValueError("Zip file not found")
-
-            try:
-                with ZipFile(zip_path, "r") as zip_ref:
-                    image_files = [
-                        f
-                        for f in zip_ref.namelist()
-                        if Path(f).suffix.lower() in IMG_EXTENSIONS
-                    ]
-                    if not image_files:
-                        raise ValueError("No image files found in zip")
-
-                    if not is_new and len(image_files) == len(
-                        list(target_dir.iterdir())
-                    ):
-                        return list(target_dir.iterdir())
-
-                    zip_ref.extractall(temp_dir)
-                    for img_path in image_files:
-                        source = temp_dir / img_path
-                        target = target_dir / Path(img_path).name
-                        if source.exists() and not target.exists():
-                            source.rename(target)
-            finally:
-                if temp_dir.exists():
-                    shutil.rmtree(temp_dir)
-
-        except Exception as e:
-            raise e
-        return list(target_dir.iterdir())
-
-    @property
-    def images(self) -> dict[str, Path]:
-        """
-        Check if images have been extracted
-        """
-        try:
-            dataset_dir = self.full_path
-            if not dataset_dir.exists() or not list(dataset_dir.iterdir()):
-                img_paths = self.extract_images()
-            else:
-                img_paths = list(dataset_dir.iterdir())
-        except Exception as e:
-            raise e
-        return {fullpath.name: fullpath for fullpath in img_paths}
 
 
 class CropList(models.Model):

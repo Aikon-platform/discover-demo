@@ -45,7 +45,7 @@ class AbstractTaskOnDatasetForm(AbstractTaskForm, AbstractDatasetForm):
 
     _dataset = None
 
-    # TODO add "use existing dataset"
+    # TODO use following to add "use existing dataset"
     # dataset = forms.ModelField(
     #     queryset=Dataset.objects.all(),
     #     required=False,
@@ -73,7 +73,7 @@ class AbstractTaskOnDatasetForm(AbstractTaskForm, AbstractDatasetForm):
         if data_format in field_format_map:
             field_name = field_format_map[data_format]
             if not self.cleaned_data.get(field_name):
-                self.add_error(field_name, "An file is required.")
+                self.add_error(field_name, "A file is required.")
                 return False
         else:
             self.add_error("format", "Invalid dataset format.")
@@ -88,7 +88,11 @@ class AbstractTaskOnDatasetForm(AbstractTaskForm, AbstractDatasetForm):
         if self._dataset:
             return
 
-        dataset_fields = {"name": self.cleaned_data.get("dataset_name", None)}
+        dataset_fields = {
+            "name": self.cleaned_data.get("dataset_name", None),
+            "created_by": self._user,
+        }
+
         data_format = self.cleaned_data.get("format", None)
         if data_format in field_format_map:
             field_name = field_format_map[data_format]

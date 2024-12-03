@@ -11,9 +11,9 @@ from .models import Dataset
 from regions.models import Regions
 
 AVAILABLE_FORMATS = [
-    ("pdf", "PDF"),
-    ("iiif", "IIIF Manifest(s)"),
     ("zip", "ZIP"),
+    ("iiif", "IIIF Manifest(s)"),
+    ("pdf", "PDF"),
     ("img", "Image(s)"),
 ]
 

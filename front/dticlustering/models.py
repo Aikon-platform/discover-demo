@@ -147,30 +147,9 @@ class DTIClustering(AbstractAPITaskOnDataset("dti")):
         return cleared_data
 
     @classmethod
-    def clear_task(cls, task_id) -> Dict[str, int]:
-        try:
-            c = cls.objects.filter(id=task_id)
-            shutil.rmtree(c.result_full_path, ignore_errors=True)
-            cleared = 1
-        except Exception:
-            cleared = 0
-
-        return {
-            "cleared_clusterings": cleared,
-            "cleared_datasets": 0,
-        }
-
-    @classmethod
     def get_frontend_monitoring(cls):
         # TODO delete
         return cls.get_frontend_monitoring()
-
-    # @classmethod
-    # def clear_old_clusterings(cls, days_before: int = 30) -> Dict[str, int]:
-    #     """
-    #     Clear old clusterings
-    #     """
-    #     return cls.clear_old_tasks(days_before)
 
     @cached_property
     def expanded_results(self):
@@ -212,8 +191,7 @@ class DTIClustering(AbstractAPITaskOnDataset("dti")):
             if c.suffix in [".jpg", ".png"]
         }
 
-        clusters = {}
-        result_dict["clusters"] = clusters
+        result_dict["clusters"] = {}
 
         # List backgrounds
         result_dict["background_urls"] = [
@@ -247,7 +225,7 @@ class DTIClustering(AbstractAPITaskOnDataset("dti")):
                 "name": f"Cluster {p}",
                 "images": [],
             }
-            clusters[p] = cluster
+            result_dict["clusters"][p] = cluster
 
             # add mask
             cluster["mask_url"] = try_and_get_url(
@@ -297,9 +275,7 @@ class SavedClustering(models.Model):
         verbose_name="Clustering name",
         help_text="An optional name to identify this clustering",
     )
-
     date = models.DateTimeField(auto_now=True, editable=False)
-
     clustering_data = models.JSONField(null=True)
 
     class Meta:

@@ -7,7 +7,7 @@ cleanup() {
     echo "All processes terminated."
     exit 0
 }
-# kill processes on FRONT_DEV_PORT / API_DEV_PORT / dramatiq_prom_port
+# kill processes on FRONT_DEV_PORT / API_DEV_PORT / dramatiq
 
 trap cleanup SIGINT SIGTERM
 

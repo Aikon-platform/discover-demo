@@ -118,6 +118,7 @@ def AbstractAPITask(task_prefix: str):
         def full_log(self):
             """
             Returns the full log file content
+            TODO keep log content before final error
             """
             if not self.log_file_path.exists():
                 return None
@@ -344,7 +345,6 @@ def AbstractAPITask(task_prefix: str):
             }
 
             try:
-                # TODO change to not retrieve all objects inheriting from this class
                 old_exp = cls.objects.filter(requested_on__lte=from_date)
 
                 for exp in old_exp:
@@ -395,12 +395,19 @@ def AbstractAPITask(task_prefix: str):
                     "output": api_query.text,
                 }
 
-        @classmethod
-        def clear_task(cls, task_id: str) -> Dict[str, int]:
+        def clear_task(self) -> Dict[str, int]:
             """
             Clears the files of a given task
             """
-            raise NotImplementedError()
+            try:
+                shutil.rmtree(self.result_full_path, ignore_errors=True)
+                cleared = 1
+            except Exception:
+                cleared = 0
+
+            return {
+                "cleared_files": cleared,
+            }
 
         @classmethod
         def clear_api_task(cls, tracking_id: str) -> Dict[str, Any]:
@@ -426,7 +433,7 @@ def AbstractAPITask(task_prefix: str):
     def pre_delete_task(sender, instance: AbstractAPITask, **kwargs):
         # Clear files on the API server
         sender.clear_api_task(instance.api_tracking_id)
-        sender.clear_task(instance.id)
+        instance.clear_task()
         return
 
     return AbstractAPITask

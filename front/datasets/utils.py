@@ -36,7 +36,7 @@ def unzip_on_the_fly(
     Ignores hidden files (starting with a dot or in a folder starting with a dot)
 
     Args:
-        zip_url: The URL of the ZIP file
+        zip_url_or_path: The URL of the ZIP file
         target_path: The path where the files are extracted
         allowed_extensions: A list of allowed extensions (default: None)
 
