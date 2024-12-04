@@ -401,6 +401,7 @@ def AbstractAPITask(task_prefix: str):
             """
             try:
                 shutil.rmtree(self.result_full_path, ignore_errors=True)
+                # TODO do not work with Vectorisation
                 cleared = 1
             except Exception:
                 cleared = 0

@@ -337,6 +337,8 @@ class Dataset(AbstractDataset):
         for doc in self.documents:
             shutil.rmtree(doc.path, ignore_errors=True)
 
+        # TODO delete dataset from API
+
         shutil.rmtree(self.full_path, ignore_errors=True)
 
     def apply_cropping(self, crops: List[Dict]) -> Dict:
