@@ -322,6 +322,23 @@ class Dataset(AbstractDataset):
             self.get_images()
         return {doc.uid: {im.id: im for im in doc.images} for doc in self.documents}
 
+    def clear_dataset(self) -> Dict:
+        """
+        Delete the dataset files (crops included)
+        """
+        if zipf := self.zip_file:
+            zipf.delete(save=False)
+        if pdf := self.pdf_file:
+            pdf.delete(save=False)
+        if imgs := self.img_files:
+            # TODO check if it works
+            [img.delete(save=False) for img in imgs]
+
+        for doc in self.documents:
+            shutil.rmtree(doc.path, ignore_errors=True)
+
+        shutil.rmtree(self.full_path, ignore_errors=True)
+
     def apply_cropping(self, crops: List[Dict]) -> Dict:
         """
         Crop regions from the images of the dataset
@@ -422,24 +439,33 @@ class Dataset(AbstractDataset):
 
         return {"success": "Regions processed successfully"}
 
+    @property
+    def tasks(self):
+        # for task_prefix in settings.DEMO_APPS:
+        #     if hasattr(self, f"{task_prefix}_tasks"):
+        #         yield getattr(self, f"{task_prefix}_tasks").all()
+        t = []
+        for task_prefix in settings.DEMO_APPS:
+            if hasattr(self, f"{task_prefix}_tasks"):
+                t += list(getattr(self, f"{task_prefix}_tasks").all())
+        return t
+
+    def get_tasks_by_prop(self, prop: str) -> Dict:
+        info = {}
+        for task in self.tasks:
+            prop_value = getattr(task, prop)
+            if prop_value not in info:
+                info[prop_value] = []
+            info[prop_value].append(task)
+        return info
+
 
 @receiver(pre_delete, sender=Dataset)
 def delete_dataset_files(sender, instance: Dataset, **kwargs):
-    """
-    Delete the dataset files (crops included)
-    """
-    if zipf := instance.zip_file:
-        zipf.delete(save=False)
-    if pdf := instance.pdf_file:
-        pdf.delete(save=False)
-    if imgs := instance.img_files:
-        # TODO check if it works
-        [img.delete(save=False) for img in imgs]
-
-    for doc in instance.documents:
-        shutil.rmtree(doc.path, ignore_errors=True)
-
-    shutil.rmtree(instance.full_path, ignore_errors=True)
+    try:
+        instance.clear_dataset()
+    except Exception as e:
+        print("Error deleting dataset files", e, traceback.format_exc(limit=2))
 
 
 class CropList(models.Model):

@@ -9,6 +9,12 @@ ENV = Env()
 Env.read_env(env_file=f"{BASE_DIR}/.env")
 
 # Application definition
+DEMO_APPS = [
+    "dticlustering",
+    "similarity",
+    "watermarks",
+    "regions",
+]
 
 INSTALLED_APPS = [
     "django.contrib.auth",
@@ -21,12 +27,7 @@ INSTALLED_APPS = [
     "shared",
     "tasking",
     "datasets",
-    # TODO make the following apps optional (set in .env)
-    "dticlustering",
-    "similarity",
-    "watermarks",
-    "regions",
-]
+] + DEMO_APPS
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",

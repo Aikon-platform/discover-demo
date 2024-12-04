@@ -445,7 +445,12 @@ def AbstractAPITaskOnDataset(task_prefix: str):
         Abstract model for tasks on dataset of images that are sent to the API
         """
 
-        dataset = models.ForeignKey(Dataset, null=True, on_delete=models.SET_NULL)
+        dataset = models.ForeignKey(
+            Dataset,
+            null=True,
+            on_delete=models.SET_NULL,
+            related_name=f"{task_prefix}_tasks",
+        )
         parameters = models.JSONField(null=True)
 
         class Meta:
