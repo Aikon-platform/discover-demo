@@ -8,8 +8,9 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Dict, List
 from PIL import Image as PImage
-from django.contrib.auth import get_user_model
 
+from django.contrib.auth import get_user_model
+from django.urls import reverse
 from django.db import models
 from django.conf import settings
 from django.db.models.signals import pre_delete
@@ -70,8 +71,8 @@ class Document:
     def to_dict(self) -> Dict:
         return {
             "type": self.dtype,
-            "src": self.src,
-            "uid": self.uid,
+            "src": str(self.src),
+            "uid": str(self.uid),
         }
 
     def is_extracted(self) -> bool:
@@ -120,7 +121,7 @@ class Image:
     def to_dict(self) -> Dict:
         return {
             "id": self.id,
-            "src": self.src,
+            "src": str(self.src),
             "path": str(self.path),
         }
 
@@ -132,7 +133,7 @@ class Image:
 class Dataset(AbstractDataset):
     """Set of images to be processed"""
 
-    # TODO upload to documents instead??
+    # TODO upload to documents/ instead??
     zip_file = models.FileField(upload_to=path_datasets, max_length=500, null=True)
     iiif_manifests = URLListModelField(
         blank=True,
@@ -150,13 +151,15 @@ class Dataset(AbstractDataset):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self._images = None
-        # self._zip_document = None
-        # self._pdf_document = None
-        # self._iiif_documents = None
-        # self._img_documents = None
 
     def __str__(self) -> str:
         return self.name
+
+    def get_absolute_url(self):
+        # TODO change when detailed view for dataset is created
+        key = self.pk
+        # return reverse(f"datasets:detail", kwargs={"pk": self.pk})
+        return reverse(f"datasets:list")
 
     @property
     def format(self):
@@ -236,6 +239,21 @@ class Dataset(AbstractDataset):
     def documents_for_api(self) -> List[Dict]:
         return [doc.to_dict() for doc in self.documents]
 
+    def download_from_api(self, doc_to_extract=None) -> None:
+        if doc_to_extract is None:
+            return
+
+        api_info = requests.get(self.api_url).json()
+
+        for doc in api_info["documents"]:
+            if doc["uid"] not in doc_to_extract:
+                continue
+            doc_to_extract[doc["uid"]].extract_from_zip(doc["download"])
+            del doc_to_extract[doc["uid"]]
+
+        if doc_to_extract:
+            print(f"Could not extract {doc_to_extract.keys()}")
+
     def download_and_extract(self) -> None:
         """
         Download and extract the dataset, from the API or the zip file
@@ -244,32 +262,26 @@ class Dataset(AbstractDataset):
             A dictionary of the form {uid: [(filename, fullpath, source(relative or url)))}
             Save the mapping in a json file
         """
-        if self.zip_file:
-            if not self.zip_document.is_extracted():
-                self.zip_document.extract_from_zip(self.zip_file.path)
+        # if self.zip_file:
+        #     if not self.zip_document.is_extracted():
+        #         self.zip_document.extract_from_zip(self.zip_file.path)
 
-        if self.iiif_manifests:
-            need_extraction = {
-                doc.uid: doc for doc in self.iiif_documents if not doc.is_extracted()
-            }
+        # if self.iiif_manifests:
+        #     need_extraction = {
+        #         doc.uid: doc for doc in self.iiif_documents if not doc.is_extracted()
+        #     }
+        #     self.download_from_api(need_extraction)
+        #
+        # if self.pdf_file:
+        #     raise NotImplementedError("PDF extraction not implemented yet")
+        #
+        # if self.img_documents:
+        #     raise NotImplementedError("Image not implemented yet")
 
-            if need_extraction:
-                api_info = requests.get(self.api_url).json()
-
-                for doc in api_info["documents"]:
-                    if doc["uid"] not in need_extraction:
-                        continue
-                    need_extraction[doc["uid"]].extract_from_zip(doc["download"])
-                    del need_extraction[doc["uid"]]
-
-                if need_extraction:
-                    print(f"Could not extract {need_extraction.keys()}")
-
-        if self.pdf_file:
-            raise NotImplementedError("PDF extraction not implemented yet")
-
-        if self.img_documents:
-            raise NotImplementedError("Image not implemented yet")
+        need_extraction = {
+            doc.uid: doc for doc in self.documents if not doc.is_extracted()
+        }
+        self.download_from_api(need_extraction)
 
     def get_images(self) -> List[Document]:
         """

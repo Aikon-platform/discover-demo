@@ -3,6 +3,7 @@ source "$SCRIPT_DIR/utils.sh"
 
 manage="$FRONT_VENV/python $FRONT_DIR/manage.py"
 
+echo_title "DELETE OLD DATABASE"
 rm -rf "$FRONT_DIR/db.sqlite3"
 
 manage makemigrations

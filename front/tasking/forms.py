@@ -1,8 +1,8 @@
 from django import forms
 
-from datasets.fields import ContentRestrictedFileField, URLListField
+from datasets.fields import ContentRestrictedFileField
 from datasets.models import Dataset
-from datasets.forms import AbstractDatasetForm
+from datasets.forms import AbstractDatasetForm, MAP_FIELD_FORMAT
 
 
 class AbstractTaskForm(forms.ModelForm):
@@ -29,55 +29,74 @@ class AbstractTaskForm(forms.ModelForm):
         return instance
 
 
-field_format_map = {
-    "img": "img_files",
-    "zip": "zip_file",
-    "iiif": "iiif_manifests",
-    "pdf": "pdf_file",
-}
-
-
 class AbstractTaskOnDatasetForm(AbstractTaskForm, AbstractDatasetForm):
     class Meta(AbstractTaskForm.Meta, AbstractDatasetForm.Meta):
         # model = AbstractAPITaskOnDataset
         abstract = True
-        fields = AbstractTaskForm.Meta.fields + AbstractDatasetForm.Meta.fields
+        fields = (
+            AbstractTaskForm.Meta.fields
+            + AbstractDatasetForm.Meta.fields
+            + ("dataset",)
+        )
+        # widgets = {
+        #     'dataset': forms.Select(attrs={'extra-class': 'old-dataset-field'}),
+        # }
 
-    _dataset = None
+    dataset = forms.ModelChoiceField(
+        queryset=Dataset.objects.all(),
+        label="Use dataset from...",
+        required=False,
+        widget=forms.Select(attrs={"extra-class": "old-dataset-field"}),
+    )
+    reuse_dataset = forms.BooleanField(
+        required=False,
+        initial=False,
+        label="Reuse existing dataset 🔄",
+        widget=forms.CheckboxInput(attrs={"class": "use-dataset mb-3"}),
+    )
 
-    # TODO use following to add "use existing dataset"
-    # dataset = forms.ModelField(
-    #     queryset=Dataset.objects.all(),
-    #     required=False,
-    #
-    # )
-    # dataset = models.ForeignKey(
-    #     Regions,
-    #     verbose_name="Existing dataset",
-    #     help_text="Use an existing dataset",
-    #     null=True,
-    #     blank=True,
-    #     on_delete=models.SET_NULL,
-    #     related_name="task_crops",
-    # )
+    def __init__(self, *args, **kwargs):
+        # super().__init__(*args, **kwargs)
+        # self._dataset = None
+
+        self._dataset = kwargs.pop("dataset", None)
+        super().__init__(*args, **kwargs)
+
+        self.fields["dataset"].queryset = self.fields["dataset"].queryset.filter(
+            created_by=self._user,
+        )
+
+        # self.order_fields(
+        #     ["reuse_dataset"] +
+        #     list(self.fields)[:-1]  # remove reuse_dataset to put it at first
+        # )
 
     def check_dataset(self):
         """
         Check if the dataset was provided
         """
-        data_format = self.cleaned_data.get("format", None)
-        if not data_format:
-            self.add_error("format", "A dataset format is required.")
-            return False
+        reuse_dataset = self.cleaned_data.get("reuse_dataset", False)
+        if reuse_dataset:
+            is_dataset = self.cleaned_data.get("dataset", None)
+            is_crops = self.cleaned_data.get("crops", True)
 
-        if data_format in field_format_map:
-            field_name = field_format_map[data_format]
-            if not self.cleaned_data.get(field_name):
-                self.add_error(field_name, "A file is required.")
+            if not is_dataset and not is_crops:
+                self.add_error("dataset", "A dataset is required.")
                 return False
         else:
-            self.add_error("format", "Invalid dataset format.")
-            return False
+            data_format = self.cleaned_data.get("format", None)
+            if not data_format:
+                self.add_error("format", "A dataset format is required.")
+                return False
+
+            if data_format in MAP_FIELD_FORMAT:
+                field_name = MAP_FIELD_FORMAT[data_format]
+                if not self.cleaned_data.get(field_name):
+                    self.add_error(field_name, "A file is required.")
+                    return False
+            else:
+                self.add_error("format", "Invalid dataset format.")
+                return False
 
         return True
 
@@ -85,8 +104,11 @@ class AbstractTaskOnDatasetForm(AbstractTaskForm, AbstractDatasetForm):
         return super().is_valid() and self.check_dataset()
 
     def _populate_dataset(self):
-        if self._dataset:
+        if dataset := self.cleaned_data["dataset"]:
+            self._dataset = dataset
             return
+        # if self._dataset:
+        #     return
 
         dataset_fields = {
             "name": self.cleaned_data.get("dataset_name", None),
@@ -94,8 +116,8 @@ class AbstractTaskOnDatasetForm(AbstractTaskForm, AbstractDatasetForm):
         }
 
         data_format = self.cleaned_data.get("format", None)
-        if data_format in field_format_map:
-            field_name = field_format_map[data_format]
+        if data_format in MAP_FIELD_FORMAT:
+            field_name = MAP_FIELD_FORMAT[data_format]
             dataset_fields[field_name] = self.cleaned_data[field_name]
 
         self._dataset = Dataset.objects.create(**dataset_fields)
@@ -117,31 +139,19 @@ class AbstractTaskOnCropsForm(AbstractTaskOnDatasetForm):
         model = None
         abstract = True
         fields = AbstractTaskOnDatasetForm.Meta.fields + ("crops",)
-
-    # crops = forms.ModelField(
-    #     queryset=None,  # We'll set this in __init__
-    #     required=False,  # Adjust as needed
-    #     help_text="If using crops from a previous task, also set the dataset to be the same (and ignore the dataset upload fields)."
-    # )
-    # TODO replace dataset by crops field
+        widgets = {
+            "crops": forms.Select(attrs={"extra-class": "old-dataset-field"}),
+        }
 
     def __init__(self, *args, **kwargs):
         self._crops = kwargs.pop("crops", None)
         super().__init__(*args, **kwargs)
-
-        # self.fields["crops"].queryset = (
-        #     Regions.objects.filter(
-        #         regions__isnull=False,
-        #         requested_by=self._user,
-        #     )
-        # )
         self.fields["crops"].queryset = self.fields["crops"].queryset.filter(
             regions__isnull=False,
             requested_by=self._user,
         )
-        self.fields[
-            "crops"
-        ].help_text = "If using crops from a previous task, also set the dataset to be the same (and ignore the dataset upload fields)."
+
+        self.order_fields(list(AbstractTaskOnDatasetForm.Meta.fields) + ["crops"])
 
     def check_dataset(self):
         # Hook to set the dataset from the crops

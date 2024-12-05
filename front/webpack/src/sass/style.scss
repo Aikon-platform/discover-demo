@@ -354,6 +354,11 @@ ul.messages {
     list-style: none;
 }
 
+.faded {
+    opacity: 0.5;
+    font-style: italic;
+}
+
 @import "_progresstracking";
 @import "_clusterviewer";
 @import "_watermarkmatches";

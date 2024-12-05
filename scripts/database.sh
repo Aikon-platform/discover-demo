@@ -4,7 +4,7 @@ source "$SCRIPT_DIR/utils.sh"
 
 manage="$FRONT_VENV/python $FRONT_DIR/manage.py"
 
-echo_title "INITIALIZE DJANGO"
+echo_title "INITIALIZE DATABASE"
 . "$FRONT_DIR"/.env
 $manage migrate
 

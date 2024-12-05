@@ -227,7 +227,6 @@ class TaskDeleteView(LoginRequiredIfConfProtectedMixin, TaskMixin, DetailView):
     def get_success_url(self):
         if hasattr(self, "success_url"):
             return self.success_url
-        # return reverse(f"{self.app_name}:list")
         return reverse(f"{self.model.django_app_name}:list")
 
 

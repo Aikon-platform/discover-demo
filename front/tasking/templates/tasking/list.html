@@ -4,35 +4,43 @@
 {% block title %}List of {{ task_name }} experiments{% endblock %}
 
 {% block content %}
-<div class="centerwrap">
-    {% if filter %}
-        {% include "includes/breadcrumbs.html" %}
-        <h1 class="is-title is-size-2 py-3">{{ filter }}</h1>
-    {% else %}
-        <h1 class="is-title is-size-2 py-3">All {{ task_name }} experiments</h1>
-    {% endif %}
+    <div class="centerwrap">
+        {% if filter %}
+            {% include "includes/breadcrumbs.html" %}
+            <h1 class="is-title is-size-2 py-3">{{ filter }}</h1>
+        {% else %}
+            <h1 class="is-title is-size-2 py-3">All {{ task_name }} experiments</h1>
+        {% endif %}
 
-    {% include "includes/pagination.html" %}
+        {% include "includes/pagination.html" %}
 
-    <div class="task-list">
-        <p class="columns">
-            <a class="button is-link column m-3" href="{% url app_name|add:':start' %}">
-                <span class="iconify mr-1" data-icon="mdi:clock-start"></span> <span>Start a new {{ task_name }}</span>
-            </a>
-            {% can_monitor request.user app_name as is_admin %}
-            {% if is_admin %}
-                <a href="{% url app_name|add:':monitor' %}" class="button is-link is-light column m-3">
-                    <span class="iconify mr-1" data-icon="mdi:database-cog"></span> <span>Monitor {{ task_name }} experiments</span>
+        <div class="task-list">
+            <p class="columns">
+                <a class="button is-link column m-3" href="{% url app_name|add:':start' %}">
+                    <span class="iconify mr-1" data-icon="mdi:clock-start"></span> <span>Start a new {{ task_name }}</span>
                 </a>
-            {% endif %}
-        </p>
+                {% can_monitor request.user app_name as is_admin %}
+                {% if is_admin %}
+                    <a href="{% url app_name|add:':monitor' %}" class="button is-link is-light column m-3">
+                        <span class="iconify mr-1" data-icon="mdi:database-cog"></span> <span>Monitor {{ task_name }} experiments</span>
+                    </a>
+                {% endif %}
+            </p>
 
-        {% for task in object_list %}
-            {% include "includes/list-item.html" %}
-        {% endfor %}
+            {% for task in object_list %}
+                {% include "includes/list-item.html" %}
+            {% empty %}
+                <div class="row columns">
+                    <div class="column task-ref is-10 p">
+                        <h2 class="task-ref faded">
+                            No task experiment to display
+                        </h2>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+
+        {% include "includes/pagination.html" %}
+
     </div>
-
-    {% include "includes/pagination.html" %}
-
-</div>
 {% endblock %}

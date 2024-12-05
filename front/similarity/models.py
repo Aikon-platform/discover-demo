@@ -56,9 +56,7 @@ class Similarity(AbstractAPITaskOnCrops("similarity")):
 
             try:
                 if self.crops:
-                    result = self.dataset.apply_cropping(
-                        self.crops.get_bounding_boxes()
-                    )
+                    self.dataset.apply_cropping(self.crops.get_bounding_boxes())
 
                 self.prepare_sim_browser()
 

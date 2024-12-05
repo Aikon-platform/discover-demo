@@ -57,6 +57,11 @@ def add_to_list(value, arg):
 
 
 @register.filter
+def remove_from_list(value, arg):
+    return [v for v in val_to_list(value) if v not in val_to_list(arg)]
+
+
+@register.filter
 def uuid_prefix(uid: str):
     return str(uid)[:8]
 

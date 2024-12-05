@@ -8,25 +8,32 @@ from .fields import (
     URLListWidget,
 )
 from .models import Dataset
-from regions.models import Regions
 
 AVAILABLE_FORMATS = [
     ("zip", "ZIP"),
     ("iiif", "IIIF Manifest(s)"),
     ("pdf", "PDF"),
-    ("img", "Image(s)"),
+    # ("img", "Image(s)"),
 ]
 
-# TODO add make it dynamic
+MAP_FIELD_FORMAT = {
+    "img": "img_files",
+    "zip": "zip_file",
+    "iiif": "iiif_manifests",
+    "pdf": "pdf_file",
+}
+
+# TODO make it dynamic
 DATASET_FIELDS = [
+    "reuse_dataset",
+    "dataset",
+    "crops",
     "dataset_name",
     "format",
-    "img_files",
-    "zip_file",
-    "iiif_manifests",
-    "pdf_file",
-    "crops",
 ]
+
+for f in AVAILABLE_FORMATS:
+    DATASET_FIELDS.append(MAP_FIELD_FORMAT[f[0]])
 
 ACCEPTED_IMG_TYPES = [
     "image/jpeg",
@@ -47,19 +54,24 @@ class AbstractDatasetForm(forms.ModelForm):
         help_text="An optional name to identify this dataset",
         max_length=64,
         required=False,
+        widget=forms.TextInput(attrs={"extra-class": "new-dataset-field mt-2"}),
     )
     format = forms.ChoiceField(
         label="Type",
         choices=[],  # will be set in __init__
+        widget=forms.Select(attrs={"extra-class": "new-dataset-field"}),
     )
     img_files = ContentRestrictedFileField(
-        label="Image",
+        label="Image(s)",
         help_text="Image files containing the dataset to be processed",
         accepted_types=ACCEPTED_IMG_TYPES,
         required=False,
         max_size=settings.MAX_UPLOAD_SIZE,
         widget=MultipleFileInput(
-            attrs={"multiple": True, "extra-class": "format-img format-field"}
+            attrs={
+                "multiple": True,
+                "extra-class": "format-img format-field new-dataset-field",
+            }
         ),
     )
     zip_file = ContentRestrictedFileField(
@@ -69,14 +81,16 @@ class AbstractDatasetForm(forms.ModelForm):
         max_size=104857600,
         required=False,
         widget=forms.ClearableFileInput(
-            attrs={"extra-class": "format-zip format-field"}
+            attrs={"extra-class": "format-zip format-field new-dataset-field"}
         ),
     )
     iiif_manifests = URLListField(
         label="IIIF Manifest URLs",
         help_text="The URLs to the IIIF manifests of the dataset",
         required=False,
-        widget=URLListWidget(attrs={"extra-class": "format-iiif format-field"}),
+        widget=URLListWidget(
+            attrs={"extra-class": "format-iiif format-field new-dataset-field"}
+        ),
     )
     pdf_file = ContentRestrictedFileField(
         label="PDF",
@@ -85,7 +99,7 @@ class AbstractDatasetForm(forms.ModelForm):
         required=False,
         max_size=settings.MAX_UPLOAD_SIZE,
         widget=forms.ClearableFileInput(
-            attrs={"extra-class": "format-pdf format-field"}
+            attrs={"extra-class": "format-pdf format-field new-dataset-field"}
         ),
     )
 

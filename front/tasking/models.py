@@ -56,6 +56,8 @@ def AbstractAPITask(task_prefix: str):
         api_endpoint_prefix = f"{API_URL}/{task_prefix}"
         django_app_name = task_prefix
 
+        parameters = models.JSONField(null=True)
+
         class Meta:
             abstract = True
             ordering = ["-requested_on"]
@@ -148,7 +150,7 @@ def AbstractAPITask(task_prefix: str):
             return f"{BASE_URL}{reverse(f'{self.django_app_name}:notify', kwargs={'pk': self.pk})}?token={self.get_token()}"
 
         def get_task_kwargs(self):
-            return {}
+            return {"parameters": self.parameters}
 
         def get_task_files(self):
             return None
@@ -400,7 +402,7 @@ def AbstractAPITask(task_prefix: str):
             Clears the files of a given task
             """
             try:
-                shutil.rmtree(self.result_full_path, ignore_errors=True)
+                shutil.rmtree(self.task_full_path, ignore_errors=True)
                 # TODO do not work with Vectorisation
                 cleared = 1
             except Exception:
@@ -424,9 +426,9 @@ def AbstractAPITask(task_prefix: str):
 
             try:
                 return api_query.json()
-            except:
+            except Exception as e:
                 return {
-                    "error": "Error when clearing task from the worker",
+                    "error": f"Error when clearing task from the worker: {e}",
                     "output": api_query.text,
                 }
 
@@ -448,18 +450,17 @@ def AbstractAPITaskOnDataset(task_prefix: str):
 
         dataset = models.ForeignKey(
             Dataset,
+            verbose_name="Use existing dataset...",
             null=True,
+            blank=True,
             on_delete=models.SET_NULL,
             related_name=f"{task_prefix}_tasks",
         )
-        parameters = models.JSONField(null=True)
+        # parameters = models.JSONField(null=True)
 
         class Meta:
             abstract = True
             ordering = ["-requested_on"]
-
-        # def get_absolute_url(self):
-        #     return reverse(f"{self.django_app_name}:status", kwargs={"pk": self.pk})
 
         def get_dataset_id(self):
             return self.dataset.id
@@ -470,7 +471,7 @@ def AbstractAPITaskOnDataset(task_prefix: str):
             kwargs.update(
                 {
                     "documents": self.dataset.documents_for_api(),
-                    "parameters": self.parameters,
+                    # "parameters": self.parameters,
                 }
             )
             return kwargs

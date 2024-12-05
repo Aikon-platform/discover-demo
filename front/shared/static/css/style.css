@@ -22777,6 +22777,11 @@ ul.messages li.warning, ul.messages li.error {
   list-style: none;
 }
 
+.faded {
+  opacity: 0.5;
+  font-style: italic;
+}
+
 .tck-progress .tck-bar-list > * {
   margin: 0.5em 0;
   background-color: #fff;
