@@ -65,9 +65,9 @@ class DatasetDeleteView(DatasetMixin, LoginRequiredIfConfProtectedMixin, DetailV
         for status, task_list in self.object.get_tasks_by_prop("status").items():
             task_list = [f"{task} #{task.id}" for task in task_list]
             task_nb += len(task_list)
-            task_html += f"<li><b>{status}</b>: {', '.join(task_list)}</li>"
+            task_html += f"<li><span class='tag status status-{status}'>{status}</span> {'<br>'.join(task_list)}</li>"
         task_html += "</ul>"
-        return f"This dataset is used in {task_nb} task(s): {task_html}"
+        return f"This dataset is used in <b>{task_nb} task(s)</b>: {task_html}"
 
     def get_context_data(self, **kwargs) -> dict[str, Any]:
         context = super().get_context_data(**kwargs)
@@ -84,5 +84,4 @@ class DatasetDeleteView(DatasetMixin, LoginRequiredIfConfProtectedMixin, DetailV
     def get_success_url(self):
         if hasattr(self, "success_url"):
             return self.success_url
-        # return reverse(f"{self.app_name}:list")
         return reverse(f"datasets:list")
