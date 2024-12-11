@@ -73,11 +73,10 @@ class Document:
     def mapping_path(self):
         """
         JSON file containing mapping in the form of
-        TODO check was exactly is src and how it is used (only for IIIF source images?)
         {
-            "img1_id.jpg": "img1_src.jpg",
-            "img2_id.png": "img2_src.png",
-            "img3_id.jpeg": "img3_src.jpeg"
+            "image_name_front.jpg": "image_name_api.jpg",
+            "image_name_front.png": "image_name_api.png",
+            "image_name_front.jpeg": "image_name_api.jpeg"
         }
         """
         return self.path / "mapping.json"
@@ -214,10 +213,6 @@ class Dataset(AbstractDataset):
         if not self.name:
             self.name = f"Dataset #{self.id}"
 
-        if self.iiif_manifests:
-            # TODO create saving logic
-            pass
-
         super().save()
 
     @property
@@ -321,7 +316,6 @@ class Dataset(AbstractDataset):
         # if self.img_documents:
         #     raise NotImplementedError("Image not implemented yet")
 
-        # TODO create mapping
         need_extraction = {
             doc.uid: doc for doc in self.documents if not doc.is_extracted()
         }

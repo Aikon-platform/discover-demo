@@ -117,9 +117,16 @@ class TaskStartFromView(TaskStartView):
 
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
-        self.from_task = self.model.objects.get(id=self.kwargs["pk"])
-        kwargs["dataset"] = self.from_task.dataset
-        kwargs["initial"] = {"name": self.from_task.name}
+
+        if previous_task := self.model.objects.get(id=self.kwargs["pk"]):
+            self.from_task = previous_task
+
+            kwargs["initial"] = {"name": previous_task.name}
+            if hasattr(previous_task, "crops"):
+                kwargs["crops"] = previous_task.crops
+            elif hasattr(previous_task, "dataset"):
+                kwargs["dataset"] = previous_task.dataset
+
         return kwargs
 
     def get_context_data(self, **kwargs) -> dict[str, Any]:

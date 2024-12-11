@@ -139,7 +139,14 @@ class AbstractTaskOnCropsForm(AbstractTaskOnDatasetForm):
         }
 
     def __init__(self, *args, **kwargs):
-        self._crops = kwargs.pop("crops", None)
+        self.crops = kwargs.pop("crops", None)
+        if self.crops:
+            kwargs["initial"] = {
+                **kwargs.get("initial", {}),
+                "crops": self.crops,
+                "reuse_dataset": True,
+            }
+
         super().__init__(*args, **kwargs)
         self.fields["crops"].queryset = self.fields["crops"].queryset.filter(
             regions__isnull=False,

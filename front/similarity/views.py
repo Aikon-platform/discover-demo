@@ -15,6 +15,7 @@ class SimilarityMixin:
     form_class = SimilarityForm
     task_name = "Similarity"
     app_name = "similarity"
+    # NOTE: set task_data to "dataset" in order to use dataset form template
     task_data = "dataset"
 
 
@@ -25,3 +26,7 @@ class SimilarityStart(SimilarityMixin.Start):
         context = super().get_context_data(**kwargs)
         context["available_algorithms"] = AVAILABLE_SIMILARITY_ALGORITHMS
         return context
+
+
+class SimilarityStartFrom(SimilarityMixin.StartFrom, SimilarityStart):
+    pass

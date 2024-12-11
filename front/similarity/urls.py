@@ -10,7 +10,7 @@ urlpatterns = [
     path("<uuid:pk>/progress", SimilarityMixin.Progress.as_view(), name="progress"),
     path("<uuid:pk>/cancel", SimilarityMixin.Cancel.as_view(), name="cancel"),
     path("<uuid:pk>/watch", SimilarityMixin.Watcher.as_view(), name="notify"),
-    path("<uuid:pk>/restart", SimilarityMixin.StartFrom.as_view(), name="restart"),
+    path("<uuid:pk>/restart", SimilarityStartFrom.as_view(), name="restart"),
     # path("<uuid:pk>/download", SimilarityDownload.as_view(), name="download"),
     path("<uuid:pk>/delete", SimilarityMixin.Delete.as_view(), name="delete"),
     # Admin views
