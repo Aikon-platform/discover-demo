@@ -38,9 +38,6 @@ class AbstractTaskOnDatasetForm(AbstractTaskForm, AbstractDatasetForm):
             + AbstractDatasetForm.Meta.fields
             + ("dataset",)
         )
-        # widgets = {
-        #     'dataset': forms.Select(attrs={'extra-class': 'old-dataset-field'}),
-        # }
 
     dataset = forms.ModelChoiceField(
         queryset=Dataset.objects.all(),
@@ -56,20 +53,19 @@ class AbstractTaskOnDatasetForm(AbstractTaskForm, AbstractDatasetForm):
     )
 
     def __init__(self, *args, **kwargs):
-        # super().__init__(*args, **kwargs)
-        # self._dataset = None
+        self.dataset = kwargs.pop("dataset", None)
+        if self.dataset:
+            kwargs["initial"] = {
+                **kwargs.get("initial", {}),
+                "dataset": self.dataset,
+                "reuse_dataset": True,
+            }
 
-        self._dataset = kwargs.pop("dataset", None)
         super().__init__(*args, **kwargs)
 
         self.fields["dataset"].queryset = self.fields["dataset"].queryset.filter(
             created_by=self._user,
         )
-
-        # self.order_fields(
-        #     ["reuse_dataset"] +
-        #     list(self.fields)[:-1]  # remove reuse_dataset to put it at first
-        # )
 
     def check_dataset(self):
         """
@@ -78,9 +74,8 @@ class AbstractTaskOnDatasetForm(AbstractTaskForm, AbstractDatasetForm):
         reuse_dataset = self.cleaned_data.get("reuse_dataset", False)
         if reuse_dataset:
             is_dataset = self.cleaned_data.get("dataset", None)
-            is_crops = self.cleaned_data.get("crops", True)
 
-            if not is_dataset and not is_crops:
+            if not is_dataset:
                 self.add_error("dataset", "A dataset is required.")
                 return False
         else:
@@ -101,14 +96,14 @@ class AbstractTaskOnDatasetForm(AbstractTaskForm, AbstractDatasetForm):
         return True
 
     def is_valid(self) -> bool:
+        # print("SUPER VALID", super().is_valid())
+        # print("DATA VALID", self.check_dataset())
         return super().is_valid() and self.check_dataset()
 
     def _populate_dataset(self):
         if dataset := self.cleaned_data["dataset"]:
             self._dataset = dataset
             return
-        # if self._dataset:
-        #     return
 
         dataset_fields = {
             "name": self.cleaned_data.get("dataset_name", None),
@@ -149,26 +144,41 @@ class AbstractTaskOnCropsForm(AbstractTaskOnDatasetForm):
         self.fields["crops"].queryset = self.fields["crops"].queryset.filter(
             regions__isnull=False,
             requested_by=self._user,
+            status="SUCCESS",
         )
 
         self.order_fields(list(AbstractTaskOnDatasetForm.Meta.fields) + ["crops"])
 
     def check_dataset(self):
-        # Hook to set the dataset from the crops
-        # TODO change here
-        # if self.cleaned_data.get("crops", None):
-        #     self._dataset = self.cleaned_data["crops"].dataset
+        """
+        Check if the dataset was provided
+        """
+        if self.cleaned_data.get("reuse_dataset", False):
+            has_crops = bool(self.cleaned_data.get("crops", None))
+            has_dataset = bool(self.cleaned_data.get("dataset", None))
+
+            if not (has_crops or has_dataset):
+                self.add_error("dataset", "Either a dataset or crops must be provided.")
+                return False
+            return True
+
+        # If not reusing dataset, fallback to parent class validation
         return super().check_dataset()
 
-    def save(self, commit=True):
-        # TODO check if crops were provided, if so set the dataset from the crops
-        instance = super().save(commit=False)
+    def _populate_dataset(self):
+        if crops := self.cleaned_data.get("crops", None):
+            self._crops = crops
+            self._dataset = crops.dataset
+            return
+        super()._populate_dataset()
 
-        # self._populate_instance(instance)
-        # instance.crops = self.cleaned_data.get("crops", None)
-        #
-        # if commit:
-        #     instance.save()
+    def save(self, commit=True):
+        # TODO check if this works correctly
+        instance = super().save(commit=False)
+        instance.crops = self._crops
+
+        if commit:
+            instance.save()
 
         return instance
 

@@ -24,9 +24,6 @@ User = get_user_model()
 path_datasets = PathAndRename("datasets/")
 
 
-# TODO create methods to delete the files when the object is deleted
-
-
 class AbstractDataset(models.Model):
     """
     This class is used to store simple datasets
@@ -57,7 +54,7 @@ class Document:
     """
     A document is a set of images that can be processed together
 
-    NOTE NOT A MODEL (for now ?)
+    NOTE: NOT A MODEL (for now ?)
     """
 
     def __init__(
@@ -66,7 +63,31 @@ class Document:
         self.dtype = dtype
         self.src = src or ""
         self.uid = uid or sanitize_str(src)
-        self.path = path or Path(settings.MEDIA_ROOT) / "documents" / self.uid
+        self.path = (
+            Path(path)
+            if path is not None
+            else Path(settings.MEDIA_ROOT) / "documents" / self.uid
+        )
+
+    @property
+    def mapping_path(self):
+        """
+        JSON file containing mapping in the form of
+        TODO check was exactly is src and how it is used (only for IIIF source images?)
+        {
+            "img1_id.jpg": "img1_src.jpg",
+            "img2_id.png": "img2_src.png",
+            "img3_id.jpeg": "img3_src.jpeg"
+        }
+        """
+        return self.path / "mapping.json"
+
+    @property
+    def img_path(self):
+        """
+        Folder containing document extracted images
+        """
+        return self.path / "images"
 
     def to_dict(self) -> Dict:
         return {
@@ -95,20 +116,36 @@ class Document:
             self._images = self._list_images()
         return self._images
 
-    def _list_images(self) -> List["Image"]:
-        if (self.path / "mapping.json").exists():
-            with open(self.path / "mapping.json", "r") as f:
+    def _list_img_dir(self):
+        return [
+            Image(id=str(p.name), path=p, src=str(p.name), document=self)
+            for p in self.img_path.iterdir()
+            if p.suffix.lower() in IMG_EXTENSIONS
+        ]
+
+    def _list_img_mapping(self):
+        try:
+            with open(self.mapping_path, "r") as f:
                 mapping = json.load(f)
             return [
-                Image(id=k, path=self.path / "images" / k, src=v, document=self)
+                Image(id=k, path=self.img_path / k, src=v, document=self)
                 for k, v in mapping.items()
             ]
-        else:
-            return [
-                Image(id=str(p.name), path=p, src=str(p.name), document=self)
-                for p in self.path.iterdir()
-                if p.suffix.lower() in IMG_EXTENSIONS
-            ]
+        except Exception:
+            return []
+
+    def _create_mapping(self, images: List["Image"]):
+        mapping = {img.id: img.src for img in images}
+        with open(self.mapping_path, "w") as f:
+            json.dump(mapping, f, indent=4)
+
+    def _list_images(self) -> List["Image"]:
+        if self.mapping_path.exists():
+            return self._list_img_mapping()
+
+        images = self._list_img_dir()
+        self._create_mapping(images)
+        return images
 
 
 @dataclass
@@ -153,7 +190,7 @@ class Dataset(AbstractDataset):
         self._images = None
 
     def __str__(self) -> str:
-        return self.name
+        return f"{self.name} #{self.id}" if self.name else f"Dataset #{self.id}"
 
     def get_absolute_url(self):
         # TODO change when detailed view for dataset is created
@@ -181,7 +218,6 @@ class Dataset(AbstractDataset):
             # TODO create saving logic
             pass
 
-        # TODO create saving logic
         super().save()
 
     @property
@@ -194,7 +230,7 @@ class Dataset(AbstractDataset):
             self._zip_document = Document(
                 dtype="zip",
                 src=f"{settings.BASE_URL}{self.zip_file.url}",
-                path=self.full_path / "unzipped",
+                # path=self.full_path / "unzipped",
             )
         return self._zip_document
 
@@ -202,7 +238,9 @@ class Dataset(AbstractDataset):
     def pdf_document(self) -> Document:
         if not hasattr(self, "_pdf_document"):
             self._pdf_document = Document(
-                dtype="pdf", src=f"{settings.BASE_URL}{self.pdf_file.url}"
+                dtype="pdf",
+                src=f"{settings.BASE_URL}{self.pdf_file.url}",
+                # path=self.full_path / "pdf",
             )
         return self._pdf_document
 
@@ -210,7 +248,12 @@ class Dataset(AbstractDataset):
     def iiif_documents(self) -> List[Document]:
         if not hasattr(self, "_iiif_documents"):
             self._iiif_documents = [
-                Document(dtype="iiif", src=url) for url in self.iiif_manifests
+                Document(
+                    dtype="iiif",
+                    src=url,
+                    # path=self.full_path / f"iiif_{i}",
+                )
+                for url in self.iiif_manifests
             ]
         return self._iiif_documents
 
@@ -278,6 +321,7 @@ class Dataset(AbstractDataset):
         # if self.img_documents:
         #     raise NotImplementedError("Image not implemented yet")
 
+        # TODO create mapping
         need_extraction = {
             doc.uid: doc for doc in self.documents if not doc.is_extracted()
         }
@@ -332,6 +376,8 @@ class Dataset(AbstractDataset):
         """
         if not self._images:
             self.get_images()
+
+        print({doc.uid: {im.id: im for im in doc.images} for doc in self.documents})
         return {doc.uid: {im.id: im for im in doc.images} for doc in self.documents}
 
     def clear_dataset(self) -> Dict:
@@ -349,7 +395,7 @@ class Dataset(AbstractDataset):
         for doc in self.documents:
             shutil.rmtree(doc.path, ignore_errors=True)
 
-        # TODO delete dataset from API
+        # TODO delete dataset from API ⚠️⚠️⚠️⚠️
 
         shutil.rmtree(self.full_path, ignore_errors=True)
 

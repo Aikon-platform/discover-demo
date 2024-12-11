@@ -21,6 +21,13 @@ class Regions(AbstractAPITaskOnDataset("regions")):
     class Meta:
         verbose_name = "Regions Extraction"
 
+    def __str__(self):
+        return (
+            f"Crops from {self.dataset}"
+            if self.dataset
+            else f"Regions Extraction #{self.pk}"
+        )
+
     def on_task_success(self, data):
         self.status = "PROCESSING RESULTS"
         self.result_full_path.mkdir(parents=True, exist_ok=True)
