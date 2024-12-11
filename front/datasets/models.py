@@ -388,6 +388,7 @@ class Dataset(AbstractDataset):
 
         for doc in self.documents:
             shutil.rmtree(doc.path, ignore_errors=True)
+            # TODO delete effectively
 
         # TODO delete dataset from API ⚠️⚠️⚠️⚠️
 

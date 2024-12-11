@@ -11,7 +11,10 @@ urlpatterns = [
     path("<uuid:pk>/cancel", RegionsMixin.Cancel.as_view(), name="cancel"),
     path("<uuid:pk>/watch", RegionsMixin.Watcher.as_view(), name="notify"),
     path("<uuid:pk>/restart", RegionsMixin.StartFrom.as_view(), name="restart"),
-    path("<uuid:pk>/download", RegionsDownload.as_view(), name="download"),
+    path("<uuid:pk>/download_zip", RegionsDownloadZip.as_view(), name="download_zip"),
+    path(
+        "<uuid:pk>/download_json", RegionsDownloadJson.as_view(), name="download_json"
+    ),
     path("<uuid:pk>/delete", RegionsMixin.Delete.as_view(), name="delete"),
     # Admin views
     path(

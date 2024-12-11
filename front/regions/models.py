@@ -77,10 +77,16 @@ class Regions(AbstractAPITaskOnDataset("regions")):
             [(str(p.relative_to(self.dataset.crops_path)), p) for p in paths]
         )
 
-    def get_download_url(self):
-        """Get the URL for downloading crops"""
+    def get_download_zip_url(self):
+        """Get the URL for downloading cropped images in a zip"""
         if self.has_crops:
-            return reverse("regions:download", kwargs={"pk": self.pk})
+            return reverse("regions:download_zip", kwargs={"pk": self.pk})
+        return None
+
+    def get_download_json_url(self):
+        """Get the URL for downloading crops in a json format"""
+        if self.has_crops:
+            return reverse("regions:download_json", kwargs={"pk": self.pk})
         return None
 
     def get_bounding_boxes(self) -> List[Dict]:
@@ -93,13 +99,15 @@ class Regions(AbstractAPITaskOnDataset("regions")):
 
     def get_bounding_boxes_for_display(self):
         bbox = []
-        doc_image_map = self.dataset.get_doc_image_mapping()
+        dataset = self.dataset
+        if not dataset:
+            return bbox
+        doc_image_map = dataset.get_doc_image_mapping()
         for image in self.get_bounding_boxes():
             image = image.get(0, image)  # Old format : single-item lists
             img_name, crops = image.get("source", ""), image.get("crops", [])
             doc_uid = image.get("doc_uid", None)
 
-            print(doc_uid, img_name)
             source_img = doc_image_map.get(doc_uid, {}).get(img_name, None)
             source_url = source_img.url if source_img else ""
 

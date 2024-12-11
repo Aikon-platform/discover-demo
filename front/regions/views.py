@@ -1,3 +1,5 @@
+import os
+
 from django.views.generic import View
 from django.http import FileResponse, Http404, HttpResponse
 
@@ -26,7 +28,7 @@ class RegionsList(RegionsMixin.List):
         return super().get_queryset().prefetch_related("dataset")
 
 
-class RegionsDownload(View):
+class RegionsDownloadZip(View):
     def get(self, request, pk):
         try:
             region = Regions.objects.get(pk=pk)
@@ -36,6 +38,25 @@ class RegionsDownload(View):
                 content_type="application/zip",
                 filename=f"crops_{region.pk}.zip",
                 as_attachment=True,
+            )
+
+        except Regions.DoesNotExist:
+            pass
+
+        raise Http404("Crops not found")
+
+
+class RegionsDownloadJson(View):
+    def get(self, request, pk):
+        try:
+            region = Regions.objects.get(pk=pk)
+
+            # Return the file as a downloadable response
+            return FileResponse(
+                open(region.task_full_path / f"{region.dataset.id}.json", "rb"),
+                as_attachment=True,
+                content_type="application/json",
+                filename=f"crops_{region.pk}.json",
             )
 
         except Regions.DoesNotExist:
