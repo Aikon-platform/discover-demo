@@ -1,0 +1,11 @@
+{% load i18n %}
+
+{% csrf_token %}
+
+{{ form.media }}
+
+{% if form.non_field_errors %}
+<div class="notification is-danger is-light py-3 px-4">
+    {{ form.non_field_errors }}
+</div>
+{% endif %}

@@ -4,6 +4,8 @@ import { TaskProgressTracker } from './ProgressTracker';
 import "./sass/style.scss";
 import { MatchViewer, WatermarkSimBrowser } from './WatermarkMatches';
 import { unserializeSingleWatermarkMatches, unserializeWatermarkSimilarity } from './WatermarkMatches/types';
+import { ImageSimBrowser } from './SimilarityApp';
+import { unserializeSimilarityMatrix } from './SimilarityApp/types';
 
 function initClusterViewer(
   target_root: HTMLElement,
@@ -40,6 +42,24 @@ function initProgressTracker(target_root: HTMLElement, tracking_url: string) {
   createRoot(target_root).render(
     <TaskProgressTracker tracking_url={tracking_url} />
   );
+}
+
+function initSimilaritySimBrowser(target_root: HTMLElement, source_index_url: string, sim_matrix_url: string) {
+  /*
+  Main entry point for the similarity browser app.
+
+  target_root: the root element to render the app in
+  source_index_url: the url to fetch the sources from
+  sim_matrix_url: the url to fetch the similarity matrix from
+  */
+  fetch(source_index_url).then(response => response.json()).then(source_index => {
+    fetch(sim_matrix_url).then(response => response.json()).then(sim_matrix => {
+      const all_matches = unserializeSimilarityMatrix(sim_matrix, source_index);
+      createRoot(target_root).render(
+        <ImageSimBrowser index={all_matches.index} matches={all_matches.matches} />
+      );
+    });
+  });
 }
 
 function initWatermarkMatches(target_root: HTMLElement, query_image: string, matches: any, source_url: string) {
@@ -79,6 +99,7 @@ function initWatermarkSimBrowser(target_root: HTMLElement, source_url: string) {
 export {
   initClusterViewer,
   initProgressTracker,
+  initSimilaritySimBrowser,
   initWatermarkMatches,
   initWatermarkSimBrowser
 };

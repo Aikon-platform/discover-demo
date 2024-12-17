@@ -20,6 +20,7 @@ from .models import DTIClustering, SavedClustering
 from .forms import DTIClusteringForm, SavedClusteringForm
 
 
+# @task_view_set
 class DTIClusteringMixin:
     """
     Mixin for DTI clustering views
@@ -29,6 +30,8 @@ class DTIClusteringMixin:
     form_class = DTIClusteringForm
     task_name = "DTI Clustering"
     app_name = "dticlustering"
+    # NOTE: set task_data to "dataset" in order to use dataset form template
+    task_data = "dataset"
 
 
 class DTIClusteringStart(DTIClusteringMixin, TaskStartView):
@@ -36,23 +39,6 @@ class DTIClusteringStart(DTIClusteringMixin, TaskStartView):
 
 
 class DTIClusteringStartFrom(DTIClusteringMixin, TaskStartFromView):
-    # """
-    # Request a clustering from a previous one
-    # """
-    #
-    # def get_form_kwargs(self):
-    #     kwargs = super().get_form_kwargs()
-    #     self.from_task = DTIClustering.objects.get(id=self.kwargs["pk"])
-    #     kwargs["dataset"] = self.from_task.dataset
-    #     kwargs["initial"] = {"name": self.from_task.name}
-    #
-    #     return kwargs
-    #
-    # def get_context_data(self, **kwargs) -> dict[str, Any]:
-    #     context = super().get_context_data(**kwargs)
-    #     context["task_name"] = self.task_name
-    #     context["from_task"] = self.from_task
-    #     return context
     pass
 
 
@@ -86,23 +72,8 @@ class DTIClusteringList(DTIClusteringMixin, TaskListView):
 class DTIClusteringByDatasetList(DTIClusteringMixin, TaskByDatasetList):
     permission_see_all = "dticlustering.monitor_dticlustering"
 
-    # """
-    # DTIClusteringList
-    # List of all clusterings for a given dataset [for admins]
-    # """
-    #
-    # def get_queryset(self):
-    #     return super().get_queryset().filter(dataset__id=self.kwargs["dataset_pk"])
-    #
-    # def get_context_data(self, **kwargs) -> dict[str, Any]:
-    #     context = super().get_context_data(**kwargs)
-    #
-    #     context["filter"] = f"DTI clustering of dataset {self.kwargs['dataset_pk']}"
-    #
-    #     return context
-    pass
 
-
+# TODO add DTIClusteringMixin
 class SavedClusteringFromDTI(LoginRequiredMixin, CreateView):
     """
     Create a saved clustering from a DTI
@@ -135,6 +106,7 @@ class SavedClusteringFromDTI(LoginRequiredMixin, CreateView):
         return context
 
 
+# TODO add DTIClusteringMixin
 class SavedClusteringEdit(LoginRequiredMixin, UpdateView):
     """
     Show/edit a clustering
@@ -202,27 +174,19 @@ class SavedClusteringCSVExport(LoginRequiredMixin, SingleObjectMixin, View):
 
 
 # SuperUser views
-class MonitoringView(DTIClusteringMixin, TaskMonitoringView):
-    # template_name = "tasking/monitoring.html"
+class DTIClusteringMonitoring(DTIClusteringMixin, TaskMonitoringView):
     permission_required = "dticlustering.monitor_dticlustering"
 
-    def get_context_data(self, **kwargs) -> dict[str, Any]:
-        context = super().get_context_data(**kwargs)
-        context["api"] = DTIClustering.get_api_monitoring()
-        context["frontend"] = DTIClustering.get_frontend_monitoring()
-        return context
 
-
-class ClearOldClusterings(PermissionRequiredMixin, LoginRequiredMixin, View):
+class ClearOldClusterings(DTIClusteringMixin, ClearOldResultsView):
     """
     Clear old clusterings
-    TODO use abstract class
     """
 
     permission_required = "dticlustering.monitor_dticlustering"
 
     def post(self, *args, **kwargs):
-        output = DTIClustering.clear_old_clusterings()
+        output = DTIClustering.clear_old_tasks()
 
         if output is None or output.get("error"):
             messages.error(
@@ -240,10 +204,9 @@ class ClearOldClusterings(PermissionRequiredMixin, LoginRequiredMixin, View):
         return redirect("dticlustering:monitor")
 
 
-class ClearAPIOldClusterings(PermissionRequiredMixin, LoginRequiredMixin, View):
+class ClearAPIOldClusterings(DTIClusteringMixin, ClearAPIOldResultsView):
     """
     Clear old clusterings from the API server
-    TODO use abstract class
     """
 
     permission_required = "dticlustering.monitor_dticlustering"

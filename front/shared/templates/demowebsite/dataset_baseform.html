@@ -1,0 +1,53 @@
+{% load shared_tags %}
+
+{% include "includes/form/base.html" %}
+
+{% include "includes/form/field_group.html" with included_fields="name,notify_email" %}
+
+<div class="box has-background-light mt-5">
+    <h3 class="title mb-2">Dataset</h3>
+    {% include "includes/form/field_group.html" with included_fields="reuse_dataset" %}
+    {% include "includes/form/field_group.html" with included_fields=dataset_fields|remove_from_list:"reuse_dataset" %}
+</div>
+
+{% include "includes/form/field_group.html" with excluded_fields=excluded_fields|add_to_list:dataset_fields|add_to_list:"name,notify_email" %}
+
+{% block extra_js %}
+    <script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const formatSelect = document.getElementById("id_format");
+        const formatFields = document.querySelectorAll(".format-field");
+        const reuseCheck = document.getElementById("id_reuse_dataset");
+
+        function toggleFormatField() {
+            const selectedFormat = formatSelect.value;
+            formatFields.forEach(div => {
+                div.style.display = div.classList.contains(`format-${selectedFormat}`) ? "block" : "none";
+            });
+        }
+
+        function toggleDatasetFields() {
+            const existingDataset = document.querySelectorAll(".old-dataset-field");
+            const newDataset = document.querySelectorAll(".new-dataset-field");
+
+            if (reuseCheck.checked) {
+                newDataset.forEach(div => { div.style.display = "none";});
+                existingDataset.forEach(div => { div.style.display = "block";});
+            } else {
+                newDataset.forEach(div => { div.style.display = "block";});
+                existingDataset.forEach(div => { div.style.display = "none";});
+                toggleFormatField();
+            }
+        }
+
+        if (formatSelect) {
+            formatSelect.addEventListener("change", toggleFormatField);
+            toggleFormatField();
+        }
+        if (reuseCheck) {
+            reuseCheck.addEventListener("change", toggleDatasetFields);
+            toggleDatasetFields();
+        }
+     });
+    </script>
+{% endblock %}

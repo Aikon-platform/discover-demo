@@ -35218,6 +35218,485 @@ function TaskProgressTracker(props) {
 
 /***/ }),
 
+/***/ "./src/SimilarityApp/components/ImageDisplay.tsx":
+/*!*******************************************************!*\
+  !*** ./src/SimilarityApp/components/ImageDisplay.tsx ***!
+  \*******************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   ImageDisplay: () => (/* binding */ ImageDisplay)
+/* harmony export */ });
+/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react/jsx-runtime */ "./node_modules/react/jsx-runtime.js");
+/* harmony import */ var _iconify_react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @iconify/react */ "./node_modules/@iconify/react/dist/iconify.mjs");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! react */ "./node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_2__);
+/* harmony import */ var _Magnifier__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./Magnifier */ "./src/SimilarityApp/components/Magnifier.tsx");
+
+
+
+
+function ImageDisplay({ image, similarity, transformations, wref }) {
+    /*
+    Component to render a single watermark match.
+    */
+    const magnifyier = react__WEBPACK_IMPORTED_MODULE_2___default().useContext(_Magnifier__WEBPACK_IMPORTED_MODULE_3__.MagnifyingContext);
+    return ((0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxs)("div", { className: "match-item column", children: [(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("div", { className: "match-img", children: (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("img", { src: image.url, alt: image.id, className: "watermark " + (transformations || []).join(" "), onClick: () => magnifyier.magnify && magnifyier.magnify({ watermark: image, transformations, wref }) }) }), (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxs)("div", { className: "match-tools", children: [image.link && (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("a", { href: image.link, className: "match-source", target: "_blank", title: "See in context", children: (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)(_iconify_react__WEBPACK_IMPORTED_MODULE_1__.Icon, { icon: "mdi:book-open-blank-variant" }) }), magnifyier.magnify && (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("a", { href: "javascript:void(0)", className: "match-magnify", title: "Magnify", onClick: () => magnifyier.magnify({ watermark: image, transformations, wref }), children: (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)(_iconify_react__WEBPACK_IMPORTED_MODULE_1__.Icon, { icon: "mdi:arrow-expand" }) }), magnifyier.matchesHref && (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("a", { href: magnifyier.matchesHref(image), className: "match-focus", title: "Show matches", children: (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)(_iconify_react__WEBPACK_IMPORTED_MODULE_1__.Icon, { icon: "mdi:image-search" }) })] }), similarity && (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxs)("span", { className: "similarity", children: [(similarity * 100).toFixed(0), "%"] })] }));
+}
+
+
+/***/ }),
+
+/***/ "./src/SimilarityApp/components/ImageSimBrowser.tsx":
+/*!**********************************************************!*\
+  !*** ./src/SimilarityApp/components/ImageSimBrowser.tsx ***!
+  \**********************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   ImageSimBrowser: () => (/* binding */ ImageSimBrowser)
+/* harmony export */ });
+/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react/jsx-runtime */ "./node_modules/react/jsx-runtime.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "./node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _MatchRow__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./MatchRow */ "./src/SimilarityApp/components/MatchRow.tsx");
+/* harmony import */ var _Magnifier__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./Magnifier */ "./src/SimilarityApp/components/Magnifier.tsx");
+/* harmony import */ var _Pagination__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./Pagination */ "./src/SimilarityApp/components/Pagination.tsx");
+
+
+
+
+
+function ImageSimBrowser({ matches, index }) {
+    /*
+    Component to render a list of watermark matches.
+    */
+    //
+    const [group_by_source, toggleGroupBySource] = (0,react__WEBPACK_IMPORTED_MODULE_1__.useReducer)((group_by_source) => !group_by_source, false);
+    const [filter_by_source, setFilterBySource] = react__WEBPACK_IMPORTED_MODULE_1___default().useState(null);
+    const [magnifying, setMagnifying] = react__WEBPACK_IMPORTED_MODULE_1___default().useState(null);
+    const [page, setPage] = react__WEBPACK_IMPORTED_MODULE_1___default().useState(1);
+    const [highlit, setHighlit] = react__WEBPACK_IMPORTED_MODULE_1___default().useState(null);
+    const [threshold, setThreshold] = react__WEBPACK_IMPORTED_MODULE_1___default().useState(50);
+    const matches_filtered = filter_by_source ? matches.filter(match => match.query.document === filter_by_source) : matches;
+    const PAGINATE_BY = 30;
+    const total_pages = Math.ceil(matches_filtered.length / PAGINATE_BY);
+    react__WEBPACK_IMPORTED_MODULE_1___default().useEffect(() => {
+        if (highlit && filter_by_source && highlit.document !== filter_by_source)
+            setFilterBySource(null);
+    }, [highlit]);
+    const matchesHref = (watermark) => {
+        const watermark_index = watermark.id;
+        return `#match-${watermark_index}`;
+    };
+    const hashchange = () => {
+        const loc = window.location.hash;
+        if (loc.startsWith("#match-")) {
+            const match_id = parseInt(loc.slice(7));
+            const nhighlit = index.images[match_id];
+            setHighlit(nhighlit);
+            setPage(Math.floor(match_id / PAGINATE_BY));
+            return;
+        }
+        setHighlit(null);
+        if (loc.startsWith("#page-")) {
+            setPage(parseInt(loc.slice(6)));
+        }
+    };
+    react__WEBPACK_IMPORTED_MODULE_1___default().useEffect(() => {
+        window.addEventListener("hashchange", hashchange);
+        hashchange();
+        return () => window.removeEventListener("hashchange", hashchange);
+    }, []);
+    const toPage = (page) => {
+        window.location.hash = `#page-${page}`;
+    };
+    const find_page = (watermark) => {
+        if (!watermark)
+            return false;
+        const actual_index = matches_filtered.findIndex(match => match.query === watermark);
+        if (actual_index === -1)
+            return false;
+        return Math.floor(actual_index / PAGINATE_BY) + 1;
+    };
+    const actual_page = find_page(highlit) || Math.min(page, total_pages);
+    return ((0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxs)(_Magnifier__WEBPACK_IMPORTED_MODULE_3__.MagnifyingContext.Provider, { value: { magnify: setMagnifying, matchesHref }, children: [(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxs)("div", { className: "viewer-options", children: [(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxs)("div", { className: "columns", children: [(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("div", { className: "field column is-2", children: (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxs)("label", { className: "checkbox is-normal", children: [(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("input", { type: "checkbox", className: "checkbox mr-2", name: "group-by-source", id: "group-by-source", checked: group_by_source, onChange: toggleGroupBySource }), "Group by source document"] }) }), (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxs)("div", { className: "field column is-horizontal is-4", children: [(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("div", { className: "field-label is-normal", children: (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("label", { className: "label is-expanded", children: "Threshold:" }) }), (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("div", { className: "field-body", children: (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("div", { className: "field", children: (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxs)("div", { className: "control", children: [(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("input", { type: "range", min: "30", max: "100", value: threshold, onChange: (e) => setThreshold(parseInt(e.target.value)) }), (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxs)("span", { className: "m-3", children: [threshold, "%"] })] }) }) })] }), (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxs)("div", { className: "field column is-horizontal is-6", children: [(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("div", { className: "field-label is-normal", children: (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("label", { className: "label", children: "Filter by document:" }) }), (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("div", { className: "field-body", children: (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("div", { className: "field is-narrow", children: (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("div", { className: "control", children: (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("div", { className: "select is-fullwidth", children: (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxs)("select", { value: filter_by_source ? filter_by_source.uid : "", onChange: (e) => setFilterBySource((e.target.value && index.sources.find(source => source.uid === e.target.value)) || null), children: [(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("option", { value: "", children: "All" }), index.sources.map(source => ((0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("option", { value: source.uid, children: source.name }, source.uid)))] }) }) }) }) })] })] }), (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)(_Pagination__WEBPACK_IMPORTED_MODULE_4__.Pagination, { page: actual_page, setPage: toPage, total_pages: total_pages })] }), (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("div", { className: "viewer-table", children: matches_filtered.slice((actual_page - 1) * PAGINATE_BY, (actual_page) * PAGINATE_BY).map((matches, idx) => ((0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)(_MatchRow__WEBPACK_IMPORTED_MODULE_2__.MatchRow, { matches: matches, group_by_source: group_by_source, highlit: highlit == matches.query, threshold: threshold }, idx))) }), (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("div", { className: "mt-4" }), (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)(_Pagination__WEBPACK_IMPORTED_MODULE_4__.Pagination, { page: actual_page, setPage: toPage, total_pages: total_pages }), magnifying && (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)(_Magnifier__WEBPACK_IMPORTED_MODULE_3__.Magnifier, Object.assign({}, magnifying))] }));
+}
+
+
+/***/ }),
+
+/***/ "./src/SimilarityApp/components/Magnifier.tsx":
+/*!****************************************************!*\
+  !*** ./src/SimilarityApp/components/Magnifier.tsx ***!
+  \****************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   Magnifier: () => (/* binding */ Magnifier),
+/* harmony export */   MagnifyingContext: () => (/* binding */ MagnifyingContext)
+/* harmony export */ });
+/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react/jsx-runtime */ "./node_modules/react/jsx-runtime.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "./node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _utils_IconBtn__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../utils/IconBtn */ "./src/utils/IconBtn.tsx");
+
+
+
+const MagnifyingContext = react__WEBPACK_IMPORTED_MODULE_1___default().createContext({});
+function Magnifier({ watermark, transformations, wref }) {
+    var _a, _b;
+    /*
+    Component to render a magnified view of a watermark.
+    */
+    const setMagnifying = react__WEBPACK_IMPORTED_MODULE_1___default().useContext(MagnifyingContext).magnify;
+    const [transf, setTransf] = react__WEBPACK_IMPORTED_MODULE_1___default().useState(transformations || []);
+    const manualTransform = (deltaRot, hflip) => {
+        const curRotStr = transf.find(t => t && t.startsWith("rot"));
+        const prevHflip = transf.includes("hflip");
+        const curRot = curRotStr ? parseInt(curRotStr.slice(3)) : 0;
+        let newRot = curRot;
+        if (hflip && curRot % 180)
+            newRot += 180;
+        newRot = (newRot + deltaRot + 360) % 360;
+        const newTransf = [];
+        if (newRot)
+            newTransf.push(`rot${newRot}`);
+        if (hflip !== prevHflip)
+            newTransf.push("hflip");
+        setTransf(newTransf);
+    };
+    react__WEBPACK_IMPORTED_MODULE_1___default().useEffect(() => {
+        setTransf(transformations || []);
+    }, [transformations]);
+    return watermark && ((0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxs)("div", { className: "magnifier", children: [(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)(_utils_IconBtn__WEBPACK_IMPORTED_MODULE_2__.IconBtn, { icon: "mdi:close", onClick: () => setMagnifying({ watermark: undefined }) }), (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxs)("div", { className: "columns", children: [wref &&
+                        (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxs)("div", { className: "column is-6", children: [(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("div", { className: "match-img", children: (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("img", { src: wref.url, alt: wref.id, className: "watermark" }) }), (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxs)("h4", { className: "mt-2", children: ["Query: ", ((_a = wref.document) === null || _a === void 0 ? void 0 : _a.name) || wref.id] }), (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("p", { children: wref.document && wref.id }), wref.link && (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("p", { children: (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("a", { href: wref.link, target: "_blank", children: "See in context" }) })] }), (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxs)("div", { className: "column is-6", children: [(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("div", { className: "match-img", children: (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("img", { src: watermark.url, alt: watermark.id, className: "watermark " + (transf.join(" ")) }) }), (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("h4", { className: "mt-2", children: ((_b = watermark.document) === null || _b === void 0 ? void 0 : _b.name) || watermark.id }), (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("p", { children: watermark.document && watermark.id }), (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxs)("p", { className: "actions", children: [(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)(_utils_IconBtn__WEBPACK_IMPORTED_MODULE_2__.IconBtn, { icon: "mdi:rotate-left", onClick: () => manualTransform(-90, false) }), (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)(_utils_IconBtn__WEBPACK_IMPORTED_MODULE_2__.IconBtn, { icon: "mdi:rotate-right", onClick: () => manualTransform(90, false) }), (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)(_utils_IconBtn__WEBPACK_IMPORTED_MODULE_2__.IconBtn, { icon: "mdi:flip-horizontal", onClick: () => manualTransform(0, true) })] }), watermark.link && (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("p", { children: (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("a", { href: watermark.link, target: "_blank", children: "See in context" }) })] })] })] }));
+}
+
+
+/***/ }),
+
+/***/ "./src/SimilarityApp/components/MatchExporter.tsx":
+/*!********************************************************!*\
+  !*** ./src/SimilarityApp/components/MatchExporter.tsx ***!
+  \********************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   MatchCSVExporter: () => (/* binding */ MatchCSVExporter)
+/* harmony export */ });
+/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react/jsx-runtime */ "./node_modules/react/jsx-runtime.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "./node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _utils_IconBtn__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../utils/IconBtn */ "./src/utils/IconBtn.tsx");
+var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+
+
+
+function escapeCSVCell(cell) {
+    /*
+    Escape a cell value for CSV.
+    */
+    if (!cell)
+        return "";
+    return cell.toString().replace(/"/g, '""');
+}
+function exportMatchesCSV(matches) {
+    /*
+    Export a list of watermark matches to CSV.
+    */
+    return new Promise((resolve, reject) => {
+        // get all metadata fields in matches' sources
+        console.log(matches);
+        const metadata_fields = new Set();
+        matches.forEach(match => {
+            var _a;
+            Object.keys(((_a = match.image.document) === null || _a === void 0 ? void 0 : _a.metadata) || {}).forEach(key => metadata_fields.add(key));
+        });
+        const header = "Image,Source,Similarity,Document,Document URL," + Array.from(metadata_fields).join(",") + "\n";
+        const lines = matches.map(match => {
+            var _a, _b;
+            const metadata = Array.from(metadata_fields).map(key => { var _a; return ((_a = match.image.document) === null || _a === void 0 ? void 0 : _a.metadata[key]) || ""; });
+            return [
+                match.image.id,
+                match.image.url || match.image.id,
+                match.similarity,
+                (_a = match.image.document) === null || _a === void 0 ? void 0 : _a.name,
+                (_b = match.image.document) === null || _b === void 0 ? void 0 : _b.src,
+                ...metadata
+            ].map(cell => `"${escapeCSVCell(cell)}"`).join(",");
+        });
+        resolve(header + lines.join("\n"));
+    });
+}
+function MatchCSVExporter({ matches, threshold }) {
+    /*
+    Component to export a list of watermark matches to CSV.
+    */
+    const [exporting, setExporting] = react__WEBPACK_IMPORTED_MODULE_1___default().useState(false);
+    const [exported, setExported] = react__WEBPACK_IMPORTED_MODULE_1___default().useState(false);
+    const [error, setError] = react__WEBPACK_IMPORTED_MODULE_1___default().useState(null);
+    const exportCSV = () => __awaiter(this, void 0, void 0, function* () {
+        setExporting(true);
+        try {
+            const ematches = matches.matches.filter(m => !threshold || m.similarity > threshold / 100);
+            // add query
+            ematches.unshift({ image: matches.query, similarity: 1, transformations: [] });
+            console.log(ematches);
+            const csv = yield exportMatchesCSV(ematches);
+            const blob = new Blob([csv], { type: "text/csv" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = "similarity-matches.csv";
+            a.click();
+            setExported(true);
+        }
+        catch (e) {
+            setError(e.toString());
+        }
+        finally {
+            setExporting(false);
+        }
+    });
+    return ((0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxs)("div", { className: "match-exporter", children: [(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)(_utils_IconBtn__WEBPACK_IMPORTED_MODULE_2__.IconBtn, { icon: "mdi:download", onClick: exportCSV, disabled: exporting, label: "Export to CSV" }), error && (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("span", { className: "has-text-danger", children: error })] }));
+}
+
+
+/***/ }),
+
+/***/ "./src/SimilarityApp/components/MatchGroup.tsx":
+/*!*****************************************************!*\
+  !*** ./src/SimilarityApp/components/MatchGroup.tsx ***!
+  \*****************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   MatchGroup: () => (/* binding */ MatchGroup)
+/* harmony export */ });
+/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react/jsx-runtime */ "./node_modules/react/jsx-runtime.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "./node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _ImageDisplay__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./ImageDisplay */ "./src/SimilarityApp/components/ImageDisplay.tsx");
+/* harmony import */ var _iconify_react__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! @iconify/react */ "./node_modules/@iconify/react/dist/iconify.mjs");
+/* harmony import */ var _utils_IconBtn__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../utils/IconBtn */ "./src/utils/IconBtn.tsx");
+
+
+
+
+
+function MatchGroup({ matches, grouped, threshold, wref }) {
+    var _a;
+    /*
+    Component to render a group of watermark matches.
+    */
+    // expand the group or not
+    const [expanded, toggleExpand] = (0,react__WEBPACK_IMPORTED_MODULE_1__.useReducer)((expanded) => !expanded, false);
+    return ((!threshold || matches[0].similarity > threshold / 100) &&
+        (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("div", { className: "column match-group", children: (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxs)("div", { className: expanded ? "match-expanded" : "match-excerpt", children: [(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxs)("h4", { children: [grouped && (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)(_iconify_react__WEBPACK_IMPORTED_MODULE_3__.Icon, { icon: "mdi:folder" }), " ", (_a = matches[0].image.document) === null || _a === void 0 ? void 0 : _a.name] }), (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("div", { className: "columns is-multiline match-items", children: matches.map((match, idx) => ((expanded || idx == 0) && (!threshold || match.similarity > threshold / 100) && (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)(_ImageDisplay__WEBPACK_IMPORTED_MODULE_2__.ImageDisplay, Object.assign({ wref: wref }, match), idx))) }), matches.length > 1 && (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)(_utils_IconBtn__WEBPACK_IMPORTED_MODULE_4__.IconBtn, { icon: expanded ? "mdi:close" : "mdi:animation-plus", onClick: toggleExpand, label: expanded ? "Collapse" : `+${matches.length - 1}` })] }) }));
+}
+
+
+/***/ }),
+
+/***/ "./src/SimilarityApp/components/MatchRow.tsx":
+/*!***************************************************!*\
+  !*** ./src/SimilarityApp/components/MatchRow.tsx ***!
+  \***************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   MatchRow: () => (/* binding */ MatchRow)
+/* harmony export */ });
+/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react/jsx-runtime */ "./node_modules/react/jsx-runtime.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "./node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _ImageDisplay__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./ImageDisplay */ "./src/SimilarityApp/components/ImageDisplay.tsx");
+/* harmony import */ var _MatchGroup__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./MatchGroup */ "./src/SimilarityApp/components/MatchGroup.tsx");
+/* harmony import */ var _MatchExporter__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./MatchExporter */ "./src/SimilarityApp/components/MatchExporter.tsx");
+
+
+
+
+
+function MatchRow({ matches, group_by_source, highlit, threshold }) {
+    var _a;
+    /*
+    Component to render a single watermark match.
+    */
+    const [showAll, toggleShowAll] = react__WEBPACK_IMPORTED_MODULE_1___default().useReducer((showAll) => !showAll, false);
+    const groups = group_by_source ? matches.matches_by_document : matches.matches.map(m => [m]);
+    const scrollRef = react__WEBPACK_IMPORTED_MODULE_1___default().useRef(null);
+    (0,react__WEBPACK_IMPORTED_MODULE_1__.useEffect)(() => {
+        var _a;
+        if (highlit) {
+            (_a = scrollRef.current) === null || _a === void 0 ? void 0 : _a.scrollIntoView({ behavior: "smooth", block: "center" });
+        }
+    }, [highlit]);
+    return ((0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxs)("div", { className: "match-row columns " + (highlit ? "highlit" : ""), ref: scrollRef, children: [(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxs)("div", { className: "column match-query", children: [(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("h4", { children: ((_a = matches.query.document) === null || _a === void 0 ? void 0 : _a.name) || matches.query.id }), (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("div", { className: "columns is-multiline match-items is-centered", children: (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)(_ImageDisplay__WEBPACK_IMPORTED_MODULE_2__.ImageDisplay, { image: matches.query }) }), groups.length > 5 && (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("p", { children: (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("a", { href: "javascript:void(0)", onClick: toggleShowAll, children: showAll ? "Show only 5 best" : `Show all results` }) }), (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)(_MatchExporter__WEBPACK_IMPORTED_MODULE_4__.MatchCSVExporter, { matches: matches, threshold: threshold })] }), (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("div", { className: "column columns match-results", children: groups.slice(0, showAll ? groups.length : 5).map((grouped_by_source, k) => ((0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)(_MatchGroup__WEBPACK_IMPORTED_MODULE_3__.MatchGroup, { matches: grouped_by_source, grouped: group_by_source, threshold: threshold, wref: matches.query }, k))) })] }));
+}
+
+
+/***/ }),
+
+/***/ "./src/SimilarityApp/components/MatchViewer.tsx":
+/*!******************************************************!*\
+  !*** ./src/SimilarityApp/components/MatchViewer.tsx ***!
+  \******************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   MatchViewer: () => (/* binding */ MatchViewer)
+/* harmony export */ });
+/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react/jsx-runtime */ "./node_modules/react/jsx-runtime.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "./node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _MatchRow__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./MatchRow */ "./src/SimilarityApp/components/MatchRow.tsx");
+/* harmony import */ var _Magnifier__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./Magnifier */ "./src/SimilarityApp/components/Magnifier.tsx");
+
+
+
+
+function MatchViewer({ all_matches }) {
+    /*
+    Component to render a list of image matches.
+    */
+    const [group_by_source, toggleGroupBySource] = (0,react__WEBPACK_IMPORTED_MODULE_1__.useReducer)((group_by_source) => !group_by_source, true);
+    const [magnifying, setMagnifying] = react__WEBPACK_IMPORTED_MODULE_1___default().useState(null);
+    return ((0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxs)(_Magnifier__WEBPACK_IMPORTED_MODULE_3__.MagnifyingContext.Provider, { value: { magnify: setMagnifying }, children: [(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("div", { className: "viewer-options", children: (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("p", { className: "field", children: (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxs)("label", { className: "checkbox", children: [(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("input", { type: "checkbox", className: "checkbox mr-2", name: "group-by-source", id: "group-by-source", defaultChecked: true, onChange: toggleGroupBySource }), "Group by source document"] }) }) }), (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("div", { className: "viewer-table", children: all_matches.map((matches, idx) => ((0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)(_MatchRow__WEBPACK_IMPORTED_MODULE_2__.MatchRow, { matches: matches, group_by_source: group_by_source }, idx))) }), magnifying && (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)(_Magnifier__WEBPACK_IMPORTED_MODULE_3__.Magnifier, Object.assign({}, magnifying))] }));
+}
+
+
+/***/ }),
+
+/***/ "./src/SimilarityApp/components/Pagination.tsx":
+/*!*****************************************************!*\
+  !*** ./src/SimilarityApp/components/Pagination.tsx ***!
+  \*****************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   Pagination: () => (/* binding */ Pagination)
+/* harmony export */ });
+/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react/jsx-runtime */ "./node_modules/react/jsx-runtime.js");
+
+function Pagination({ page, total_pages, setPage }) {
+    /*
+    Component to render a pagination control.
+    */
+    return ((0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxs)("div", { className: "pagination", children: [(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("button", { className: "pagination-ctrl button", onClick: () => setPage(page - 1), disabled: page <= 1, children: "Previous" }), (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxs)("span", { className: "pagination-page", children: [page, " / ", total_pages] }), (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("button", { className: "pagination-ctrl button", onClick: () => setPage(page + 1), disabled: page >= total_pages, children: "Next" })] }));
+}
+
+
+/***/ }),
+
+/***/ "./src/SimilarityApp/index.tsx":
+/*!*************************************!*\
+  !*** ./src/SimilarityApp/index.tsx ***!
+  \*************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   ImageSimBrowser: () => (/* reexport safe */ _components_ImageSimBrowser__WEBPACK_IMPORTED_MODULE_1__.ImageSimBrowser),
+/* harmony export */   MatchViewer: () => (/* reexport safe */ _components_MatchViewer__WEBPACK_IMPORTED_MODULE_0__.MatchViewer)
+/* harmony export */ });
+/* harmony import */ var _components_MatchViewer__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./components/MatchViewer */ "./src/SimilarityApp/components/MatchViewer.tsx");
+/* harmony import */ var _components_ImageSimBrowser__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./components/ImageSimBrowser */ "./src/SimilarityApp/components/ImageSimBrowser.tsx");
+
+
+
+
+
+/***/ }),
+
+/***/ "./src/SimilarityApp/types.tsx":
+/*!*************************************!*\
+  !*** ./src/SimilarityApp/types.tsx ***!
+  \*************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   unserializeImageMatches: () => (/* binding */ unserializeImageMatches),
+/* harmony export */   unserializeSimilarityIndex: () => (/* binding */ unserializeSimilarityIndex),
+/* harmony export */   unserializeSimilarityMatrix: () => (/* binding */ unserializeSimilarityMatrix)
+/* harmony export */ });
+// PROPS
+function unserializeSimilarityIndex(index) {
+    const source_documents = Object.fromEntries(Object.entries(index.sources).map(([id, source]) => { var _a; return [id, Object.assign({ name: ((_a = source.metadata) === null || _a === void 0 ? void 0 : _a.name) || source.uid }, source)]; }));
+    const source_images = index.images.map((image, i) => ({
+        id: image.id,
+        src: image.src,
+        url: image.url,
+        document: source_documents[image.doc_uid]
+    }));
+    return {
+        sources: Object.values(source_documents),
+        images: source_images,
+        flips: index.flips || [null]
+    };
+}
+function unserializeSimilarityMatrix(raw_matches, index_raw) {
+    const index = unserializeSimilarityIndex(index_raw);
+    const complex_matches = index.images.map(() => []);
+    raw_matches.forEach(([source_index, query_index, similarity]) => {
+        // Create a symmetric matrix
+        complex_matches[query_index].push({ similarity, best_source_flip: 0, best_query_flip: 0, query_index, source_index });
+        complex_matches[source_index].push({ similarity, best_source_flip: 0, best_query_flip: 0, query_index, source_index });
+    });
+    return { matches: unserializeImageMatches(index.images, { matches: complex_matches, query_flips: index.flips }, index), index };
+}
+function unserializeImageMatches(queries, raw_matches, index) {
+    const matches = [];
+    for (let i = 0; i < raw_matches.matches.length; i++) {
+        const query = queries[i];
+        const matches_for_query = (raw_matches.matches[i].map(match => {
+            const source_image = index.images[match.source_index];
+            return {
+                image: source_image,
+                similarity: match.similarity,
+                transformations: [raw_matches.query_flips[match.best_query_flip], index.flips[match.best_source_flip]]
+            };
+        }).sort((a, b) => b.similarity - a.similarity));
+        const grouped_by_source = {};
+        const groups = [];
+        matches_for_query.forEach(match => {
+            if (!grouped_by_source[match.image.document.uid]) {
+                const newgroup = [];
+                grouped_by_source[match.image.document.uid] = newgroup;
+                groups.push(newgroup);
+            }
+            grouped_by_source[match.image.document.uid].push(match);
+        });
+        matches.push({
+            query,
+            matches: matches_for_query,
+            matches_by_document: groups
+        });
+    }
+    return matches.sort((a, b) => b.matches[0].similarity - a.matches[0].similarity);
+}
+
+
+/***/ }),
+
 /***/ "./src/WatermarkMatches/components/Magnifier.tsx":
 /*!*******************************************************!*\
   !*** ./src/WatermarkMatches/components/Magnifier.tsx ***!
@@ -37914,6 +38393,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   initClusterViewer: () => (/* binding */ initClusterViewer),
 /* harmony export */   initProgressTracker: () => (/* binding */ initProgressTracker),
+/* harmony export */   initSimilaritySimBrowser: () => (/* binding */ initSimilaritySimBrowser),
 /* harmony export */   initWatermarkMatches: () => (/* binding */ initWatermarkMatches),
 /* harmony export */   initWatermarkSimBrowser: () => (/* binding */ initWatermarkSimBrowser)
 /* harmony export */ });
@@ -37924,6 +38404,10 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _sass_style_scss__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./sass/style.scss */ "./src/sass/style.scss");
 /* harmony import */ var _WatermarkMatches__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./WatermarkMatches */ "./src/WatermarkMatches/index.tsx");
 /* harmony import */ var _WatermarkMatches_types__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./WatermarkMatches/types */ "./src/WatermarkMatches/types.tsx");
+/* harmony import */ var _SimilarityApp__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./SimilarityApp */ "./src/SimilarityApp/index.tsx");
+/* harmony import */ var _SimilarityApp_types__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./SimilarityApp/types */ "./src/SimilarityApp/types.tsx");
+
+
 
 
 
@@ -37952,6 +38436,21 @@ function initProgressTracker(target_root, tracking_url) {
     tracking_url: the url to track
     */
     (0,react_dom_client__WEBPACK_IMPORTED_MODULE_1__.createRoot)(target_root).render((0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)(_ProgressTracker__WEBPACK_IMPORTED_MODULE_3__.TaskProgressTracker, { tracking_url: tracking_url }));
+}
+function initSimilaritySimBrowser(target_root, source_index_url, sim_matrix_url) {
+    /*
+    Main entry point for the similarity browser app.
+
+    target_root: the root element to render the app in
+    source_index_url: the url to fetch the sources from
+    sim_matrix_url: the url to fetch the similarity matrix from
+    */
+    fetch(source_index_url).then(response => response.json()).then(source_index => {
+        fetch(sim_matrix_url).then(response => response.json()).then(sim_matrix => {
+            const all_matches = (0,_SimilarityApp_types__WEBPACK_IMPORTED_MODULE_8__.unserializeSimilarityMatrix)(sim_matrix, source_index);
+            (0,react_dom_client__WEBPACK_IMPORTED_MODULE_1__.createRoot)(target_root).render((0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)(_SimilarityApp__WEBPACK_IMPORTED_MODULE_7__.ImageSimBrowser, { index: all_matches.index, matches: all_matches.matches }));
+        });
+    });
 }
 function initWatermarkMatches(target_root, query_image, matches, source_url) {
     /*

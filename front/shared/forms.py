@@ -1,3 +1,6 @@
+from dataclasses import dataclass
+from typing import Type
+
 from django import forms
 from django.conf import settings
 from django.contrib.auth import get_user_model
@@ -9,6 +12,13 @@ from .mails import (
 )
 
 User = get_user_model()
+
+
+@dataclass
+class FormConfig:
+    display_name: str
+    description: str
+    form_class: Type[forms.Form]
 
 
 class AccountRequestForm(forms.ModelForm):

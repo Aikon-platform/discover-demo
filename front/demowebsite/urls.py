@@ -12,6 +12,7 @@ urlpatterns = [
     path("similarity/", include("similarity.urls")),
     path("regions/", include("regions.urls")),
     path("watermarks/", include("watermarks.urls")),
+    path("datasets/", include("datasets.urls")),
 ]
 
 # Serve media files in development

@@ -26,7 +26,7 @@ run_script "system-package.sh" "System packages installation"
 run_script "venv.sh" "Virtual environment setup"
 run_script "var_env.sh" "Environment variables configuration"
 # run_script "redis.sh" "Redis installation and setup"
-run_script "django.sh" "Django configuration"
+run_script "database.sh" "Database configuration"
 # run_script "webpack.sh" "Webpack setup"
 
 echo_title "SUCCESSFUL INSTALL"

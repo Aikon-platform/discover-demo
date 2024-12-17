@@ -52,7 +52,6 @@
 <div class="centerwrap mt-4">
     <h2 class="is-title is-size-3 pb-3 mt-0">Process a new image</h2>
     <form method="post" enctype="multipart/form-data" action="{% url 'watermarks:start' %}">
-        {% csrf_token %}
         {% include "demowebsite/baseform.html" %}
         <button type="submit" class="button is-link">Submit</button>
     </form>

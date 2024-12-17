@@ -1,16 +1,24 @@
 {% extends "demowebsite/base.html" %}
 
-{% block title %}Delete a task{% endblock %}
+{% block title %}Delete {{ task_name }} #{{ object.id }}{% endblock %}
 
 {% block content %}
 <div class="centerwrap">
     <h1 class="is-title is-size-2 py-3">Delete {{ task_name }}</h1>
     <p>Are you sure you want to delete the <span class="strong">{{ task_name }} #{{ object.id }}</span>?</p>
+
+    {% if extra_warning %}
+        <div class="message">
+            <div class="message-body">
+                {{ extra_warning|safe }}
+            </div>
+        </div>
+    {% endif %}
     <form class="columns pt-5" action="" method="post" enctype="multipart/form-data">
         {% csrf_token %}
         <button class="column is-2 button is-danger is-light is-middle" type="submit">
             <span class="iconify" data-icon="mdi:delete"></span>
-            Delete task
+            Delete
         </button>
         <a class="button is-ghost column is-2" href="{{ object.get_absolute_url }}">Take me back</a>
     </form>

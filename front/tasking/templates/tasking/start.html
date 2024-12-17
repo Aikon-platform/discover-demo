@@ -12,11 +12,17 @@
         <p>Using same dataset as {{ task_name }} <a href="{{ from_task.get_absolute_url }}">#{{ from_task.id }}</a></p>
     {% endif %}
     <form action="" method="post" enctype="multipart/form-data">
-        {% csrf_token %}
-        {% include "demowebsite/baseform.html" %}
-        <p class="has-text-centered">
+
+        {% if task_data == "dataset" %}
+            {% include "demowebsite/dataset_baseform.html" with excluded_fields="excluded_field" %}
+        {% else %}
+            {% include "demowebsite/baseform.html" %}
+        {% endif %}
+
+        <p class="has-text-centered pt-3">
             <input class="button is-link" type="submit" value="Start processing">
         </p>
+
     </form>
 </div>
 {% endblock %}

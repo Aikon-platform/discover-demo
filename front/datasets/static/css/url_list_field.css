@@ -1,0 +1,52 @@
+@charset "UTF-8";
+/* line 7, ../../style/url_document_list_field.scss */
+.urllist-wrapper .urllist-list {
+  margin-left: 0;
+}
+/* line 9, ../../style/url_document_list_field.scss */
+.urllist-wrapper .urllist-list .urllist-entry {
+  list-style: none;
+  background: #bfcddf;
+  border: 1px solid #597dac;
+  color: #3e587b;
+  padding: 3px;
+  font-size: 0.9em;
+  position: relative;
+}
+/* line 18, ../../style/url_document_list_field.scss */
+.urllist-wrapper .urllist-list .urllist-entry .urllist-actions {
+  position: absolute;
+  right: 0;
+  top: 0;
+  z-index: 2;
+}
+/* line 23, ../../style/url_document_list_field.scss */
+.urllist-wrapper .urllist-list .urllist-entry .urllist-actions > a {
+  display: inline-block;
+  font-size: 1.1em;
+  padding: 2px 7px;
+  margin-left: 5px;
+  text-decoration: none;
+}
+/* line 29, ../../style/url_document_list_field.scss */
+.urllist-wrapper .urllist-list .urllist-entry .urllist-actions > a::before {
+  font-weight: bold;
+}
+/* line 34, ../../style/url_document_list_field.scss */
+.urllist-wrapper .urllist-list .urllist-entry .urllist-delete::before {
+  content: "×";
+}
+/* line 37, ../../style/url_document_list_field.scss */
+.urllist-wrapper .urllist-list .urllist-entry .urllist-edit::before {
+  content: "✎";
+}
+/* line 41, ../../style/url_document_list_field.scss */
+.urllist-wrapper .urllist-list .urllist-entry.editing .urllist-actions, .urllist-wrapper .urllist-list .urllist-entry.editing span {
+  display: none;
+}
+/* line 45, ../../style/url_document_list_field.scss */
+.urllist-wrapper .urllist-list .urllist-entry.not-url {
+  background: #eb6b92;
+  border: 1px solid #a61742;
+  color: #630e27;
+}
