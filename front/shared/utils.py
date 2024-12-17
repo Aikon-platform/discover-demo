@@ -1,3 +1,4 @@
+import json
 from stat import S_IFREG
 from stream_zip import ZIP_32, stream_zip
 from typing import List, Tuple, Iterable, Generator, Union
@@ -33,3 +34,27 @@ def zip_on_the_fly(files: List[Tuple[str, TPath]]) -> Iterable[bytes]:
             yield (name, dt, S_IFREG | 0o600, ZIP_32, contents(path))
 
     return stream_zip(iter_files())
+
+
+def pprint(o):
+    if isinstance(o, str):
+        try:
+            return json.dumps(json.loads(o), indent=4, sort_keys=True)
+        except ValueError:
+            return o
+    elif isinstance(o, dict) or isinstance(o, list) or isinstance(o, tuple):
+        if isinstance(o, list):
+            o = list(o)
+        try:
+            return json.dumps(o, indent=4, sort_keys=True)
+        except TypeError:
+            dict_str = ""
+            if isinstance(o, list):
+                for v in o:
+                    dict_str += f"{v}\n"
+            if isinstance(o, dict):
+                for k, v in o.items():
+                    dict_str += f"{k}:\n{v}\n"
+            return dict_str
+    else:
+        return str(o)

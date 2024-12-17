@@ -26,8 +26,17 @@
                     <span>Download bounding boxes</span>
                 </a>
             {% endif %}
-            {% if object.status == "SUCCESS" and not object.get_bounding_boxes %}
-                <p class="status">No regions extracted</p>
+
+            {% if not object.get_bounding_boxes or not object.dataset %}
+                <div class="message mt-5">
+                    <div class="message-body">
+                        {% if not object.get_bounding_boxes %}
+                            <p>No regions extracted</p>
+                        {% elif not object.dataset %}
+                            <p>Dataset was deleted</p>
+                        {% endif %}
+                    </div>
+                </div>
             {% endif %}
 
             <table class="table is-fullwidth">
@@ -53,17 +62,15 @@
                         </th>
 
                         <td style="width: 100%">
-                            <div class="fixed-grid has-5-cols">
-                                <div class="grid">
-                                    {% for crop in item.crops %}
-                                        <div class="region is-center p-4" style="width: 160px;">
-                                            <figure class="image card region-image"
-                                                    style="height: 160px; min-width: 160px;">
-                                                <img class="region-img" src="{{ crop.url }}" alt="Extracted region">
-                                            </figure>
-                                        </div>
-                                    {% endfor %}
-                                </div>
+                            <div class="grid is-col-min-5">
+                                {% for crop in item.crops %}
+                                    <div class="cell region is-center p-4" style="width: 130px;">
+                                        <figure class="image card region-image"
+                                                style="height: 130px; min-width: 130px;">
+                                            <img class="region-img" src="{{ crop.url }}" alt="Extracted region">
+                                        </figure>
+                                    </div>
+                                {% endfor %}
                             </div>
                         </td>
                     </tr>

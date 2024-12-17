@@ -30,4 +30,9 @@ urlpatterns = [
         SimilarityMixin.ClearAPIOld.as_view(),
         name="monitor_clear_api",
     ),
+    path(
+        "<uuid:pk>/download/matrix",
+        SimilarityDownloadJson.as_view(),
+        name="download_json",
+    ),
 ]

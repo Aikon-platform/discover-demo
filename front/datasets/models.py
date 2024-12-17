@@ -278,7 +278,7 @@ class Dataset(AbstractDataset):
         return [doc.to_dict() for doc in self.documents]
 
     def download_from_api(self, doc_to_extract=None) -> None:
-        if doc_to_extract is None:
+        if len(doc_to_extract) == 0:
             return
 
         api_info = requests.get(self.api_url).json()
@@ -300,22 +300,6 @@ class Dataset(AbstractDataset):
             A dictionary of the form {uid: [(filename, fullpath, source(relative or url)))}
             Save the mapping in a json file
         """
-        # if self.zip_file:
-        #     if not self.zip_document.is_extracted():
-        #         self.zip_document.extract_from_zip(self.zip_file.path)
-
-        # if self.iiif_manifests:
-        #     need_extraction = {
-        #         doc.uid: doc for doc in self.iiif_documents if not doc.is_extracted()
-        #     }
-        #     self.download_from_api(need_extraction)
-        #
-        # if self.pdf_file:
-        #     raise NotImplementedError("PDF extraction not implemented yet")
-        #
-        # if self.img_documents:
-        #     raise NotImplementedError("Image not implemented yet")
-
         need_extraction = {
             doc.uid: doc for doc in self.documents if not doc.is_extracted()
         }
@@ -371,7 +355,6 @@ class Dataset(AbstractDataset):
         if not self._images:
             self.get_images()
 
-        print({doc.uid: {im.id: im for im in doc.images} for doc in self.documents})
         return {doc.uid: {im.id: im for im in doc.images} for doc in self.documents}
 
     def clear_dataset(self) -> Dict:
@@ -388,7 +371,7 @@ class Dataset(AbstractDataset):
 
         for doc in self.documents:
             shutil.rmtree(doc.path, ignore_errors=True)
-            # TODO delete effectively
+            # TODO delete effectively (do not work for certain type of document)
 
         # TODO delete dataset from API ⚠️⚠️⚠️⚠️
 
@@ -496,9 +479,6 @@ class Dataset(AbstractDataset):
 
     @property
     def tasks(self):
-        # for task_prefix in settings.DEMO_APPS:
-        #     if hasattr(self, f"{task_prefix}_tasks"):
-        #         yield getattr(self, f"{task_prefix}_tasks").all()
         t = []
         for task_prefix in settings.DEMO_APPS:
             if hasattr(self, f"{task_prefix}_tasks"):

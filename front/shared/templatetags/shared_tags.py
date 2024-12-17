@@ -1,6 +1,8 @@
 from django import template
 from django.utils.safestring import mark_safe
 
+from ..utils import pprint
+
 register = template.Library()
 
 
@@ -86,3 +88,8 @@ def can_admin_accounts(user):
 @register.simple_tag
 def can_monitor(user, app_name):
     return user.has_perm(f"{app_name}.monitor_{app_name}")
+
+
+# @register.filter("dump")
+# def dump(value):
+#     return f"<pre>{pprint(value)}</pre>"

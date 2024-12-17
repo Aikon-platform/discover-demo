@@ -60,14 +60,17 @@ class DatasetDeleteView(DatasetMixin, LoginRequiredIfConfProtectedMixin, DetailV
     template_name = "tasking/delete.html"
 
     def get_extra_warning(self):
-        task_nb = 0
         task_html = "<ul>"
-        for status, task_list in self.object.get_tasks_by_prop("status").items():
-            task_list = [f"{task} #{task.id}" for task in task_list]
-            task_nb += len(task_list)
-            task_html += f"<li><span class='tag status status-{status}'>{status}</span> {'<br>'.join(task_list)}</li>"
+        tasks = self.object.tasks
+        for task in self.object.tasks:
+            status = task.status
+            task_html += f"<li><span class='tag status status-{status}'>{status}</span> {task} #{task.id}</li>"
+        # for status, task_list in self.object.get_tasks_by_prop("status").items():
+        #     task_list = [f"{task} #{task.id}" for task in task_list]
+        #     task_nb += len(task_list)
+        #     task_html += f"<li><span class='tag status status-{status}'>{status}</span> {'<br>'.join(task_list)}</li>"
         task_html += "</ul>"
-        return f"This dataset is used in <b>{task_nb} task(s)</b>: {task_html}"
+        return f"This dataset is used in <b>{len(tasks)} task(s)</b>: {task_html}"
 
     def get_context_data(self, **kwargs) -> dict[str, Any]:
         context = super().get_context_data(**kwargs)

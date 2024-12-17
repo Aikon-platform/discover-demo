@@ -2,6 +2,8 @@ import requests
 import orjson
 import traceback
 
+from django.urls import reverse
+
 from regions.models import AbstractAPITaskOnCrops
 
 
@@ -77,6 +79,42 @@ class Similarity(AbstractAPITaskOnCrops("similarity")):
     @property
     def similarity_matrix_url(self):
         return f"{self.result_media_url}/pairs.json"
+
+    @property
+    def similarity_index(self):
+        with open(self.result_full_path / "index.json", "r") as f:
+            return orjson.loads(f.read())
+
+    @property
+    def similarity_matrix(self):
+        with open(self.result_full_path / "pairs.json", "r") as f:
+            return orjson.loads(f.read())
+
+    def get_similarity_matrix_for_display(self, as_list=True):
+        # TODO improve!!!
+        images = self.similarity_index.get("images", [])
+        pairs = self.similarity_matrix
+        similarities = {}
+        for q_img, s_img, score in pairs:
+            query = images[q_img]
+            query["score"] = float(score)
+            sim = images[s_img]
+            sim["score"] = float(score)
+            if query["id"] not in similarities:
+                similarities[query["id"]] = {"query": images[q_img], "sim": []}
+            if sim["id"] not in similarities:
+                similarities[sim["id"]] = {"query": images[s_img], "sim": []}
+            similarities[query["id"]]["sim"].append(sim)
+            similarities[sim["id"]]["sim"].append(query)
+
+        for img in similarities.values():
+            img["sim"].sort(key=lambda x: x["score"], reverse=True)
+
+        return list(similarities.values()) if as_list else similarities
+
+    def get_download_json_url(self):
+        """Get the URL for downloading crops in a json format"""
+        return reverse("similarity:download_json", kwargs={"pk": self.pk})
 
     def prepare_sim_browser(self):
         sim_index = self.similarity.get("index", {})

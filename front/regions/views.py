@@ -1,5 +1,3 @@
-import os
-
 from django.views.generic import View
 from django.http import FileResponse, Http404, HttpResponse
 

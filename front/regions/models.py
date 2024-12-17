@@ -1,8 +1,4 @@
 import json
-from pathlib import Path
-import zipfile
-from PIL import Image
-import traceback
 from typing import List, Dict, Iterable, Any
 
 from django.urls import reverse
@@ -23,7 +19,7 @@ class Regions(AbstractAPITaskOnDataset("regions")):
 
     def __str__(self):
         return (
-            f"Crops from {self.dataset}"
+            f"Crops from {self.dataset.name}"
             if self.dataset
             else f"Regions Extraction #{self.pk}"
         )
