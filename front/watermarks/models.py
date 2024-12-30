@@ -8,7 +8,7 @@ import zipfile
 import json
 
 from datasets.utils import PathAndRename
-from tasking.models import AbstractAPITask
+from tasking.models import AbstractAPITaskOnDataset
 
 User = get_user_model()
 
@@ -18,7 +18,7 @@ WATERMARKS_API_URL = getattr(settings, "API_URL", "http://localhost:5000")
 SOURCE_API_BASE_URL = f"{WATERMARKS_API_URL}/watermarks/sources"
 
 
-class WatermarkProcessing(AbstractAPITask("watermarks")):
+class WatermarkProcessing(AbstractAPITaskOnDataset("watermarks")):
     notify_email = False
 
     # The clustering tracking id

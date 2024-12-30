@@ -14,6 +14,7 @@ DEMO_APPS = [
     "similarity",
     "watermarks",
     "regions",
+    "pipelines",
 ]
 
 INSTALLED_APPS = [
