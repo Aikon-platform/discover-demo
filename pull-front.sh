@@ -1,3 +1,6 @@
+ROOT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+source "$ROOT_DIR/scripts/utils.sh"
+
 (
     git pull &&
     cd front/ &&
@@ -7,5 +10,5 @@
     python manage.py collectstatic --noinput &&
     sudo service apache2 restart &&
     sudo service dramatiq restart &&
-    echo -e "\e[32m\n\nUpdate successful !\e[0m"
+    color_echo "green" "Update successful!"
 )
