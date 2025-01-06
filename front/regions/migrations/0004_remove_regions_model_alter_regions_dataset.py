@@ -7,7 +7,7 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("datasets", "0004_croplist_dataset_delete_iiifdataset"),
+        ("datasets", "0005_delete_zippeddataset_remove_dataset_format_and_more"),
         ("regions", "0003_regions_regions"),
     ]
 
