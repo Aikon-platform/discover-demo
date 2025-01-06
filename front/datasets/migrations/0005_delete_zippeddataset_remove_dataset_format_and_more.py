@@ -11,6 +11,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
+        ("regions", "0004_remove_regions_model_alter_regions_dataset"),
         ("dticlustering", "0008_alter_dticlustering_options_and_more"),
         ("datasets", "0004_croplist_dataset_delete_iiifdataset"),
     ]
