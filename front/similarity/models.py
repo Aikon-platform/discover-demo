@@ -93,19 +93,35 @@ class Similarity(AbstractAPITaskOnCrops("similarity")):
     def get_similarity_matrix_for_display(self, as_list=True):
         # TODO improve!!!
         images = self.similarity_index.get("images", [])
-        pairs = self.similarity_matrix
         similarities = {}
-        for q_img, s_img, score in pairs:
-            query = images[q_img]
-            query["score"] = float(score)
-            sim = images[s_img]
-            sim["score"] = float(score)
-            if query["id"] not in similarities:
-                similarities[query["id"]] = {"query": images[q_img], "sim": []}
-            if sim["id"] not in similarities:
-                similarities[sim["id"]] = {"query": images[s_img], "sim": []}
-            similarities[query["id"]]["sim"].append(sim)
-            similarities[sim["id"]]["sim"].append(query)
+
+        # for q_idx, s_idx, score in self.similarity_matrix:
+        #     query = images[q_idx].copy()
+        #     sim = images[s_idx].copy()
+        #
+        #     if query["id"] not in similarities:
+        #         similarities[query["id"]] = {"query": query, "sim": []}
+        #     if sim["id"] not in similarities:
+        #         similarities[sim["id"]] = {"query": sim, "sim": []}
+        #
+        #     sim_copy = sim.copy()
+        #     query_copy = query.copy()
+        #
+        #     sim_copy["score"] = float(score)
+        #     query_copy["score"] = float(score)
+        #
+        #     similarities[query["id"]]["sim"].append(sim_copy)
+        #     similarities[sim["id"]]["sim"].append(query_copy)
+        for q_idx, s_idx, score in self.similarity_matrix:
+            for img1, img2 in [
+                (images[q_idx], images[s_idx]),
+                (images[s_idx], images[q_idx]),
+            ]:
+                if img1["id"] not in similarities:
+                    similarities[img1["id"]] = {"query": img1.copy(), "sim": []}
+                sim_img = img2.copy()
+                sim_img["score"] = float(score)
+                similarities[img1["id"]]["sim"].append(sim_img)
 
         for img in similarities.values():
             img["sim"].sort(key=lambda x: x["score"], reverse=True)
