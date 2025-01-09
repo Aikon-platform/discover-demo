@@ -78,7 +78,7 @@ class AbstractDatasetForm(forms.ModelForm):
         label="Zipped Dataset",
         help_text="A .zip file containing the dataset to be processed",
         accepted_types=["application/zip"],
-        max_size=104857600,
+        max_size=settings.MAX_UPLOAD_SIZE,
         required=False,
         widget=forms.ClearableFileInput(
             attrs={"extra-class": "format-zip format-field new-dataset-field"}

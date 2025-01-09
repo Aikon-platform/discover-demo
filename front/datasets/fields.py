@@ -27,10 +27,9 @@ class ContentRestrictedFileField(FileField):
         file_type, _ = mimetypes.guess_type(data.name)
 
         if self.__accepted_types and file_type:
-            print(file_type)
             if file_type not in self.__accepted_types:
                 raise ValidationError(
-                    "File type not supported. "
+                    f"File type ({file_type}) not supported. "
                     f"Supported types are: {', '.join(self.__accepted_types)}"
                 )
 
