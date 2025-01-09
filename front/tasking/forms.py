@@ -31,7 +31,6 @@ class AbstractTaskForm(forms.ModelForm):
 
 class AbstractTaskOnDatasetForm(AbstractTaskForm, AbstractDatasetForm):
     class Meta(AbstractTaskForm.Meta, AbstractDatasetForm.Meta):
-        # model = AbstractAPITaskOnDataset
         abstract = True
         fields = (
             AbstractTaskForm.Meta.fields
@@ -96,8 +95,6 @@ class AbstractTaskOnDatasetForm(AbstractTaskForm, AbstractDatasetForm):
         return True
 
     def is_valid(self) -> bool:
-        # print("SUPER VALID", super().is_valid())
-        # print("DATA VALID", self.check_dataset())
         return super().is_valid() and self.check_dataset()
 
     def _populate_dataset(self):
