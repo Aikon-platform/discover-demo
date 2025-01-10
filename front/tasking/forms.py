@@ -179,7 +179,7 @@ class AbstractTaskOnCropsForm(AbstractTaskOnDatasetForm):
     def save(self, commit=True):
         # TODO check if this works correctly
         instance = super().save(commit=False)
-        instance.crops = self._crops
+        instance.crops = getattr(self, "_crops", None)
 
         if commit:
             instance.save()
