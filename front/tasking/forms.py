@@ -4,6 +4,17 @@ from datasets.fields import ContentRestrictedFileField
 from datasets.models import Dataset
 from datasets.forms import AbstractDatasetForm, MAP_FIELD_FORMAT
 
+"""
+MODELS: AbstractAPITask
+        → AbstractAPITaskOnDataset (w/ Dataset PK)
+        → AbstractAPITaskOnCrops
+        → Similarity
+FORMS:  AbstractTaskForm + DatasetForm
+        → AbstractTaskOnDatasetForm (combines both)
+        → AbstractTaskOnCropsForm
+        → SimilarityForm
+"""
+
 
 class AbstractTaskForm(forms.ModelForm):
     class Meta:

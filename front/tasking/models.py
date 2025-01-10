@@ -18,6 +18,17 @@ from django.conf import settings
 
 from datasets.models import Dataset
 
+"""
+MODELS: AbstractAPITask
+        → AbstractAPITaskOnDataset (w/ Dataset PK)
+        → AbstractAPITaskOnCrops
+        → Similarity
+FORMS:  AbstractTaskForm + DatasetForm
+        → AbstractTaskOnDatasetForm (combines both)
+        → AbstractTaskOnCropsForm
+        → SimilarityForm
+"""
+
 User = get_user_model()
 
 API_URL = getattr(settings, "API_URL", "http://localhost:5000")
