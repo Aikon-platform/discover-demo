@@ -48,7 +48,7 @@ class DatasetListView(DatasetMixin, LoginRequiredIfConfProtectedMixin, ListView)
         if not self.request.user.is_authenticated:
             return qset.none()
         if not self.request.user.has_perm(self.permission_see_all):
-            qset = qset.filter(requested_by=self.request.user)
+            qset = qset.filter(created_by=self.request.user)
         return qset
 
 

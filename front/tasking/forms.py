@@ -4,6 +4,17 @@ from datasets.fields import ContentRestrictedFileField
 from datasets.models import Dataset
 from datasets.forms import AbstractDatasetForm, MAP_FIELD_FORMAT
 
+"""
+MODELS: AbstractAPITask
+        → AbstractAPITaskOnDataset (w/ Dataset PK)
+        → AbstractAPITaskOnCrops
+        → Similarity
+FORMS:  AbstractTaskForm + DatasetForm
+        → AbstractTaskOnDatasetForm (combines both)
+        → AbstractTaskOnCropsForm
+        → SimilarityForm
+"""
+
 
 class AbstractTaskForm(forms.ModelForm):
     class Meta:
@@ -31,7 +42,6 @@ class AbstractTaskForm(forms.ModelForm):
 
 class AbstractTaskOnDatasetForm(AbstractTaskForm, AbstractDatasetForm):
     class Meta(AbstractTaskForm.Meta, AbstractDatasetForm.Meta):
-        # model = AbstractAPITaskOnDataset
         abstract = True
         fields = (
             AbstractTaskForm.Meta.fields
@@ -96,8 +106,6 @@ class AbstractTaskOnDatasetForm(AbstractTaskForm, AbstractDatasetForm):
         return True
 
     def is_valid(self) -> bool:
-        # print("SUPER VALID", super().is_valid())
-        # print("DATA VALID", self.check_dataset())
         return super().is_valid() and self.check_dataset()
 
     def _populate_dataset(self):
@@ -182,7 +190,7 @@ class AbstractTaskOnCropsForm(AbstractTaskOnDatasetForm):
     def save(self, commit=True):
         # TODO check if this works correctly
         instance = super().save(commit=False)
-        instance.crops = self._crops
+        instance.crops = getattr(self, "_crops", None)
 
         if commit:
             instance.save()

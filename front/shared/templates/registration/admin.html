@@ -18,7 +18,7 @@
                         <span class="tag username">{{ user.username }}</span>
                         <span class="nom">{{ user.get_full_name }}</span>
                         <span class="tag email"><a href="mailto:{{ user.email }}">{{ user.email }}</a></span>
-                        <form class="action" action="{% url "accounts_validate" user.id %}" method="post">
+                        <form class="action" action="{% url "accounts_validate" user.id %}" method="post" class="py-4">
                             {% csrf_token %}
                             <input type="submit" name="validate" value="{% trans "Validate" %}" class="button is-success">
                             <a href="{% url "accounts_reject" user.id %}" class="button is-danger">{% trans "Delete" %}</a>
