@@ -30,60 +30,12 @@
             </div>
         {% endif %}
 
-        <table class="table is-fullwidth">
-            <tbody>
-            {% for similarities in object.similarity_task.get_similarity_matrix_for_display %}
-                <tr class="is-fullwidth">
-                    {% with q_img=similarities.query %}
-                        <th class="center-flex is-narrow" style="width: 300px; margin-bottom: -1px;">
-                            <div class="center-flex mt-2" style="position: relative">
-                                <img class="card mb-2" src="{{ q_img.url }}" alt="{{ q_img.src }}"
-                                     style="max-width: 90%; display: block; margin:0;">
-                                <span class="tag is-light">{{ q_img.src }}</span>
-                            </div>
-                        </th>
-                    {% endwith %}
+        <div id="matches" class="watermark-matches"></div>
 
-                    <td style="width: 100%">
-                        <div class="grid is-col-min-5">
-                            {% for s_img in similarities.sim %}
-                                <div class="cell region is-center p-4" style="width: 130px;">
-                                    <figure class="image card region-image mb-2"
-                                            style="height: 130px; min-width: 130px;">
-                                        <img class="region-img" src="{{ s_img.url }}" alt="{{ s_img.src }}">
-                                    </figure>
-                                    <span class="tag is-light is-centered">{{ s_img.score }}</span>
-                                </div>
-                            {% endfor %}
-                        </div>
-                    </td>
-                </tr>
-            {% endfor %}
-            </tbody>
-        </table>
-
-        {#<div id="matches" class="watermark-matches"></div>#}
-        {#<script type="text/javascript">#}
-        {#    DemoTools.initSimilaritySimBrowser(#}
-        {#        document.getElementById("matches"),#}
-        {#        "{{ object.index_url|escapejs }}",#}
-        {#        "{{ object.similarity_matrix_url|escapejs }}"#}
-        {#    );#}
-        {#</script>#}
+        <script type="text/javascript">
+            DemoTools.initSimilaritySimBrowser(
+                document.getElementById("matches"), "{{ object.similarity_task.index_url|escapejs }}",
+                "{{ object.similarity_task.similarity_matrix_url|escapejs }}");
+        </script>
     </div>
 {% endif %}
-
-<style>
-    .region-img {
-        object-fit: contain;
-        height: 100% !important;
-    }
-
-    th, td {
-        border: none !important;
-    }
-
-    tr {
-        border-bottom: 1px solid #e6e6e6;
-    }
-</style>
