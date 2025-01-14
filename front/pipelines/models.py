@@ -102,7 +102,10 @@ class Pipeline(AbstractTaskOnDataset("pipelines")):
             requested_by=self.requested_by,
             notify_email=False,
             pipeline=self,
-            parameters={"model": "fasterrcnn_watermarks.pth"},
+            parameters={
+                "model": "fasterrcnn_watermarks.pth",
+                "postprocess": "watermarks",
+            },
         )
         self.regions_task.save()
         self.save()
@@ -114,7 +117,7 @@ class Pipeline(AbstractTaskOnDataset("pipelines")):
             requested_by=self.requested_by,
             notify_email=False,
             pipeline=self,
-            parameters={"feat_net": "dino_deitsmall16_pretrain", "algorithm": "cosine"},
+            parameters={"feat_net": "resnet18_watermarks", "algorithm": "cosine"},
             crops=self.regions_task,
         )
         self.similarity_task.save()
