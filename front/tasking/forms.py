@@ -73,9 +73,11 @@ class AbstractTaskOnDatasetForm(AbstractTaskForm, AbstractDatasetForm):
 
         super().__init__(*args, **kwargs)
 
-        self.fields["dataset"].queryset = self.fields["dataset"].queryset.filter(
-            created_by=self._user,
-        )
+        dataset_queryset = self.fields["dataset"].queryset
+        if not self._user.is_superuser:
+            dataset_queryset = dataset_queryset.filter(created_by=self._user)
+
+        self.fields["dataset"].queryset = dataset_queryset
 
     def check_dataset(self):
         """
