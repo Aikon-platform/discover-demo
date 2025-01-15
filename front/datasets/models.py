@@ -72,7 +72,7 @@ class Document:
     @property
     def mapping_path(self):
         """
-        JSON file containing mapping in the form of
+        DEPRECATED: JSON file containing mapping in the form of
         {
             "image_name_front.jpg": "image_name_api.jpg",
             "image_name_front.png": "image_name_api.png",
@@ -80,6 +80,13 @@ class Document:
         }
         """
         return self.path / "mapping.json"
+
+    @property
+    def images_info_path(self):
+        """
+        JSON file containing image information
+        """
+        return self.path / "images.json"
 
     @property
     def img_path(self):
@@ -122,7 +129,7 @@ class Document:
             if p.suffix.lower() in IMG_EXTENSIONS
         ]
 
-    def _list_img_mapping(self):
+    def _legacy_list_img_mapping(self):
         try:
             with open(self.mapping_path, "r") as f:
                 mapping = json.load(f)
@@ -133,17 +140,16 @@ class Document:
         except Exception:
             return []
 
-    def _create_mapping(self, images: List["Image"]):
-        mapping = {img.id: img.src for img in images}
-        with open(self.mapping_path, "w") as f:
-            json.dump(mapping, f, indent=4)
-
     def _list_images(self) -> List["Image"]:
         if self.mapping_path.exists():
-            return self._list_img_mapping()
+            return self._legacy_list_img_mapping()
+
+        if self.images_info_path.exists():
+            with open(self.images_info_path, "r") as f:
+                data = json.load(f)
+            return [Image.from_dict(im, self, self.img_path) for im in data]
 
         images = self._list_img_dir()
-        self._create_mapping(images)
         return images
 
 
@@ -152,14 +158,26 @@ class Image:
     id: str
     src: str
     path: Path
+    metadata: Dict[str, str] = None
     document: "Document" = None
 
-    def to_dict(self) -> Dict:
+    def to_dict(self, relpath: Path) -> Dict:
         return {
             "id": self.id,
             "src": str(self.src),
-            "path": str(self.path),
+            "path": str(self.path.relative_to(relpath)),
+            "metadata": self.metadata,
         }
+
+    @classmethod
+    def from_dict(cls, data: Dict, document: "Document", relpath: Path) -> "Image":
+        return cls(
+            id=data["id"],
+            src=data["src"],
+            path=relpath / data["path"],
+            metadata=data.get("metadata", None),
+            document=document,
+        )
 
     @property
     def url(self):
