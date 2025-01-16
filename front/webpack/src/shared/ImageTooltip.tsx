@@ -1,30 +1,30 @@
 import React from "react";
 import { IconBtn } from "./IconBtn";
-import { MatchTransformation } from "../SimilarityApp/types";
-import { ImageInfo } from "./ImageDisplay";
+import { MatchTransposition } from "../SimilarityApp/types";
+import { ImageToDisplay } from "./ImageDisplay";
 
 
 export interface TooltipProps {
-    image?: ImageInfo;
-    transformations?: MatchTransformation[];
+    image?: ImageToDisplay;
+    transpositions?: MatchTransposition[];
 }
 
 export interface TooltipContext {
     // Context to manage focusing on a Watermark
     setTooltip?: (tooltip?:TooltipProps) => void;
-    getTitle?: (image: ImageInfo) => string;
-    getSubtitle?: (image: ImageInfo) => string;
+    getTitle?: (image: ImageToDisplay) => string;
+    getSubtitle?: (image: ImageToDisplay) => string;
 }
 
 export const TooltipContext = React.createContext<TooltipContext>({});
 
-export function ImageTooltip({ image, transformations }: TooltipProps) {
+export function ImageTooltip({ image, transpositions }: TooltipProps) {
     /*
     Component to render a magnified view of a watermark.
     */
     const context = React.useContext(TooltipContext);
-    const getTitle = context.getTitle || ((image: ImageInfo) => image.title);
-    const getSubtitle = context.getSubtitle || ((image: ImageInfo) => image.subtitle);
+    const getTitle = context.getTitle || ((image: ImageToDisplay) => image.title);
+    const getSubtitle = context.getSubtitle || ((image: ImageToDisplay) => image.subtitle);
     const refTooltip = React.useRef<HTMLDivElement>(null);
 
     const followMouse = (e: MouseEvent) => {
@@ -44,7 +44,7 @@ export function ImageTooltip({ image, transformations }: TooltipProps) {
     return image && (
         <div className="tooltip" ref={refTooltip}>
             <div className="display-image">
-                <img src={image.url} alt={image.id} className={"display-img " + (transformations?.join(" "))} />
+                <img src={image.url} alt={image.id} className={"display-img " + (transpositions?.join(" "))} />
             </div>
             <h4 className="mt-2">{getTitle(image)}</h4>
             <p>{getSubtitle(image)}</p>

@@ -1,6 +1,6 @@
 import React from "react";
 import { ClusterEditorContext } from "../actions";
-import { ImageInfo } from "../types";
+import { ClusterImageInfo } from "../types";
 import { ImageDisplay } from "../../shared/ImageDisplay";
 
 /*
@@ -11,18 +11,18 @@ import { ImageDisplay } from "../../shared/ImageDisplay";
   - SelectableImageList: the list of images with checkboxes for selection
 */
 
-export function SelectableImageList(props: { images: ImageInfo[]; limit?: number; transformed: boolean; expander?: React.ReactNode; }) {
+export function SelectableImageList(props: { images: ClusterImageInfo[]; limit?: number; transformed: boolean; expander?: React.ReactNode; }) {
   const editorContext = React.useContext(ClusterEditorContext);
   const selection = editorContext!.state.image_selection;
 
-  const toggleSelection = (image: ImageInfo) => {
+  const toggleSelection = (image: ClusterImageInfo) => {
     editorContext!.dispatch({ type: "selection_change", images: [image], selected: !selection.has(image) });
   };
 
   return (
     <div className="cl-images cl-selectable">
       {props.images.slice(0, props.limit).map((image) => (
-        <ClusterImage key={image.path} image={image} transformed={props.transformed}
+        <ClusterImage key={image.id} image={image} transformed={props.transformed}
           selectable={true} selected={selection.has(image)} onClick={() => toggleSelection(image)} />
       ))}
       {props.images.length === 0 && <p>∅</p>}
@@ -32,11 +32,11 @@ export function SelectableImageList(props: { images: ImageInfo[]; limit?: number
 }
 
 
-export function BasicImageList(props: { images: ImageInfo[]; transformed: boolean; limit?: number; expander?: React.ReactNode; }) {
+export function BasicImageList(props: { images: ClusterImageInfo[]; transformed: boolean; limit?: number; expander?: React.ReactNode; }) {
   return (
     <div className="cl-images">
       {props.images.slice(0, props.limit).map((image) => (
-        <ClusterImage key={image.path} image={image} transformed={props.transformed} selectable={false} />
+        <ClusterImage key={image.id} image={image} transformed={props.transformed} selectable={false} />
       ))}
       {props.images.length === 0 && <p>∅</p>}
       {props.expander}
@@ -45,7 +45,7 @@ export function BasicImageList(props: { images: ImageInfo[]; transformed: boolea
 }
 
 
-export function ClusterImage(props: { image: ImageInfo; transformed: boolean; selected?: boolean; selectable: boolean; onClick?: () => void; }) {
+export function ClusterImage(props: { image: ClusterImageInfo; transformed: boolean; selected?: boolean; selectable: boolean; onClick?: () => void; }) {
   const editorContext = React.useContext(ClusterEditorContext);
   const image = props.image;
 
@@ -54,9 +54,8 @@ export function ClusterImage(props: { image: ImageInfo; transformed: boolean; se
       {props.selectable && <a href="javascript:void(0)" className="cl-selecter"></a>}
       <ImageDisplay image={{
         ...image,
-        id: image.id.toString(),
-        title: image.path,
-        url: (editorContext?.state.base_url || "") + ((props.transformed && image.tsf_url) ? image.tsf_url : image.raw_url),
+        id: image.iid.toString(),
+        url: (editorContext?.state.base_url || "") + ((props.transformed && image.tsf_url) ? image.tsf_url : image.url),
       }} disable_magnify={props.selectable} />
     </div>
   );

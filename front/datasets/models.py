@@ -161,7 +161,7 @@ class Image:
     metadata: Dict[str, str] = None
     document: "Document" = None
 
-    def to_dict(self, relpath: Path) -> Dict:
+    def to_dict(self, relpath: Path = None) -> Dict:
         if relpath is None:
             relpath = self.document.path
         return {
@@ -172,7 +172,9 @@ class Image:
         }
 
     @classmethod
-    def from_dict(cls, data: Dict, document: "Document", relpath: Path) -> "Image":
+    def from_dict(
+        cls, data: Dict, document: "Document", relpath: Path = None
+    ) -> "Image":
         if relpath is None:
             relpath = document.path
         return cls(

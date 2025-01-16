@@ -1,5 +1,6 @@
-import { ClusterInfo, ClusteringFile, ImageInfo } from "../../ClusterApp/types";
-import { SimilarityIndex, SimilarityMatches, SimImage } from "../types";
+import { ClusterInfo, ClusteringFile, ClusterImageInfo } from "../../ClusterApp/types";
+import { SimilarityIndex, SimilarityMatches } from "../types";
+import { ImageInfo } from "../../shared/types";
 
 export interface Edge {
     source: number;
@@ -51,7 +52,7 @@ export function connectedComponents(graph: Graph, threshold: number, graph_size:
 
 export function graphFromSimilarityMatches(index: SimilarityIndex, matches: SimilarityMatches[]): Graph {
     const edges: Edge[] = [];
-    const map_index = new Map<SimImage, number>();
+    const map_index = new Map<ImageInfo, number>();
     for (const [i, image] of index.images.entries()) {
         map_index.set(image, i);
     }
@@ -73,17 +74,17 @@ export function convertToClusteringFile(index: SimilarityIndex, matches: Similar
     }
     const cluster_info = new Map<number, ClusterInfo>();
     for (const [id, cluster] of cluster_map) {
-        const images: ImageInfo[] = cluster.members.map((i) => {
+        const images: ClusterImageInfo[] = cluster.members.map((i) => {
             const image = index.images[i];
             return {
                 ...image,
-                id: i,
+                iid: i,
                 raw_url: image.url,
                 path: image.url,
                 name: image.name || "",
             };
         });
-        const pid = (id >= 0 ? id : cluster_map.size + 1);
+        const pid = (id >= 0 ? id+1 : cluster_map.size + 1);
         cluster_info.set(pid, { id: pid, name: (id >= 0 ? `Cluster ${id+1}` : "Unclustered"), images });
     }
     return { clusters: cluster_info, background_urls: index.sources.map((s) => s.src) };

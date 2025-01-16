@@ -1,4 +1,4 @@
-import { EditorContext, EditorState, EditorAction, ImageInfo, ClusterInfo } from "./types";
+import { EditorContext, EditorState, EditorAction, ClusterImageInfo, ClusterInfo } from "./types";
 import React from "react";
 
 /*
@@ -8,10 +8,10 @@ import React from "react";
 
 export const ClusterEditorContext = React.createContext<EditorContext | undefined>(undefined);
 
-function eraseImagesMetadata(images: ImageInfo[]): ImageInfo[] {
+function eraseImagesMetadata(images: ClusterImageInfo[]): ClusterImageInfo[] {
   return images.map((image) => {
     const { tsf_url, ...rest } = image;
-    return { ...rest, distance: image.id + 10 };
+    return { ...rest, distance: image.iid + 10 };
   });
 }
 
@@ -46,10 +46,13 @@ function handleViewerAction(state: EditorState, action: EditorAction): EditorSta
       return { ...state, viewer_display: action.display as "grid" | "rows" };
 
     case "viewer_edit":
-      return { ...state, editing: true, editingCluster: null, image_selection: new Set<ImageInfo>() };
+      return { ...state, editing: true, editingCluster: null, image_selection: new Set<ClusterImageInfo>() };
+
+    case "viewer_end_edit":
+      return { ...state, editing: false, editingCluster: null, image_selection: new Set<ClusterImageInfo>() };
 
     case "viewer_focus":
-      return { ...state, editingCluster: action.cluster_id, image_selection: new Set<ImageInfo>() };
+      return { ...state, editingCluster: action.cluster_id, image_selection: new Set<ClusterImageInfo>() };
   }
   throw new Error("Invalid action type " + action.type);
 }
@@ -88,7 +91,7 @@ function handleSelectionAction(state: EditorState, action: EditorAction): Editor
   /*
   Handle actions that are selection-specific.
   */
-  const selection = new Set<ImageInfo>(state.image_selection);
+  const selection = new Set<ClusterImageInfo>(state.image_selection);
   if (state.editingCluster === null) {
     return state;
   }
@@ -105,16 +108,16 @@ function handleSelectionAction(state: EditorState, action: EditorAction): Editor
       return { ...state, image_selection: selection };
 
     case "selection_invert":
-      const inverted = new Set<ImageInfo>(state.content.clusters.get(state.editingCluster)!.images);
+      const inverted = new Set<ClusterImageInfo>(state.content.clusters.get(state.editingCluster)!.images);
       selection.forEach(item => inverted.delete(item));
       return { ...state, image_selection: inverted };
 
     case "selection_all":
-      const all = new Set<ImageInfo>(state.content.clusters.get(state.editingCluster)!.images);
+      const all = new Set<ClusterImageInfo>(state.content.clusters.get(state.editingCluster)!.images);
       return { ...state, image_selection: all };
 
     case "selection_clear":
-      return { ...state, image_selection: new Set<ImageInfo>() };
+      return { ...state, image_selection: new Set<ClusterImageInfo>() };
 
     case "selection_move":
       if (action.cluster_id === null) {
@@ -147,7 +150,7 @@ function handleSelectionAction(state: EditorState, action: EditorAction): Editor
         ...state,
         content: { ...state.content, clusters: new_clusters },
         editingCluster: null,
-        image_selection: new Set<ImageInfo>(),
+        image_selection: new Set<ClusterImageInfo>(),
         askingCluster: null
       };
   }

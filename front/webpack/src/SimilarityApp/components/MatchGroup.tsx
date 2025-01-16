@@ -1,16 +1,17 @@
 import React, { useReducer } from "react";
-import { SimImage, SimilarityMatch } from "../types";
+import { SimilarityMatch } from "../types";
+import { ImageInfo } from "../../shared/types";
 import { ImageDisplay } from "../../shared/ImageDisplay";
 import { Icon } from "@iconify/react";
 import { IconBtn } from "../../shared/IconBtn";
-import { NameProviderContext, getSourceName } from "../utils/naming";
+import { NameProviderContext, getSourceName } from "../../shared/naming";
 import { SimilarityHrefContext } from "./ImageSimBrowser";
 
 interface MatchGroupProps {
     matches: SimilarityMatch[];
     grouped?: boolean;
     threshold?: number;
-    wref?: SimImage;
+    wref?: ImageInfo;
 }
 
 export function MatchGroup({ matches, grouped, threshold, wref }: MatchGroupProps) {

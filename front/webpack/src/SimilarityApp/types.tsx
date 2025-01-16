@@ -1,5 +1,6 @@
 import React from "react";
 import internal from "stream";
+import { Document, ImageInfo } from "../shared/types";
 
 // RAW TYPES
 
@@ -21,7 +22,7 @@ export interface SimilarityIndexRaw {
             metadata?: { [key: string]: string };
         }
     ]
-    flips?: MatchTransformation[];
+    transpositions?: MatchTransposition[];
 }
 
 export type SimpleSimilarityMatchRaw = [number, number, number] // [source_index, query_index, similarity]
@@ -36,35 +37,15 @@ export interface SimilarityMatchRaw {
 
 export interface SimilarityOutputRaw {
     matches: SimilarityMatchRaw[][]; // matches for each query image
-    query_flips: MatchTransformation[];
+    query_transpositions: MatchTransposition[];
 }
 
-export type MatchTransformation = null | "rot90" | "rot180" | "rot270" | "hflip" | "vflip";
-
-// SOURCE TYPES
-
-export interface SimDocument {
-    uid: string;
-    src: string;
-    type: string;
-    name: string;
-    metadata: { [key: string]: string };
-}
-
-export interface SimImage {
-    id: string;
-    url: string;
-    src?: string;
-    name?: string;
-    document?: SimDocument;
-    link?: string;
-    metadata?: { [key: string]: string };
-}
+export type MatchTransposition = "none" | "rot90" | "rot180" | "rot270" | "hflip" | "vflip" | "rot90 hflip" | "rot180 hflip" | "rot270 hflip";
 
 export interface SimilarityIndex {
-    sources: SimDocument[];
-    images: SimImage[];
-    flips: MatchTransformation[];
+    sources: Document[];
+    images: ImageInfo[];
+    transpositions: MatchTransposition[];
 }
 
 // QUERY TYPES
@@ -78,23 +59,14 @@ export interface QueryImage {
 // RESULT TYPES
 
 export interface SimilarityMatch {
-    image: SimImage;
+    image: ImageInfo;
     similarity: number;
-    transformations: MatchTransformation[];
+    q_transposition: MatchTransposition;
+    m_transposition: MatchTransposition;
 }
 
 export interface SimilarityMatches {
-    query: SimImage;
+    query: ImageInfo;
     matches: SimilarityMatch[];
     matches_by_document: SimilarityMatch[][];
-}
-
-// CONTEXT
-
-export interface NameProvider {
-    [source_id: string]: {
-        name: string;
-        metadata: { [key: string]: string };
-        images: { [image_id: string]: string };
-    }
 }

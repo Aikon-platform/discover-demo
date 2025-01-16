@@ -117,7 +117,11 @@ class Pipeline(AbstractTaskOnDataset("pipelines")):
             requested_by=self.requested_by,
             notify_email=False,
             pipeline=self,
-            parameters={"feat_net": "resnet18_watermarks", "algorithm": "cosine"},
+            parameters={
+                "feat_net": "resnet18_watermarks",
+                "algorithm": "cosine",
+                "transpositions": ["none", "rot90", "rot270", "hflip", "vflip"],
+            },
             crops=self.regions_task,
         )
         self.similarity_task.save()

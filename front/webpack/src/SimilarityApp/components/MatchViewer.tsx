@@ -12,8 +12,8 @@ export function MatchViewer({ all_matches }: { all_matches: SimilarityMatches[] 
 
     return (
         <MagnifyingContext.Provider value={{magnify: setMagnifying}}>
-            <div className="viewer-options">
-                <p className="field">
+            <div className="toolbar">
+                <p className="toolbar-item field">
                     <label className="checkbox">
                         <input type="checkbox" className="checkbox mr-2" name="group-by-source" id="group-by-source" defaultChecked onChange={toggleGroupBySource} />
                         Group by source document

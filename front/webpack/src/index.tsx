@@ -7,6 +7,7 @@ import { unserializeSingleWatermarkMatches, unserializeWatermarkSimilarity } fro
 import { SimilarityApp } from './SimilarityApp';
 import { unserializeSimilarityMatrix } from "./SimilarityApp/utils/serialization";
 import { unserializeClusterFile } from './ClusterApp/types';
+import { SimilarityMode } from './SimilarityApp/components/SimilarityApp';
 
 function initClusterViewer(
   target_root: HTMLElement,
@@ -45,7 +46,7 @@ function initProgressTracker(target_root: HTMLElement, tracking_url: string) {
   );
 }
 
-function initSimilaritySimBrowser(target_root: HTMLElement, source_index_url: string, sim_matrix_url: string) {
+function initSimilaritySimBrowser(target_root: HTMLElement, source_index_url: string, sim_matrix_url: string, mode: string) {
   /*
   Main entry point for the similarity browser app.
 
@@ -57,7 +58,7 @@ function initSimilaritySimBrowser(target_root: HTMLElement, source_index_url: st
     fetch(sim_matrix_url).then(response => response.json()).then(sim_matrix => {
       const all_matches = unserializeSimilarityMatrix(sim_matrix, source_index);
       createRoot(target_root).render(
-        <SimilarityApp index={all_matches.index} matches={all_matches.matches} />
+        <SimilarityApp index={all_matches.index} matches={all_matches.matches} mode={(mode as SimilarityMode) || "browse"} />
       );
     });
   });

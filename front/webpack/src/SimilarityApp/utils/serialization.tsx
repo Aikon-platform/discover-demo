@@ -1,4 +1,5 @@
-import { SimilarityIndexRaw, SimilarityIndex, SimImage, SimpleSimilarityMatchRaw, SimilarityMatches, SimilarityMatchRaw, SimilarityOutputRaw, SimilarityMatch } from "../types";
+import { SimilarityIndexRaw, SimilarityIndex, SimpleSimilarityMatchRaw, SimilarityMatches, SimilarityMatchRaw, SimilarityOutputRaw, SimilarityMatch } from "../types";
+import { ImageInfo } from "../../shared/types";
 
 
 // PROPS
@@ -7,18 +8,19 @@ export function unserializeSimilarityIndex(index: SimilarityIndexRaw): Similarit
     const source_documents = Object.fromEntries(
         Object.entries(index.sources).map(([id, source]) => [id, { name: source.metadata?.name || source.uid, ...source }])
     );
-    const source_images: SimImage[] = index.images.map((image, i) => (
+    const source_images: ImageInfo[] = index.images.map((image, i) => (
         {
             id: image.id,
             src: image.src,
             url: image.url,
-            document: source_documents[image.doc_uid]
+            document: source_documents[image.doc_uid],
+            metadata: image.metadata || {}
         }));
 
     return {
         sources: Object.values(source_documents),
         images: source_images,
-        flips: index.flips || [null]
+        transpositions: index.transpositions || ["none"]
     };
 }
 
@@ -30,10 +32,10 @@ export function unserializeSimilarityMatrix(raw_matches: SimpleSimilarityMatchRa
         complex_matches[query_index].push({ similarity, best_source_flip: 0, best_query_flip: 0, query_index: query_index, source_index: source_index });
         complex_matches[source_index].push({ similarity, best_source_flip: 0, best_query_flip: 0, query_index: source_index, source_index: query_index });
     });
-    return { matches: unserializeImageMatches(index.images, { matches: complex_matches, query_flips: index.flips }, index), index };
+    return { matches: unserializeImageMatches(index.images, { matches: complex_matches, query_transpositions: index.transpositions }, index), index };
 }
 
-export function unserializeImageMatches(queries: SimImage[], raw_matches: SimilarityOutputRaw, index: SimilarityIndex): SimilarityMatches[] {
+export function unserializeImageMatches(queries: ImageInfo[], raw_matches: SimilarityOutputRaw, index: SimilarityIndex): SimilarityMatches[] {
     const matches: SimilarityMatches[] = [];
     for (let i = 0; i < raw_matches.matches.length; i++) {
         const query = queries[i];
@@ -43,7 +45,8 @@ export function unserializeImageMatches(queries: SimImage[], raw_matches: Simila
                 return {
                     image: source_image,
                     similarity: match.similarity,
-                    transformations: [raw_matches.query_flips[match.best_query_flip], index.flips[match.best_source_flip]]
+                    q_transposition: raw_matches.query_transpositions[match.best_query_flip],
+                    m_transposition: index.transpositions[match.best_source_flip]
                 };
             }).sort((a, b) => b.similarity - a.similarity)
         );

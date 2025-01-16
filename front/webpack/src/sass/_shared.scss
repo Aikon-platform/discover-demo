@@ -1,53 +1,22 @@
+// IMAGE DISPLAY BOX
 
-.display-item {
-    position: relative;
-    display: inline-block;
-    line-height: 0;
-    width: 100%;
-    height: 100%;
-    max-width: 200px;
-    flex-basis: 200px;
-    // min-width: 180px;
-    // min-height: 180px;
-
-    .display-tools {
-        position: absolute;
-        top: 0;
-        right: 0;
-        font-size: 1.5em;
-
-        a {
-            padding: 0.2em;
-        }
-
-        svg path {
-            stroke: white;
-            paint-order: stroke;
-            stroke-width: 2;
-        }
-    }
-    .similarity {
-        position: absolute;
-        bottom: 0;
-        right: 0;
-        background-color: rgba(0, 0, 0, 0.5);
-        color: white;
-        font-size: 0.8em;
-        font-weight: bold;
-        padding: 0.4em 0.6em;
-        border-radius: 2*$border-radius 0 0 0;
-        line-height: 1;
-    }
-}
 .display-image {
-    width: 100%;
-    height: 0;
-    padding-bottom: 100%;
     position: relative;
+
+    &::before {
+        content: "";
+        display: block;
+        padding-top: 100%;
+        padding-left: 100%;
+    }
+
     .display-img {
         position: absolute;
         top: 50%;
         left: 50%;
+        width: auto;
+        height: auto;
+        max-height: 100%;
         transform: translate(-50%, -50%);
         &.rot270 {
             transform: translate(-50%, -50%) rotate(270deg);
@@ -73,22 +42,105 @@
     }
 }
 
+.display-item {
+    position: relative;
+    display: inline-block;
+    line-height: 0;
+    width: 100%;
+    height: 100%;
+    max-width: 200px;
+    flex-basis: 200px;
+    // min-width: 180px;
+    // min-height: 180px;
+
+    .display-tools {
+        position: absolute;
+        top: 0;
+        right: 0;
+        font-size: 1.5em;
+        margin-top: 5px;
+
+        a {
+            padding: 0.2em;
+        }
+
+        svg path {
+            stroke: white;
+            paint-order: stroke;
+            stroke-width: 2;
+        }
+    }
+
+    &:not(:hover) .display-tools > *:not(.always-visible) {
+        display: none;
+    }
+
+    .similarity {
+        position: absolute;
+        bottom: 0;
+        right: 0;
+        background-color: rgba(0, 0, 0, 0.5);
+        color: white;
+        font-size: 0.8em;
+        font-weight: bold;
+        padding: 0.4em 0.6em;
+        border-radius: 2*$border-radius 0 0 0;
+        line-height: 1;
+    }
+}
+
 
 .magnifier {
     position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
     z-index: 1000;
-    background-color: #fff;
-    min-width: 60vw;
-    min-height: 60vh;
-    border: 8px solid lighten($faded-color, 5%);
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    border-radius: 4*$border-radius;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+
+    .magnifier-close {
+        position: absolute;
+        top: 0;
+        right: 0;
+        background: none;
+        border: none;
+        color: white;
+        cursor: pointer;
+    }
+
+    .magnifying-content {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100%;
+        width: 100%;
+        max-width: 100%;
+        max-height: 100%;
+        overflow: auto;
+        gap: 2em;
+    }
+
+    .magnifying-item {
+        background-color: white;
+        border-radius: 2*$border-radius;
+        text-align: center;
+        padding: 2em;
+    }
+
+    .magnifying-info {
+        max-width: 400px;
+    }
+
+    &::before {
+        content: "";
+        background-color: rgba(0, 0, 0, 0.5);
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        z-index: -1;
+    }
 }
 
 .tooltip {
@@ -98,6 +150,31 @@
     padding: 0.5em;
     border-radius: 4px;
     max-width: 20em;
-    max-height: 20em;
     z-index: 1000;
+}
+
+.toolbar {
+    margin: 1em -2em;
+    position: sticky;
+    top: 0;
+    z-index: 80;
+    background-color: white;
+    box-shadow: 0 0 5px 0 rgba(0, 0, 0, 0.2);
+    padding: 1em 3em;
+
+    .toolbar-content {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 2em;
+
+        .toolbar-item {
+            padding: 0.7em;
+            background: lighten($faded-color, 10%);
+            border-radius: 2*$border-radius;
+            &.toolbar-btn {
+                background: none;
+            }
+        }
+    }
 }

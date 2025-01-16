@@ -4,6 +4,7 @@ import { Icon } from "@iconify/react";
 import { ClusterInfo, ClusterProps } from "../types";
 import { BasicImageList, SelectableImageList } from "./ImageLists";
 import { IconBtn } from "../../shared/IconBtn";
+import { ClusterCSVExporter } from "./ClusterExporter";
 
 const N_SHOWN = {"grid": 8, "rows": 18};
 
@@ -31,7 +32,7 @@ export function MiniClusterElement(props: { info: ClusterInfo; selected: boolean
       <div className="cl-samples">
         <BasicImageList images={cluster.images} transformed={false} limit={5} />
       </div>
-      <a className="cl-overlay" href="javascript:void(0)"></a>
+      {/* <a className="cl-overlay" href="javascript:void(0)"></a> */}
     </div>
   );
 }
@@ -98,7 +99,7 @@ export function ClusterElement(props: ClusterProps) {
       <div className="cl-props">
         <div className="cl-propcontent">
           <div className="cl-propinfo">
-            <p className="cl-cluster-title">
+            <div className="cl-cluster-title">
             {(renaming && props.editing) ?
                 (<form onSubmit={onRenameSubmit}>
                   <input type="text" ref={nameInput} defaultValue={cluster.name} autoFocus></input>
@@ -109,7 +110,7 @@ export function ClusterElement(props: ClusterProps) {
                   {props.editing && <a href="javascript:void(0)" className="btn is-edit" onClick={() => {toggleEdition(true); setRenaming(true)}} title="Rename"><Icon icon="mdi:edit" /></a>}
                 </React.Fragment>)
             }
-            </p>
+            </div>
 
             <p>{cluster.id >= 0 && <React.Fragment>Cluster #{cluster.id}, {cluster.images.length} images</React.Fragment>}</p>
 
@@ -118,11 +119,15 @@ export function ClusterElement(props: ClusterProps) {
             <p>
               {props.editing ?
               <React.Fragment>
-                <IconBtn icon="mdi:merge" label="Merge with..." onClick={askForMerge}/>
+                <IconBtn icon="mdi:merge" label="Merge cluster with..." onClick={askForMerge}/>
                 <IconBtn icon="mdi:check-bold" label="End edition" onClick={() => toggleEdition(false)} />
               </React.Fragment>:
                 <IconBtn icon="mdi:edit" label="Edit cluster" onClick={() => toggleEdition(true)} />}
-            </p> : btnExpand}
+            </p> :
+              <p>
+                <ClusterCSVExporter clusters={[cluster]} />
+                {btnExpand}
+              </p>}
           </div>
           {cluster.proto_url &&
           <div className="cl-protoinfo">
@@ -137,6 +142,12 @@ export function ClusterElement(props: ClusterProps) {
           </div>}
 
         </div>
+
+        {editable && !props.editing &&
+        <a className="cl-overlay cl-hoveroptions" href="javascript:void(0)" onClick={() => toggleEdition(true)}>
+          <IconBtn icon="mdi:edit" label="Edit cluster" />
+          <IconBtn icon="mdi:merge" label="Merge with..." onClick={(e) => {e.stopPropagation(); askForMerge()}}/>
+          </a>}
       </div>
       <div className="cl-samples">
           {props.editing ?
@@ -144,11 +155,6 @@ export function ClusterElement(props: ClusterProps) {
           <BasicImageList images={cluster.images} transformed={transformed} limit={expanded ? undefined : n_shown} expander={btnMore}/>
           }
       </div>
-      {editable && !props.editing &&
-      <a className="cl-overlay cl-hoveroptions" href="javascript:void(0)" onClick={() => toggleEdition(true)}>
-        <IconBtn icon="mdi:edit" label="Edit cluster" />
-        <IconBtn icon="mdi:merge" label="Merge with..." onClick={(e) => {e.stopPropagation(); askForMerge()}}/>
-        </a>}
     </div>
   );
 }

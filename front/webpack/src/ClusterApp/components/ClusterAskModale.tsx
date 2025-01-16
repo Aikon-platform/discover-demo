@@ -3,6 +3,7 @@ import { MiniClusterElement } from "./ClusterElement";
 import { ClusterInfo } from "../types";
 import { ClusterEditorContext } from "../actions";
 import { IconBtn } from "../../shared/IconBtn";
+import { MagnifyingContext } from "../../shared/ImageMagnifier";
 
 /*
   This file contains the React component that displays a modale to ask the user
@@ -13,6 +14,7 @@ export function ClusterAskModale(props: { for_action: "cluster_merge" | "selecti
     const editorContext = React.useContext(ClusterEditorContext);
     const cluster = editorContext!.state.content.clusters.get(props.not_cluster_id)!;
     const [selected, setSelected] = useState<ClusterInfo | null>(null);
+    const magnifyingContext = React.useContext(MagnifyingContext);
 
     const doAction = () => {
         editorContext!.dispatch({
@@ -40,6 +42,7 @@ export function ClusterAskModale(props: { for_action: "cluster_merge" | "selecti
     ];
 
     return (
+        <MagnifyingContext.Provider value={{ ...magnifyingContext, magnify: undefined, setComparison: undefined }}>
         <div className="cl-modale">
             <div className="cl-modale-wrapper">
                 <div className="cl-modale-content">
@@ -60,5 +63,6 @@ export function ClusterAskModale(props: { for_action: "cluster_merge" | "selecti
                 </div>
             </div>
         </div>
+        </MagnifyingContext.Provider>
     );
 }

@@ -3,7 +3,7 @@ import { SimilarityMatches } from "../types";
 import { ImageDisplay } from "../../shared/ImageDisplay";
 import { MatchGroup } from "./MatchGroup";
 import { MatchCSVExporter } from "./MatchExporter";
-import { getSourceName, NameProviderContext } from "../utils/naming";
+import { getSourceName, NameProviderContext } from "../../shared/naming";
 import { SimilarityHrefContext } from "./ImageSimBrowser";
 
 interface MatchRowProps {

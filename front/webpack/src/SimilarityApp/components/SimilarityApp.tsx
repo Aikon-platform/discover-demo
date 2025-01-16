@@ -1,7 +1,9 @@
 import React from "react";
-import { NameProvider, SimilarityIndex, SimilarityMatches, SimImage } from "../types";
+import { SimilarityIndex, SimilarityMatches } from "../types";
+import { NameProvider } from "../../shared/types";
+import { ImageInfo } from "../../shared/types";
 import { ImageMagnifier, MagnifyingContext, MagnifyProps } from "../../shared/ImageMagnifier";
-import { fetchIIIFNames, getImageName, getSourceName, NameProviderContext } from "../utils/naming";
+import { fetchIIIFNames, getImageName, getSourceName, NameProviderContext } from "../../shared/naming";
 import { IconBtn } from "../../shared/IconBtn";
 import { ImageSimBrowser } from "./ImageSimBrowser";
 import { ClusteringTool } from "./ClusteringTool";
@@ -10,6 +12,7 @@ import { ImageTooltip, TooltipContext, TooltipProps } from "../../shared/ImageTo
 export interface SimilarityProps {
     index: SimilarityIndex;
     matches: SimilarityMatches[];
+    mode?: SimilarityMode;
 }
 
 export type SimilarityMode = "cluster" | "browse";
@@ -18,23 +21,23 @@ export function SimilarityApp(props: SimilarityProps) {
 
     const [nameProvider, setContext] = React.useState<NameProvider>({});
     const [magnifying, setMagnifying] = React.useState<MagnifyProps | null>(null);
-    const [mode, setMode] = React.useState<SimilarityMode>("cluster");
+    const [mode, setMode] = React.useState<SimilarityMode>(props.mode || "cluster");
     const [tooltip, setTooltip] = React.useState<TooltipProps | undefined>(undefined);
 
     React.useEffect(() => {
         fetchIIIFNames(props.index.sources, (ncontext: NameProvider) => setContext({ ...nameProvider, ...ncontext }));
     }, []);
 
-    const getTitle = (image: SimImage) => {
+    const getTitle = (image: ImageInfo) => {
         return getSourceName(nameProvider, image.document) || image.document?.name || image.id;
     }
 
-    const getSubtitle = (image: SimImage) => {
+    const getSubtitle = (image: ImageInfo) => {
         return getImageName(nameProvider, image);
     }
 
     const addtitional_toolbar = (
-        <div className="field column is-horizontal">
+        <div className="toolbar-item toolbar-btn">
             {mode != "browse" && <IconBtn icon="mdi:folder" onClick={() => setMode("browse")} label="Switch to Browse Mode" />}
             {mode != "cluster" && <IconBtn icon="mdi:graph" onClick={() => setMode("cluster")} label="Cluster the results" />}
         </div>
@@ -44,8 +47,8 @@ export function SimilarityApp(props: SimilarityProps) {
     <NameProviderContext.Provider value={nameProvider}>
         <TooltipContext.Provider value={{ getTitle, getSubtitle, setTooltip }}>
             <MagnifyingContext.Provider value={{ magnify: setMagnifying, getTitle, getSubtitle }}>
-                {mode === "browse" && <ImageSimBrowser index={props.index} matches={props.matches} addtitional_toolbar={addtitional_toolbar} />}
-                <ClusteringTool index={props.index} matches={props.matches} visible={mode == "cluster"} additional_toolbar={addtitional_toolbar} />
+                {mode === "browse" && <ImageSimBrowser index={props.index} matches={props.matches} extra_toolbar_items={addtitional_toolbar} />}
+                <ClusteringTool index={props.index} matches={props.matches} visible={mode == "cluster"} extra_toolbar_items={addtitional_toolbar} />
                 {magnifying && <ImageMagnifier {...magnifying} />}
                 {tooltip && <ImageTooltip {...tooltip} />}
             </MagnifyingContext.Provider>
