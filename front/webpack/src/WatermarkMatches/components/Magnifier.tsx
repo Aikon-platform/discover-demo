@@ -1,5 +1,5 @@
 import React from "react";
-import { IconBtn } from "../../utils/IconBtn";
+import { IconBtn } from "../../shared/IconBtn";
 import { MatchTransformation, Watermark } from "../types";
 
 export interface MagnifyProps {

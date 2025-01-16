@@ -7,8 +7,9 @@ export interface ImageInfo {
     path: string;
     raw_url: string;
     tsf_url?: string;
-    distance: number;
+    distance?: number;
     id: number;
+    name?: string;
 }
 
 export interface ClusterInfo {
@@ -29,9 +30,9 @@ export interface ClusteringFile {
     background_urls: string[];
 }
 
-export interface AppProps {
-    clustering_data: any;
-    base_url: string;
+export interface ClusterAppProps {
+    clustering_data: ClusteringFile;
+    base_url?: string;
     editing?: boolean;
     editable?: boolean;
     formfield?: HTMLInputElement;
@@ -44,7 +45,7 @@ export interface EditorState {
     editingCluster: number | null;
     askingCluster: { not_cluster_id: number, for_action: ActionRequiringAsk } | null;
     content: ClusteringFile;
-    base_url: string;
+    base_url?: string;
     image_selection: Set<ImageInfo>;
     viewer_sort: "size" | "id" | "name";
     viewer_display: "grid" | "rows";
@@ -87,4 +88,3 @@ export interface EditorContext {
   state: EditorState;
   dispatch: React.Dispatch<EditorAction>;
 }
-

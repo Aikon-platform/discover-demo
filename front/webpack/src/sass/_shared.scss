@@ -1,0 +1,103 @@
+
+.display-item {
+    position: relative;
+    display: inline-block;
+    line-height: 0;
+    width: 100%;
+    height: 100%;
+    max-width: 200px;
+    flex-basis: 200px;
+    // min-width: 180px;
+    // min-height: 180px;
+
+    .display-tools {
+        position: absolute;
+        top: 0;
+        right: 0;
+        font-size: 1.5em;
+
+        a {
+            padding: 0.2em;
+        }
+
+        svg path {
+            stroke: white;
+            paint-order: stroke;
+            stroke-width: 2;
+        }
+    }
+    .similarity {
+        position: absolute;
+        bottom: 0;
+        right: 0;
+        background-color: rgba(0, 0, 0, 0.5);
+        color: white;
+        font-size: 0.8em;
+        font-weight: bold;
+        padding: 0.4em 0.6em;
+        border-radius: 2*$border-radius 0 0 0;
+        line-height: 1;
+    }
+}
+.display-image {
+    width: 100%;
+    height: 0;
+    padding-bottom: 100%;
+    position: relative;
+    .display-img {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        &.rot270 {
+            transform: translate(-50%, -50%) rotate(270deg);
+        }
+        &.rot180 {
+            transform: translate(-50%, -50%) rotate(180deg);
+        }
+        &.rot90 {
+            transform: translate(-50%, -50%) rotate(90deg);
+        }
+        &.hflip {
+            transform: translate(-50%, -50%) scaleX(-1);
+        }
+        &.hflip.rot270 {
+            transform: translate(-50%, -50%) rotate(270deg) scaleX(-1);
+        }
+        &.hflip.rot180 {
+            transform: translate(-50%, -50%) rotate(180deg) scaleX(-1);
+        }
+        &.hflip.rot90 {
+            transform: translate(-50%, -50%) rotate(90deg) scaleX(-1);
+        }
+    }
+}
+
+
+.magnifier {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 1000;
+    background-color: #fff;
+    min-width: 60vw;
+    min-height: 60vh;
+    border: 8px solid lighten($faded-color, 5%);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    border-radius: 4*$border-radius;
+}
+
+.tooltip {
+    position: fixed;
+    box-shadow: 0 0 5px 0 rgba(0, 0, 0, 0.2);
+    background-color: #fff;
+    padding: 0.5em;
+    border-radius: 4px;
+    max-width: 20em;
+    max-height: 20em;
+    z-index: 1000;
+}

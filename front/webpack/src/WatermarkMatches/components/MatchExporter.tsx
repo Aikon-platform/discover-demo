@@ -1,6 +1,6 @@
 import React from "react";
 import { WatermarkMatch, WatermarkMatches } from "../types";
-import { IconBtn } from "../../utils/IconBtn";
+import { IconBtn } from "../../shared/IconBtn";
 
 function escapeCSVCell(cell?: string | number): string {
     /*

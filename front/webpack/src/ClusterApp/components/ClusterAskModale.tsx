@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { MiniClusterElement } from "./ClusterElement";
 import { ClusterInfo } from "../types";
 import { ClusterEditorContext } from "../actions";
-import { IconBtn } from "../../utils/IconBtn";
+import { IconBtn } from "../../shared/IconBtn";
 
 /*
   This file contains the React component that displays a modale to ask the user

@@ -22782,6 +22782,12 @@ ul.messages li.warning, ul.messages li.error {
   font-style: italic;
 }
 
+.widen {
+  width: calc(100vw - 2em);
+  margin-left: calc(-50vw + 50% + 1em);
+  margin-right: calc(-50vw + 50% + 1em);
+}
+
 .tck-progress .tck-bar-list > * {
   margin: 0.5em 0;
   background-color: #fff;
@@ -22883,6 +22889,7 @@ ul.messages li.warning, ul.messages li.error {
   outline: 2px solid hsl(233, 100%, 63%);
   text-decoration: none;
   line-height: 1;
+  z-index: 2;
 }
 .cluster-viewer .cl-cluster-list .cl-cluster > .cl-samples .cl-selectable.cl-images > *.cl-selected .cl-selecter {
   background-color: hsl(233, 100%, 63%);
@@ -22925,7 +22932,10 @@ ul.messages li.warning, ul.messages li.error {
 .cluster-viewer .cl-cluster-list.cl-display-grid .cl-cluster > .cl-samples .cl-images > * {
   width: 80px;
   height: 80px;
+}
+.cluster-viewer .cl-cluster-list.cl-display-grid .cl-cluster > .cl-samples .cl-images > .cl-placeholder {
   line-height: 80px;
+  overflow: hidden;
 }
 .cluster-viewer .cl-cluster-list.cl-display-grid .cl-cluster.cl-expanded {
   min-width: 100%;
@@ -23024,7 +23034,7 @@ ul.messages li.warning, ul.messages li.error {
   width: 100%;
   justify-content: space-between;
   align-items: center;
-  z-index: 10;
+  z-index: 100;
   height: 60px;
   gap: 1em;
 }
@@ -23052,7 +23062,7 @@ ul.messages li.warning, ul.messages li.error {
   justify-content: center;
   overflow: hidden;
   background-color: rgba(0, 0, 0, 0.5);
-  z-index: 30;
+  z-index: 200;
 }
 .cluster-viewer .cl-modale .cl-modale-wrapper {
   max-height: 100vh;
@@ -23186,7 +23196,7 @@ ul.messages li.warning, ul.messages li.error {
   margin: 1em 0;
   position: sticky;
   top: 0;
-  z-index: 100;
+  z-index: 80;
   background-color: white;
 }
 .watermark-matches .match-row {
@@ -23208,8 +23218,9 @@ ul.messages li.warning, ul.messages li.error {
   border-radius: 20px;
 }
 .watermark-matches .match-row .match-group h4, .watermark-matches .match-row .match-query h4, .watermark-matches .match-row .match-expanded h4 {
-  height: 2.4em;
-  max-height: 2.4em;
+  height: 4em;
+  max-height: 4em;
+  font-size: 1em;
   overflow: hidden;
   text-overflow: ellipsis;
 }
@@ -23232,7 +23243,17 @@ ul.messages li.warning, ul.messages li.error {
   top: 0;
   left: 0;
 }
-.watermark-matches .match-row .match-item {
+.watermark-matches .match-row .match-query {
+  border-color: hsl(233, 100%, 63%);
+  max-width: 200px;
+  flex-grow: 0.2;
+}
+
+.details-wrapper:not(.detailed) .details-content {
+  display: none;
+}
+
+.display-item {
   position: relative;
   display: inline-block;
   line-height: 0;
@@ -23240,24 +23261,22 @@ ul.messages li.warning, ul.messages li.error {
   height: 100%;
   max-width: 200px;
   flex-basis: 200px;
-  min-width: 180px;
-  min-height: 180px;
 }
-.watermark-matches .match-row .match-item .match-tools {
+.display-item .display-tools {
   position: absolute;
   top: 0;
   right: 0;
   font-size: 1.5em;
 }
-.watermark-matches .match-row .match-item .match-tools a {
+.display-item .display-tools a {
   padding: 0.2em;
 }
-.watermark-matches .match-row .match-item .match-tools svg path {
+.display-item .display-tools svg path {
   stroke: white;
   paint-order: stroke;
   stroke-width: 2;
 }
-.watermark-matches .match-row .match-item .similarity {
+.display-item .similarity {
   position: absolute;
   bottom: 0;
   right: 0;
@@ -23269,45 +23288,42 @@ ul.messages li.warning, ul.messages li.error {
   border-radius: 10px 0 0 0;
   line-height: 1;
 }
-.watermark-matches .match-row .match-query {
-  border-color: hsl(233, 100%, 63%);
-  max-width: 200px;
-  flex-grow: 0.2;
-}
-.watermark-matches .match-img {
+
+.display-image {
   width: 100%;
   height: 0;
   padding-bottom: 100%;
   position: relative;
 }
-.watermark-matches .match-img .watermark {
+.display-image .display-img {
   position: absolute;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
 }
-.watermark-matches .match-img .watermark.rot270 {
+.display-image .display-img.rot270 {
   transform: translate(-50%, -50%) rotate(270deg);
 }
-.watermark-matches .match-img .watermark.rot180 {
+.display-image .display-img.rot180 {
   transform: translate(-50%, -50%) rotate(180deg);
 }
-.watermark-matches .match-img .watermark.rot90 {
+.display-image .display-img.rot90 {
   transform: translate(-50%, -50%) rotate(90deg);
 }
-.watermark-matches .match-img .watermark.hflip {
+.display-image .display-img.hflip {
   transform: translate(-50%, -50%) scaleX(-1);
 }
-.watermark-matches .match-img .watermark.hflip.rot270 {
+.display-image .display-img.hflip.rot270 {
   transform: translate(-50%, -50%) rotate(270deg) scaleX(-1);
 }
-.watermark-matches .match-img .watermark.hflip.rot180 {
+.display-image .display-img.hflip.rot180 {
   transform: translate(-50%, -50%) rotate(180deg) scaleX(-1);
 }
-.watermark-matches .match-img .watermark.hflip.rot90 {
+.display-image .display-img.hflip.rot90 {
   transform: translate(-50%, -50%) rotate(90deg) scaleX(-1);
 }
-.watermark-matches .magnifier {
+
+.magnifier {
   position: fixed;
   top: 50%;
   left: 50%;
@@ -23324,6 +23340,13 @@ ul.messages li.warning, ul.messages li.error {
   border-radius: 20px;
 }
 
-.details-wrapper:not(.detailed) .details-content {
-  display: none;
+.tooltip {
+  position: fixed;
+  box-shadow: 0 0 5px 0 rgba(0, 0, 0, 0.2);
+  background-color: #fff;
+  padding: 0.5em;
+  border-radius: 4px;
+  max-width: 20em;
+  max-height: 20em;
+  z-index: 1000;
 }

@@ -1,26 +1,32 @@
 import React from "react";
-import { IconBtn } from "../../utils/IconBtn";
-import { MatchTransformation, SimImage } from "../types";
+import { IconBtn } from "./IconBtn";
+import { MatchTransformation } from "../SimilarityApp/types";
+import { ImageInfo } from "./ImageDisplay";
+
 
 export interface MagnifyProps {
-    watermark?: SimImage;
+    image?: ImageInfo;
     transformations?: MatchTransformation[];
-    wref?: SimImage;
+    comparison?: ImageInfo;
 }
 
 export interface MagnifyingContext {
     // Context to manage focusing on a Watermark
-    magnify?: ({watermark, transformations, wref}:MagnifyProps) => void;
-    matchesHref?: (watermark: SimImage) => string;
+    magnify?: ({image, transformations, comparison}:MagnifyProps) => void;
+    getTitle?: (image: ImageInfo) => string;
+    getSubtitle?: (image: ImageInfo) => string;
 }
 
 export const MagnifyingContext = React.createContext<MagnifyingContext>({});
 
-export function Magnifier({ watermark, transformations, wref }: MagnifyProps) {
+export function ImageMagnifier({ image, transformations, comparison }: MagnifyProps) {
     /*
     Component to render a magnified view of a watermark.
     */
-    const setMagnifying = React.useContext(MagnifyingContext).magnify!;
+    const context = React.useContext(MagnifyingContext);
+    const setMagnifying = context.magnify!;
+    const getTitle = context.getTitle || ((image: ImageInfo) => image.title);
+    const getSubtitle = context.getSubtitle || ((image: ImageInfo) => image.subtitle);
     const [transf, setTransf] = React.useState<MatchTransformation[]>(transformations || []);
 
     const manualTransform = (deltaRot: 0 | 90 | -90, hflip: boolean) => {
@@ -40,32 +46,32 @@ export function Magnifier({ watermark, transformations, wref }: MagnifyProps) {
         setTransf(transformations || []);
     }, [transformations]);
 
-    return watermark && (
+    return image && (
         <div className="magnifier">
-            <IconBtn icon="mdi:close" onClick={() => setMagnifying({ watermark: undefined })}/>
+            <IconBtn icon="mdi:close" onClick={() => setMagnifying({ image: undefined })}/>
             <div className="columns">
-                {wref &&
+                {comparison &&
                     <div className="column is-6">
-                        <div className="match-img">
-                            <img src={wref.url} alt={wref.id} className="watermark" />
+                        <div className="display-image">
+                            <img src={comparison.url} alt={comparison.id} className="display-img" />
                         </div>
-                        <h4 className="mt-2">Query: {wref.document?.name || wref.id}</h4>
-                        <p>{wref.document && wref.id}</p>
-                        {wref.link && <p><a href={wref.link} target="_blank">See in context</a></p>}
+                        <h4 className="mt-2">Query: {getTitle(comparison) || comparison.title || comparison.id}</h4>
+                        <p>{getSubtitle(comparison) || comparison.subtitle}</p>
+                        {comparison.link && <p><a href={comparison.link} target="_blank">See in context</a></p>}
                     </div>
                 }
                 <div className="column is-6">
-                    <div className="match-img">
-                        <img src={watermark.url} alt={watermark.id} className={"watermark " + (transf.join(" "))} />
+                    <div className="display-image">
+                        <img src={image.url} alt={image.id} className={"display-img " + (transf.join(" "))} />
                     </div>
-                    <h4 className="mt-2">{watermark.document?.name || watermark.id}</h4>
-                    <p>{watermark.document && watermark.id}</p>
+                    <h4 className="mt-2">{getTitle(image)}</h4>
+                    <p>{getSubtitle(image)}</p>
                     <p className="actions">
                         <IconBtn icon="mdi:rotate-left" onClick={() => manualTransform(-90, false)} />
                         <IconBtn icon="mdi:rotate-right" onClick={() => manualTransform(90, false)} />
                         <IconBtn icon="mdi:flip-horizontal" onClick={() => manualTransform(0, true)} />
                     </p>
-                    {watermark.link && <p><a href={watermark.link} target="_blank">See in context</a></p>}
+                    {image.link && <p><a href={image.link} target="_blank">See in context</a></p>}
                 </div>
             </div>
         </div>

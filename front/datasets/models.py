@@ -147,7 +147,7 @@ class Document:
         if self.images_info_path.exists():
             with open(self.images_info_path, "r") as f:
                 data = json.load(f)
-            return [Image.from_dict(im, self, self.img_path) for im in data]
+            return [Image.from_dict(im, self) for im in data]
 
         images = self._list_img_dir()
         return images
@@ -162,6 +162,8 @@ class Image:
     document: "Document" = None
 
     def to_dict(self, relpath: Path) -> Dict:
+        if relpath is None:
+            relpath = self.document.path
         return {
             "id": self.id,
             "src": str(self.src),
@@ -171,6 +173,8 @@ class Image:
 
     @classmethod
     def from_dict(cls, data: Dict, document: "Document", relpath: Path) -> "Image":
+        if relpath is None:
+            relpath = document.path
         return cls(
             id=data["id"],
             src=data["src"],

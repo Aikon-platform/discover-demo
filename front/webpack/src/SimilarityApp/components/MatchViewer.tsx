@@ -1,7 +1,7 @@
 import React, { useReducer } from "react";
 import { SimilarityMatches } from "../types";
 import { MatchRow } from "./MatchRow";
-import { Magnifier, MagnifyProps, MagnifyingContext } from "./Magnifier";
+import { ImageMagnifier, MagnifyProps, MagnifyingContext } from "../../shared/ImageMagnifier";
 
 export function MatchViewer({ all_matches }: { all_matches: SimilarityMatches[] }) {
     /*
@@ -25,7 +25,7 @@ export function MatchViewer({ all_matches }: { all_matches: SimilarityMatches[] 
                 <MatchRow key={idx} matches={matches} group_by_source={group_by_source} />
             ))}
             </div>
-            {magnifying && <Magnifier {...magnifying} />}
+            {magnifying && <ImageMagnifier {...magnifying} />}
         </MagnifyingContext.Provider>
     );
 }

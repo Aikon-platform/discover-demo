@@ -1,7 +1,7 @@
 import React, { useReducer } from "react";
 import { Watermark, WatermarkMatches, WatermarkOutputRaw, WatermarkSource, WatermarksIndex, WatermarksIndexRaw, unserializeSingleWatermarkMatches } from "../types";
 import { MatchRow } from "./MatchRow";
-import { IconBtn } from "../../utils/IconBtn";
+import { IconBtn } from "../../shared/IconBtn";
 import { Magnifier, MagnifyProps, MagnifyingContext } from "./Magnifier";
 import { Pagination } from "./Pagination";
 

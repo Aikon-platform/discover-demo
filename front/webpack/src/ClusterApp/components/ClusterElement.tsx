@@ -3,7 +3,7 @@ import { ClusterEditorContext } from "../actions";
 import { Icon } from "@iconify/react";
 import { ClusterInfo, ClusterProps } from "../types";
 import { BasicImageList, SelectableImageList } from "./ImageLists";
-import { IconBtn } from "../../utils/IconBtn";
+import { IconBtn } from "../../shared/IconBtn";
 
 const N_SHOWN = {"grid": 8, "rows": 18};
 
@@ -80,7 +80,7 @@ export function ClusterElement(props: ClusterProps) {
 
   // sub components
   const btnMore = (cluster.images.length > n_shown &&
-    <a className="cl-more card" href="javascript:void(0)" onClick={() => {setExpanded(!expanded); scrollIntoView();}}>
+    <a className="cl-more card cl-placeholder" href="javascript:void(0)" onClick={() => {setExpanded(!expanded); scrollIntoView();}}>
       {expanded ? "–" : "+"}{cluster.images.length - n_shown}
     </a>
   );
@@ -131,8 +131,8 @@ export function ClusterElement(props: ClusterProps) {
               <IconBtn icon="mdi:panorama-variant" className="is-outline" label="Show protos" onClick={() => {setTransformed(true)}} />}
           </p>
             <div className="cl-proto">
-              <img src={editorContext?.state.base_url + cluster.proto_url} alt="cl-proto" className="prototype" />
-              {cluster.mask_url && false && <img src={editorContext!.state.base_url + cluster.mask_url} alt="mask" className="mask" />}
+              <img src={(editorContext?.state.base_url || "") + cluster.proto_url} alt="cl-proto" className="prototype" />
+              {cluster.mask_url && false && <img src={(editorContext!.state.base_url || "") + cluster.mask_url} alt="mask" className="mask" />}
             </div>
           </div>}
 

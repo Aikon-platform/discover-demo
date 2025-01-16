@@ -1,21 +1,21 @@
 import React, { useReducer } from "react";
 import { ClusterElement } from "./ClusterElement";
-import { unserializeClusterFile, ImageInfo, serializeClusterFile, AppProps, ClusterInfo } from "../types";
+import { ImageInfo, serializeClusterFile, ClusterAppProps, ClusterInfo } from "../types";
 import { ClusterEditorContext, editorReducer } from "../actions";
 import { ClusterAskModale } from "./ClusterAskModale";
-import { IconBtn } from "../../utils/IconBtn";
+import { IconBtn } from "../../shared/IconBtn";
 
 /*
   This file contains the main React component for the ClusterEditor app.
 */
 
-export function ClusterApp({ clustering_data, editing = false, editable = false, formfield, base_url }: AppProps) {
+export function ClusterApp({ clustering_data, editing = false, editable = false, formfield, base_url }: ClusterAppProps) {
   const [editorState, dispatchEditor] = useReducer(
     editorReducer, {
     editing: editable && editing,
     editingCluster: null,
     askingCluster: null,
-    content: unserializeClusterFile(clustering_data),
+    content: clustering_data,
     base_url: base_url,
     image_selection: new Set<ImageInfo>(),
     viewer_sort: "size",
@@ -49,21 +49,41 @@ export function ClusterApp({ clustering_data, editing = false, editable = false,
       <div className={editorState.editing ? "cl-editor" : ""}>
         <div className="cl-editor-toolbar">
           <h2>Cluster {editorState.editing ? "Editor" : "Viewer"}</h2>
-          <div className="cl-options">
-            <div className="cl-option-viewer_display">
-              <span>Sort by:</span>
+          <div className="cl-options columns">
+            <div className="column is-6">
+            <div className="field is-horizontal">
+              <div className="field-label is-normal">
+                <label className="label">Sort by:</label>
+              </div>
+              <div className="field-body">
+              <div className="field is-narrow">
+              <div className="select">
               <select value={editorState.viewer_sort} onChange={(e) => { dispatchEditor({ type: "viewer_sort", sort: e.target.value }); } }>
                 <option value="size">Size</option>
                 <option value="id">ID</option>
                 <option value="name">Name</option>
               </select>
+              </div>
+              </div>
+              </div>
+              </div>
             </div>
-            <div className="cl-option-viewer_display">
-              <span>Display:</span>
+            <div className="column is-6">
+            <div className="field is-horizontal">
+              <div className="field-label is-normal">
+                <label className="label">Display:</label>
+              </div>
+              <div className="field-body">
+              <div className="field is-narrow">
+              <div className="select">
               <select value={editorState.viewer_display} onChange={(e) => { dispatchEditor({ type: "viewer_display", display: e.target.value }); } }>
                 <option value="grid">Grid</option>
                 <option value="rows">Rows</option>
               </select>
+              </div>
+              </div>
+              </div>
+              </div>
             </div>
           </div>
           {editable &&

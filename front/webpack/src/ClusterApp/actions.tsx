@@ -9,12 +9,13 @@ import React from "react";
 export const ClusterEditorContext = React.createContext<EditorContext | undefined>(undefined);
 
 function eraseImagesMetadata(images: ImageInfo[]): ImageInfo[] {
-  return images.map((image) => { return { path: image.path, raw_url: image.raw_url, id: image.id, distance: image.id + 10 } });
+  return images.map((image) => {
+    const { tsf_url, ...rest } = image;
+    return { ...rest, distance: image.id + 10 };
+  });
 }
 
 export const editorReducer = (state: EditorState, action: EditorAction) : EditorState => {
-  console.log("editorReducer", state, action);
-
   const action_prefix = action.type.split("_")[0];
   if (!state.editing && action_prefix != "viewer") return state;
 
@@ -74,10 +75,10 @@ function handleClusterAction(state: EditorState, action: EditorAction): EditorSt
       return { ...state, content: { ...state.content, clusters: new_clusters }, editingCluster: cluster1.id, askingCluster: null };
 
     case "cluster_ask":
-      return { 
-        ...state, 
-        askingCluster: (action.cluster_id === null ? null : 
-          { not_cluster_id: action.cluster_id, for_action: action.for_action! }) 
+      return {
+        ...state,
+        askingCluster: (action.cluster_id === null ? null :
+          { not_cluster_id: action.cluster_id, for_action: action.for_action! })
         };
   }
   throw new Error("Invalid action type " + action.type);
@@ -101,7 +102,6 @@ function handleSelectionAction(state: EditorState, action: EditorAction): Editor
           selection.delete(image);
         }
       }
-      console.log("selection_change", selection);
       return { ...state, image_selection: selection };
 
     case "selection_invert":

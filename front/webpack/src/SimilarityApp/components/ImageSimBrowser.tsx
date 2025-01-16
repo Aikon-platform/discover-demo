@@ -1,47 +1,45 @@
 import React, { useReducer } from "react";
-import { SimImage, SimilarityMatches, SimDocument, SimilarityIndex } from "../types";
+import { SimImage, SimilarityMatches, SimDocument, SimilarityIndex, NameProvider } from "../types";
 import { MatchRow } from "./MatchRow";
-import { Magnifier, MagnifyProps, MagnifyingContext } from "./Magnifier";
+import { ImageMagnifier, MagnifyProps, MagnifyingContext } from "../../shared/ImageMagnifier";
 import { Pagination } from "./Pagination";
+import { fetchIIIFNames, getSourceName, NameProviderContext } from "../utils/naming";
+import { SimilarityProps } from "./SimilarityApp";
 
-export interface SimBrowserProps {
-    index: SimilarityIndex;
-    matches: SimilarityMatches[];
+interface SimilarityHref {
+    matchesHref?: (watermark: SimImage) => string;
 }
 
-export function ImageSimBrowser({ matches, index }: SimBrowserProps) {
+export const SimilarityHrefContext = React.createContext<SimilarityHref>({});
+
+export function ImageSimBrowser({ index, matches, addtitional_toolbar }: { index: SimilarityIndex, matches: SimilarityMatches[], addtitional_toolbar?: React.ReactNode }) {
     /*
     Component to render a list of watermark matches.
     */
-    //
 
     const [group_by_source, toggleGroupBySource] = useReducer((group_by_source) => !group_by_source, false);
     const [filter_by_source, setFilterBySource] = React.useState<SimDocument | null>(null);
-    const [magnifying, setMagnifying] = React.useState<MagnifyProps | null>(null);
     const [page, setPage] = React.useState(1);
     const [highlit, setHighlit] = React.useState<SimImage | null>(null);
     const [threshold, setThreshold] = React.useState(50);
+    const nameProvider = React.useContext(NameProviderContext);
 
     const matches_filtered = filter_by_source ? matches.filter(match => match.query.document === filter_by_source) : matches;
     const PAGINATE_BY = 30;
-    const total_pages = Math.ceil(matches_filtered.length/PAGINATE_BY);
+    const total_pages = Math.ceil(matches_filtered.length / PAGINATE_BY);
 
     React.useEffect(() => {
         if (highlit && filter_by_source && highlit.document !== filter_by_source)
             setFilterBySource(null);
     }, [highlit]);
 
-    const matchesHref = (watermark: SimImage) => {
-        const watermark_index = watermark.id!;
-        return `#match-${watermark_index}`;
-    }
     const hashchange = () => {
         const loc = window.location.hash;
         if (loc.startsWith("#match-")) {
             const match_id = parseInt(loc.slice(7));
             const nhighlit = index.images[match_id];
             setHighlit(nhighlit);
-            setPage(Math.floor(match_id/PAGINATE_BY));
+            setPage(Math.floor(match_id / PAGINATE_BY));
             return;
         }
         setHighlit(null);
@@ -55,6 +53,11 @@ export function ImageSimBrowser({ matches, index }: SimBrowserProps) {
         return () => window.removeEventListener("hashchange", hashchange);
     }, []);
 
+    const matchesHref = (watermark: SimImage) => {
+        const watermark_index = watermark.id!;
+        return `#match-${watermark_index}`;
+    }
+
     const toPage = (page: number) => {
         window.location.hash = `#page-${page}`;
     }
@@ -62,21 +65,22 @@ export function ImageSimBrowser({ matches, index }: SimBrowserProps) {
         if (!watermark) return false;
         const actual_index = matches_filtered.findIndex(match => match.query === watermark);
         if (actual_index === -1) return false;
-        return Math.floor(actual_index/PAGINATE_BY) + 1;
+        return Math.floor(actual_index / PAGINATE_BY) + 1;
     }
     const actual_page = find_page(highlit) || Math.min(page, total_pages);
 
     return (
-        <MagnifyingContext.Provider value={{magnify: setMagnifying, matchesHref}}>
+        <SimilarityHrefContext.Provider value={{matchesHref}}>
             <div className="viewer-options">
                 <div className="columns">
-                    <div className="field column is-2">
+                    {addtitional_toolbar}
+                    <div className="field column">
                         <label className="checkbox is-normal">
                             <input type="checkbox" className="checkbox mr-2" name="group-by-source" id="group-by-source" checked={group_by_source} onChange={toggleGroupBySource} />
                             Group by source document
                         </label>
                     </div>
-                    <div className="field column is-horizontal is-4">
+                    <div className="field column is-horizontal">
                         <div className="field-label is-normal">
                             <label className="label is-expanded">
                                 Threshold:
@@ -91,24 +95,24 @@ export function ImageSimBrowser({ matches, index }: SimBrowserProps) {
                             </div>
                         </div>
                     </div>
-                    <div className="field column is-horizontal is-6">
+                    <div className="field column is-horizontal">
                         <div className="field-label is-normal">
                             <label className="label">
                                 Filter by document:
                             </label>
                         </div>
                         <div className="field-body">
-                        <div className="field is-narrow">
-                        <div className="control">
-                            <div className="select is-fullwidth">
-                                <select value={filter_by_source ? filter_by_source.uid : ""} onChange={(e) => setFilterBySource((e.target.value && index.sources.find(source => source.uid === e.target.value)) || null)}>
-                                    <option value="">All</option>
-                                    {index.sources.map(source => (
-                                        <option key={source.uid} value={source.uid}>{source.name}</option>
-                                    ))}
-                                </select>
-                            </div>
-                            </div>
+                            <div className="field is-narrow">
+                                <div className="control">
+                                    <div className="select is-fullwidth">
+                                        <select value={filter_by_source ? filter_by_source.uid : ""} onChange={(e) => setFilterBySource((e.target.value && index.sources.find(source => source.uid === e.target.value)) || null)}>
+                                            <option value="">All</option>
+                                            {index.sources.map(source => (
+                                                <option key={source.uid} value={source.uid}>{getSourceName(nameProvider, source)}</option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -117,13 +121,12 @@ export function ImageSimBrowser({ matches, index }: SimBrowserProps) {
             </div>
             <div className="viewer-table">
 
-            {matches_filtered.slice((actual_page-1)*PAGINATE_BY, (actual_page)*PAGINATE_BY).map((matches, idx) => (
-                <MatchRow key={idx} matches={matches} group_by_source={group_by_source} highlit={highlit==matches.query} threshold={threshold} />
-            ))}
+                {matches_filtered.slice((actual_page - 1) * PAGINATE_BY, (actual_page) * PAGINATE_BY).map((matches, idx) => (
+                    <MatchRow key={idx} matches={matches} group_by_source={group_by_source} highlit={highlit == matches.query} threshold={threshold} />
+                ))}
             </div>
             <div className="mt-4"></div>
             <Pagination page={actual_page} setPage={toPage} total_pages={total_pages} />
-            {magnifying && <Magnifier {...magnifying} />}
-        </MagnifyingContext.Provider>
+        </SimilarityHrefContext.Provider>
     );
 }
