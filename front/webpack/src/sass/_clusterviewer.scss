@@ -18,6 +18,38 @@ $toolbar-height: 60px;
         padding: 0 !important;
     }
 
+    .cl-overlay {
+        position: absolute;
+        display: block;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 5;
+        background-color: transparent !important;
+        &.cl-hoveroptions {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            display: flex !important;
+            flex-wrap: wrap;
+            align-content: center;
+            gap: 1em;
+
+            & > * {
+                font-size: 1.5em;
+            }
+
+            &:hover {
+                background-color: rgba(#fff, 0.7) !important;
+            }
+            &:not(:hover) {
+                & > * {
+                    display: none;
+                }
+            }
+        }
+    }
     .cl-cluster-list {
         padding: 1em;
         width: 100%;
@@ -33,6 +65,7 @@ $toolbar-height: 60px;
             }
             & > .cl-props {
                 vertical-align: top;
+                position: relative;
                 .cl-propcontent {
                     .cl-cluster-title {
                         display: flex;
@@ -71,6 +104,10 @@ $toolbar-height: 60px;
                             vertical-align: middle;
                         }
                     }
+                    &.cl-limitheight {
+                        max-height: 400px;
+                        overflow-y: auto;
+                    }
                 }
                 .cl-selectable.cl-images {
                     & > * {
@@ -87,6 +124,7 @@ $toolbar-height: 60px;
                             outline: 2px solid $head-color;
                             text-decoration: none;
                             line-height: 1;
+                            z-index: 2;
                         }
                         &.cl-selected {
                             .cl-selecter {
@@ -139,7 +177,10 @@ $toolbar-height: 60px;
                         & > * {
                             width: 80px;
                             height: 80px;
+                        }
+                        & > .cl-placeholder {
                             line-height: 80px;
+                            overflow: hidden;
                         }
                     }
                 }
@@ -206,37 +247,12 @@ $toolbar-height: 60px;
                             width: 128px;
                             height: 128px;
                             margin: 0.5em;
-                            line-height: 128px;
+                        }
+                        & > .cl-placeholder {
+                            line-height: 80px;
+                            overflow: hidden;
                         }
                     }
-                }
-            }
-        }
-    }
-    .cl-overlay {
-        position: absolute;
-        display: block;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        z-index: 2;
-        background-color: transparent !important;
-        &.cl-hoveroptions {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-
-            & > * {
-                font-size: 1.5em;
-            }
-
-            &:hover {
-                background-color: rgba(#fff, 0.7) !important;
-            }
-            &:not(:hover) {
-                & > * {
-                    display: none;
                 }
             }
         }
@@ -244,32 +260,25 @@ $toolbar-height: 60px;
     .cl-hidden {
         display: none !important;
     }
-    .cl-editor-toolbar {
-        position: sticky;
-        top: 0;
-        background-color: #fff;
-        padding: 1em;
-        display: flex;
-        width: 100%;
-        justify-content: space-between;
-        align-items: center;
-        z-index: 10;
-        height: $toolbar-height;
-        gap: 1em;
-        .cl-editor-tools {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: 1em;
-        }
-        .cl-options {
-            display: flex;
-            justify-content: start;
-            align-items: center;
-            gap: 1em;
-            flex: 1;
-        }
-    }
+    // .cl-editor-toolbar {
+    //     position: sticky;
+    //     top: 0;
+    //     background-color: #fff;
+    //     padding: 1em;
+    //     display: flex;
+    //     width: 100%;
+    //     justify-content: space-between;
+    //     align-items: center;
+    //     z-index: 100;
+    //     height: $toolbar-height;
+    //     gap: 1em;
+    //     .cl-editor-tools {
+    //         display: flex;
+    //         justify-content: space-between;
+    //         align-items: center;
+    //         gap: 1em;
+    //     }
+    // }
     .cl-modale {
         position: fixed;
         top: 0;
@@ -281,16 +290,20 @@ $toolbar-height: 60px;
         justify-content: center;
         overflow: hidden;
         background-color: rgba(0,0,0,0.5);
-        z-index: 30;
+        z-index: 200;
 
         .cl-modale-wrapper {
             max-height: 100vh;
-            overflow-y: auto;
+            // overflow-y: auto;
         }
 
         .cl-modale-content {
             max-width: 800px;
             border-radius: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: stretch;
+            max-height: 100vh;
             background-color: #fff;
             margin: 0 auto;
             padding: 1em;
@@ -307,42 +320,66 @@ $toolbar-height: 60px;
         }
 
         .cl-ask-select {
+            flex: 1;
+            overflow-y: auto;
+            padding: 10px;
+            border-radius: 10px;
+            border: 1px solid $head-color;
+
             .cl-ask-list {
                 display: flex;
                 flex-wrap: wrap;
                 justify-content: space-between;
-                .cl-cluster {
-                    position: relative;
-                    width: 380px;
-                    padding: 0.5em;
-                    border-radius: 5px;
-                    &.cl-selected {
-                        outline: 4px solid $head-color;
-                    }
+                gap: 0.5em;
+            }
+        }
+        .cl-ask-cluster {
+            .cl-cluster {
+                position: relative;
+                width: 360px;
+                padding: 0.5em;
+                border-radius: 5px;
+                cursor: pointer;
 
-                    .cl-images {
-                        & > * {
-                            width: 64px;
-                            height: 64px;
+                &.cl-selected {
+                    outline: 4px solid $head-color;
+                }
+
+                .cl-images {
+                    & > * {
+                        width: 64px;
+                        height: 64px;
+                        border-radius: 5px;
+                        margin: 0.1em;
+                        background-color: rgba($dark-grey, 0.5);
+                        display: inline-block;
+                        text-align: center;
+                        vertical-align: middle;
+                        color: $dark-grey;
+                        line-height: 64px;
+                        text-decoration: none;
+
+                        img {
                             border-radius: 5px;
-                            margin: 0.1em;
-                            background-color: rgba($dark-grey, 0.5);
-                            display: inline-block;
-                            text-align: center;
+                            max-width: 100%;
+                            max-height: 100%;
                             vertical-align: middle;
-                            color: $dark-grey;
-                            line-height: 64px;
-                            text-decoration: none;
-
-                            img {
-                                border-radius: 5px;
-                                max-width: 100%;
-                                max-height: 100%;
-                                vertical-align: middle;
-                            }
                         }
                     }
                 }
+            }
+        }
+
+        .cl-modale-header {
+            padding-bottom: 1em;
+
+            .cl-modale-title {
+                font-size: 1.5em;
+                font-weight: bold;
+                display: block;
+            }
+            .cl-ask-cluster .cl-cluster {
+                width: 100%;
             }
         }
     }

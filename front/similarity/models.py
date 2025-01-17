@@ -112,7 +112,7 @@ class Similarity(AbstractAPITaskOnCrops("similarity")):
         #
         #     similarities[query["id"]]["sim"].append(sim_copy)
         #     similarities[sim["id"]]["sim"].append(query_copy)
-        for q_idx, s_idx, score in self.similarity_matrix:
+        for q_idx, s_idx, score, *tr in self.similarity_matrix:
             for img1, img2 in [
                 (images[q_idx], images[s_idx]),
                 (images[s_idx], images[q_idx]),

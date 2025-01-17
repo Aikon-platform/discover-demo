@@ -1,6 +1,6 @@
 import React from "react";
 import { WatermarkMatch, WatermarkMatches } from "../types";
-import { IconBtn } from "../../utils/IconBtn";
+import { IconBtn } from "../../shared/IconBtn";
 
 function escapeCSVCell(cell?: string | number): string {
     /*
@@ -16,7 +16,6 @@ function exportMatchesCSV(matches: WatermarkMatch[]): Promise<string> {
     */
     return new Promise((resolve, reject) => {
         // get all metadata fields in matches' sources
-        console.log(matches);
         const metadata_fields = new Set<string>();
         matches.forEach(match => {
             Object.keys(match.watermark.source?.metadata || {}).forEach(key => metadata_fields.add(key));
@@ -53,7 +52,6 @@ export function MatchCSVExporter({ matches, threshold }: { matches: WatermarkMat
             const ematches = matches.matches.filter(m => !threshold || m.similarity > threshold/100);
             // add query
             ematches.unshift({watermark: matches.query, similarity: 1, transformations: []});
-            console.log(ematches);
             const csv = await exportMatchesCSV(ematches);
             const blob = new Blob([csv], {type: "text/csv"});
             const url = URL.createObjectURL(blob);

@@ -56,13 +56,27 @@
         {% if object.parameters %}
             <pre>Parameters : {{ object.parameters }}</pre>
         {% endif %}
+
+        {% if object.pipeline %}
+        <p>
+            Part of pipeline <a href="{{ object.pipeline.get_absolute_url }}">{{ object.pipeline }}</a>
+        </p>
+        {% endif %}
+        {% if object.all_tasks %} {# for pipelines #}
+            <div class="task-list">
+                <h4>Sub-task launched</h4>
+                {% for task in object.all_tasks %}
+                    {% include "includes/list-item.html" %}
+                {% endfor %}
+            </div>
+        {% endif %}
     </div>
     {% if object.is_finished %}
         <div class="centerwrap">
             <p>Status: <span class="status status-{{ object.status }}">{{ object.status }}</span></p>
 
             {% if object.full_log %}
-                <pre>{{ object.full_log }}</pre>
+                <pre class="full-log">{{ object.full_log }}</pre>
             {% endif %}
         </div>
 

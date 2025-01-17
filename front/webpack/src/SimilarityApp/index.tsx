@@ -1,4 +1,4 @@
 import { MatchViewer } from "./components/MatchViewer"
-import { ImageSimBrowser } from "./components/ImageSimBrowser"
+import { SimilarityApp } from "./components/SimilarityApp"
 
-export { MatchViewer, ImageSimBrowser }
+export { MatchViewer, SimilarityApp }

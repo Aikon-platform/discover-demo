@@ -2,7 +2,7 @@ import { useReducer } from "react";
 import { Watermark, WatermarkMatch } from "../types";
 import { WatermarkDisplay } from "./WatermarkDisplay";
 import { Icon } from "@iconify/react";
-import { IconBtn } from "../../utils/IconBtn";
+import { IconBtn } from "../../shared/IconBtn";
 
 interface MatchGroupProps {
     matches: WatermarkMatch[];

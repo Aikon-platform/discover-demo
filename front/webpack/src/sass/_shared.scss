@@ -1,0 +1,180 @@
+// IMAGE DISPLAY BOX
+
+.display-image {
+    position: relative;
+
+    &::before {
+        content: "";
+        display: block;
+        padding-top: 100%;
+        padding-left: 100%;
+    }
+
+    .display-img {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: auto;
+        height: auto;
+        max-height: 100%;
+        transform: translate(-50%, -50%);
+        &.rot270 {
+            transform: translate(-50%, -50%) rotate(270deg);
+        }
+        &.rot180 {
+            transform: translate(-50%, -50%) rotate(180deg);
+        }
+        &.rot90 {
+            transform: translate(-50%, -50%) rotate(90deg);
+        }
+        &.hflip {
+            transform: translate(-50%, -50%) scaleX(-1);
+        }
+        &.hflip.rot270 {
+            transform: translate(-50%, -50%) rotate(270deg) scaleX(-1);
+        }
+        &.hflip.rot180 {
+            transform: translate(-50%, -50%) rotate(180deg) scaleX(-1);
+        }
+        &.hflip.rot90 {
+            transform: translate(-50%, -50%) rotate(90deg) scaleX(-1);
+        }
+    }
+}
+
+.display-item {
+    position: relative;
+    display: inline-block;
+    line-height: 0;
+    width: 100%;
+    height: 100%;
+    max-width: 200px;
+    flex-basis: 200px;
+    // min-width: 180px;
+    // min-height: 180px;
+
+    .display-tools {
+        position: absolute;
+        top: 0;
+        right: 0;
+        font-size: 1.5em;
+        margin-top: 5px;
+
+        a {
+            padding: 0.2em;
+        }
+
+        svg path {
+            stroke: white;
+            paint-order: stroke;
+            stroke-width: 2;
+        }
+    }
+
+    &:not(:hover) .display-tools > *:not(.always-visible) {
+        display: none;
+    }
+
+    .similarity {
+        position: absolute;
+        bottom: 0;
+        right: 0;
+        background-color: rgba(0, 0, 0, 0.5);
+        color: white;
+        font-size: 0.8em;
+        font-weight: bold;
+        padding: 0.4em 0.6em;
+        border-radius: 2*$border-radius 0 0 0;
+        line-height: 1;
+    }
+}
+
+
+.magnifier {
+    position: fixed;
+    z-index: 1000;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+
+    .magnifier-close {
+        position: absolute;
+        top: 0;
+        right: 0;
+        background: none;
+        border: none;
+        color: white;
+        cursor: pointer;
+    }
+
+    .magnifying-content {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100%;
+        width: 100%;
+        max-width: 100%;
+        max-height: 100%;
+        overflow: auto;
+        gap: 2em;
+    }
+
+    .magnifying-item {
+        background-color: white;
+        border-radius: 2*$border-radius;
+        text-align: center;
+        padding: 2em;
+    }
+
+    .magnifying-info {
+        max-width: 400px;
+    }
+
+    &::before {
+        content: "";
+        background-color: rgba(0, 0, 0, 0.5);
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        z-index: -1;
+    }
+}
+
+.tooltip {
+    position: fixed;
+    box-shadow: 0 0 5px 0 rgba(0, 0, 0, 0.2);
+    background-color: #fff;
+    padding: 0.5em;
+    border-radius: 4px;
+    max-width: 20em;
+    z-index: 1000;
+}
+
+.toolbar {
+    margin: 1em -2em;
+    position: sticky;
+    top: 0;
+    z-index: 80;
+    background-color: white;
+    box-shadow: 0 0 5px 0 rgba(0, 0, 0, 0.2);
+    padding: 1em 3em;
+
+    .toolbar-content {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 2em;
+
+        .toolbar-item {
+            padding: 0.7em;
+            background: lighten($faded-color, 10%);
+            border-radius: 2*$border-radius;
+            &.toolbar-btn {
+                background: none;
+            }
+        }
+    }
+}

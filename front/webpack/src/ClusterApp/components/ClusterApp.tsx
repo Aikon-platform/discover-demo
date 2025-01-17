@@ -1,24 +1,25 @@
 import React, { useReducer } from "react";
 import { ClusterElement } from "./ClusterElement";
-import { unserializeClusterFile, ImageInfo, serializeClusterFile, AppProps, ClusterInfo } from "../types";
+import { ClusterImageInfo, serializeClusterFile, ClusterAppProps, ClusterInfo } from "../types";
 import { ClusterEditorContext, editorReducer } from "../actions";
 import { ClusterAskModale } from "./ClusterAskModale";
-import { IconBtn } from "../../utils/IconBtn";
+import { IconBtn } from "../../shared/IconBtn";
+import { ClusterCSVExporter } from "./ClusterExporter";
 
 /*
   This file contains the main React component for the ClusterEditor app.
 */
 
-export function ClusterApp({ clustering_data, editing = false, editable = false, formfield, base_url }: AppProps) {
+export function ClusterApp({ clustering_data, viewer_sort="size", editing = false, editable = false, formfield, base_url }: ClusterAppProps) {
   const [editorState, dispatchEditor] = useReducer(
     editorReducer, {
     editing: editable && editing,
     editingCluster: null,
     askingCluster: null,
-    content: unserializeClusterFile(clustering_data),
+    content: clustering_data,
     base_url: base_url,
-    image_selection: new Set<ImageInfo>(),
-    viewer_sort: "size",
+    image_selection: new Set<ClusterImageInfo>(),
+    viewer_sort: viewer_sort,
     viewer_display: "grid",
   });
 
@@ -33,6 +34,7 @@ export function ClusterApp({ clustering_data, editing = false, editable = false,
       updateFormField();
       formfield.form!.submit();
     }
+    dispatchEditor({ type: "viewer_end_edit" });
   };
 
   // sort clusters
@@ -47,45 +49,61 @@ export function ClusterApp({ clustering_data, editing = false, editable = false,
   return (
     <ClusterEditorContext.Provider value={{ state: editorState, dispatch: dispatchEditor }}>
       <div className={editorState.editing ? "cl-editor" : ""}>
-        <div className="cl-editor-toolbar">
-          <h2>Cluster {editorState.editing ? "Editor" : "Viewer"}</h2>
-          <div className="cl-options">
-            <div className="cl-option-viewer_display">
-              <span>Sort by:</span>
-              <select value={editorState.viewer_sort} onChange={(e) => { dispatchEditor({ type: "viewer_sort", sort: e.target.value }); } }>
-                <option value="size">Size</option>
-                <option value="id">ID</option>
-                <option value="name">Name</option>
-              </select>
+        <div className="toolbar cl-editor-toolbar">
+          <div className="toolbar-content">
+            <h2>Cluster {editorState.editing ? "Editor" : "Viewer"}</h2>
+            <div className="toolbar-item">
+              <label className="label">Sort by:</label>
+              <div className="field is-narrow">
+                <div className="select">
+                  <select value={editorState.viewer_sort} onChange={(e) => { dispatchEditor({ type: "viewer_sort", sort: e.target.value }); } }>
+                    <option value="size">Size</option>
+                    <option value="id">ID</option>
+                    <option value="name">Name</option>
+                  </select>
+                </div>
+              </div>
             </div>
-            <div className="cl-option-viewer_display">
-              <span>Display:</span>
-              <select value={editorState.viewer_display} onChange={(e) => { dispatchEditor({ type: "viewer_display", display: e.target.value }); } }>
-                <option value="grid">Grid</option>
-                <option value="rows">Rows</option>
-              </select>
+            <div className="toolbar-item">
+              <label className="label">Display:</label>
+              <div className="field is-narrow">
+                <div className="select">
+                  <select value={editorState.viewer_display} onChange={(e) => { dispatchEditor({ type: "viewer_display", display: e.target.value }); } }>
+                    <option value="grid">Grid</option>
+                    <option value="rows">Rows</option>
+                  </select>
+                </div>
+              </div>
             </div>
+            {editable &&
+              <div className="toolbar-content cl-editor-tools">
+                {editorState.editingCluster !== null &&
+                  <div className="toolbar-item cl-select-tools">
+                    <label className="label">Selection ({editorState.image_selection.size}):</label>
+                    <div className="field">
+                    {editorState.image_selection.size == 0 ?
+                      <IconBtn onClick={() => { dispatchEditor({ type: "selection_all" });}} icon="mdi:select-all" label="All" /> :
+                      <React.Fragment>
+                        <IconBtn onClick={() => { dispatchEditor({ type: "selection_clear" });}} icon="mdi:close" label="Clear" />
+                        <IconBtn onClick={() => { dispatchEditor({ type: "selection_invert" });}} icon="mdi:select-inverse" label="Invert" />
+                      </React.Fragment>}
+                    </div>
+                  </div>}
+                {editorState.editingCluster !== null && editorState.image_selection.size > 0 &&
+                  <div className="toolbar-item toolbar-btn">
+                    <label className="label">Actions on selection:</label>
+                    <IconBtn onClick={() => { dispatchEditor({ type: "cluster_ask", for_action: "selection_move", cluster_id: editorState.editingCluster! }); } } icon="mdi:folder-move" label="Move to cluster..." />
+                  </div>}
+                <div className="toolbar-item toolbar-btn">
+                {editorState.editing ?
+                  <IconBtn onClick={save} icon="mdi:content-save" className="big is-link" label={formfield ? "Save" : "Apply"} /> :
+                  <IconBtn onClick={() => { dispatchEditor({ type: "viewer_edit" }); } } className="big is-link" icon="mdi:edit" label="Edit" />}
+                </div>
+                <div className="toolbar-item toolbar-btn">
+                  <ClusterCSVExporter clusters={clusters} />
+                </div>
+              </div>}
           </div>
-          {editable &&
-            <div className="cl-editor-tools">
-              {editorState.editingCluster !== null && editorState.image_selection.size > 0 &&
-                <React.Fragment>
-                  <IconBtn onClick={() => { dispatchEditor({ type: "cluster_ask", for_action: "selection_move", cluster_id: editorState.editingCluster! }); } } icon="mdi:folder-move" label="Move to cluster..." />
-                </React.Fragment>}
-              {editorState.editingCluster !== null &&
-                <div className="cl-select-tools">
-                  <span>Selection ({editorState.image_selection.size}):</span>
-                  {editorState.image_selection.size == 0 ?
-                    <IconBtn onClick={() => { dispatchEditor({ type: "selection_all" });}} icon="mdi:select-all" label="All" /> :
-                    <React.Fragment>
-                      <IconBtn onClick={() => { dispatchEditor({ type: "selection_clear" });}} icon="mdi:close" label="Clear" />
-                      <IconBtn onClick={() => { dispatchEditor({ type: "selection_invert" });}} icon="mdi:select-inverse" label="Invert" />
-                    </React.Fragment>}
-                </div>}
-              {editorState.editing ?
-                <IconBtn onClick={save} icon="mdi:content-save" className="big" label="Save" /> :
-                <IconBtn onClick={() => { dispatchEditor({ type: "viewer_edit" }); } } className="big" icon="mdi:edit" label="Edit" />}
-            </div>}
         </div>
         <div className={"cl-cluster-list cl-display-" + editorState.viewer_display}>
           {clusters.map((cluster) => (

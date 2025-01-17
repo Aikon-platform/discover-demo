@@ -1,0 +1,24 @@
+{% load static %}
+{% if object.status == "SUCCESS" %}
+    <div class="centerwrap details-wrapper detailed">
+        <h3>Similarity results</h3>
+
+        {% if not object.dataset %}
+            <div class="message mt-5">
+                <div class="message-body">
+                    <p>Dataset was deleted</p>
+                </div>
+            </div>
+        {% endif %}
+
+        <div class="widen">
+        <div id="matches" class="matches-viewer"></div>
+        </div>
+
+        <script type="text/javascript">
+            DemoTools.initSimilaritySimBrowser(
+                document.getElementById("matches"), "{{ object.similarity_task.index_url|escapejs }}",
+                "{{ object.similarity_task.similarity_matrix_url|escapejs }}", "cluster");
+        </script>
+    </div>
+{% endif %}

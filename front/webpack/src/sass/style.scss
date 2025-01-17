@@ -76,6 +76,11 @@ pre {
     text-indent: 0;
 }
 
+.full-log {
+    max-height: 300px;
+    overflow: auto;
+}
+
 .iconify {
     width: 1em;
     margin-right: 5px;
@@ -359,6 +364,15 @@ ul.messages {
     font-style: italic;
 }
 
+// Remove the wrapping borders
+
+.widen {
+    width: calc(100vw - 2em);
+    margin-left: calc(-50vw + 50% + 1em);
+    margin-right: calc(-50vw + 50% + 1em);
+}
+
 @import "_progresstracking";
 @import "_clusterviewer";
-@import "_watermarkmatches";
+@import "_similarity";
+@import "_shared";

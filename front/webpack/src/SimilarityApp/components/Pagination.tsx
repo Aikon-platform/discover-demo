@@ -4,6 +4,7 @@ export function Pagination({ page, total_pages, setPage }: { page: number, total
     /*
     Component to render a pagination control.
     */
+   if (total_pages <= 1) return null;
     return (
         <div className="pagination">
             <button className="pagination-ctrl button" onClick={() => setPage(page - 1)} disabled={page <= 1}>Previous</button>

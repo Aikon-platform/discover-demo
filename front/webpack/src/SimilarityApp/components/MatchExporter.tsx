@@ -1,6 +1,8 @@
 import React from "react";
 import { SimilarityMatch, SimilarityMatches } from "../types";
-import { IconBtn } from "../../utils/IconBtn";
+import { NameProvider } from "../../shared/types";
+import { IconBtn } from "../../shared/IconBtn";
+import { getImageName, getSourceName, NameProviderContext } from "../../shared/naming";
 
 function escapeCSVCell(cell?: string | number): string {
     /*
@@ -10,26 +12,27 @@ function escapeCSVCell(cell?: string | number): string {
     return cell.toString().replace(/"/g, '""');
 }
 
-function exportMatchesCSV(matches: SimilarityMatch[]): Promise<string> {
+function exportMatchesCSV(matches: SimilarityMatch[], nameProvider?: NameProvider): Promise<string> {
     /*
     Export a list of watermark matches to CSV.
     */
     return new Promise((resolve, reject) => {
         // get all metadata fields in matches' sources
-        console.log(matches);
         const metadata_fields = new Set<string>();
         matches.forEach(match => {
             Object.keys(match.image.document?.metadata || {}).forEach(key => metadata_fields.add(key));
+            Object.keys(match.image.metadata || {}).forEach(key => metadata_fields.add(key));
         });
+        const linted_metadata = Array.from(metadata_fields).map(s => (s.charAt(0).toUpperCase()+s.slice(1)).replace(/[\s,"'_]+/g, " "));
 
-        const header = "Image,Source,Similarity,Document,Document URL," + Array.from(metadata_fields).join(",") + "\n";
+        const header = "Image,Source,Similarity,Document,Document URL," + linted_metadata.join(",") + "\n";
         const lines = matches.map(match => {
-            const metadata = Array.from(metadata_fields).map(key => match.image.document?.metadata[key] || "");
+            const metadata = Array.from(metadata_fields).map(key => (match.image.metadata || match.image.document?.metadata || {})[key] || "");
             return [
-                match.image.id,
-                match.image.url || match.image.id,
+                (nameProvider && getImageName(nameProvider, match.image)) || match.image.id,
+                match.image.src || match.image.id,
                 match.similarity,
-                match.image.document?.name,
+                (nameProvider && getSourceName(nameProvider, match.image.document)) || match.image.document?.name,
                 match.image.document?.src,
                 ...metadata
             ].map(cell => `"${escapeCSVCell(cell)}"`).join(",");
@@ -43,24 +46,22 @@ export function MatchCSVExporter({ matches, threshold }: { matches: SimilarityMa
     Component to export a list of watermark matches to CSV.
     */
     const [exporting, setExporting] = React.useState(false);
-    const [exported, setExported] = React.useState(false);
     const [error, setError] = React.useState<string | null>(null);
+    const nameProvider = React.useContext(NameProviderContext);
 
     const exportCSV = async () => {
         setExporting(true);
         try {
             const ematches = matches.matches.filter(m => !threshold || m.similarity > threshold/100);
             // add query
-            ematches.unshift({image: matches.query, similarity: 1, transformations: []});
-            console.log(ematches);
-            const csv = await exportMatchesCSV(ematches);
+            ematches.unshift({image: matches.query, similarity: 1, q_transposition: "none", m_transposition: "none"});
+            const csv = await exportMatchesCSV(ematches, nameProvider);
             const blob = new Blob([csv], {type: "text/csv"});
             const url = URL.createObjectURL(blob);
             const a = document.createElement("a");
             a.href = url;
             a.download = "similarity-matches.csv";
             a.click();
-            setExported(true);
         } catch (e: any) {
             setError(e.toString());
         } finally {

@@ -32,14 +32,6 @@ class BaseFeatureExtractionForm(forms.Form):
     #     widget=forms.NumberInput(attrs={"extra-class": "preprocessing-field"}),
     # )
 
-    # feat_set = forms.ChoiceField(
-    #     label="Image dataset on which the model was trained",
-    #     choices=[("imagenet", "ImageNet")],
-    # )
-    # feat_layer = forms.ChoiceField(
-    #     label="Feature Extraction Layer", choices=[("conv4", "Convolutional Layer 4")]
-    # )
-
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields["feat_net"].choices = Similarity.get_available_models()
@@ -83,6 +75,13 @@ class CosineSimilarityForm(BaseFeatureExtractionForm):
     #     label="Number of similar images to keep",
     #     widget=forms.NumberInput(attrs={"extra-class": "preprocessing-field"}),
     # )
+    use_transpositions = forms.BooleanField(
+        required=False,
+        initial=False,
+        label="Use Transpositions",
+        help_text="Include transposed images in similarity computation",
+        widget=forms.CheckboxInput(attrs={"extra-class": "preprocessing-field"}),
+    )
 
 
 class SegSwapForm(CosinePreprocessing):
@@ -178,6 +177,9 @@ class SimilarityForm(AbstractTaskOnCropsForm):
                     ),
                 }
             )
+
+        if parameters.get("use_transpositions"):
+            parameters["transpositions"] = ["none", "rot90", "rot270", "hflip", "vflip"]
 
         instance.parameters = parameters
 
