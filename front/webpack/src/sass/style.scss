@@ -76,6 +76,11 @@ pre {
     text-indent: 0;
 }
 
+.full-log {
+    max-height: 300px;
+    overflow: auto;
+}
+
 .iconify {
     width: 1em;
     margin-right: 5px;

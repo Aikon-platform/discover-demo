@@ -1,16 +1,5 @@
 {% load static %}
-{% if object.status != "SUCCESS" %}
-    {% if object.full_log %}
-        <div class="centerwrap">
-            <details>
-                <summary>Full log</summary>
-                <pre>
-{{ object.full_log }}
-                </pre>
-            </details>
-        </div>
-    {% endif %}
-{% else %}
+{% if object.status == "SUCCESS" %}
     <div class="centerwrap details-wrapper detailed">
         <h3>Similarity results</h3>
 

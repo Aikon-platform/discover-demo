@@ -17,7 +17,7 @@ const N_SHOWN = {"grid": 8, "rows": 18};
 */
 
 // Lightweight cluster element for the cluster list in modale
-export function MiniClusterElement(props: { info: ClusterInfo; selected: boolean; onClick?: () => void; }) {
+export function MiniClusterElement(props: { info: ClusterInfo; selected: boolean; onClick?: () => void; limit?: number }) {
   const editorContext = React.useContext(ClusterEditorContext);
   const cluster = props.info;
 
@@ -30,7 +30,7 @@ export function MiniClusterElement(props: { info: ClusterInfo; selected: boolean
         </div>
       </div>
       <div className="cl-samples">
-        <BasicImageList images={cluster.images} transformed={false} limit={5} />
+        <BasicImageList images={cluster.images} transformed={false} limit={props.limit || 5} />
       </div>
       {/* <a className="cl-overlay" href="javascript:void(0)"></a> */}
     </div>

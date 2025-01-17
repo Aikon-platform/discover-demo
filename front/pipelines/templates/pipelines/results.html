@@ -1,26 +1,7 @@
 {% load static %}
-{% if object.status != "SUCCESS" %}
-    {% if object.full_log %}
-        <div class="centerwrap">
-            <details>
-                <summary>Full log</summary>
-                <pre>
-{{ object.full_log }}
-                </pre>
-            </details>
-        </div>
-    {% endif %}
-{% else %}
+{% if object.status == "SUCCESS" %}
     <div class="centerwrap details-wrapper detailed">
         <h3>Similarity results</h3>
-
-        {% if object.similarity_task.similarity %}
-            <a href="{{ object.similarity_task.get_download_json_url }}"
-               class="button is-link" download>
-                <span class="iconify" data-icon="mdi:json"></span>
-                <span>Download similarity matrix</span>
-            </a>
-        {% endif %}
 
         {% if not object.dataset %}
             <div class="message mt-5">

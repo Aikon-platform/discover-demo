@@ -42,7 +42,10 @@ export function ClusteringTool({ matches, index, visible, extra_toolbar_items}: 
     };
 
     const setComparison = (image?: ImageToDisplay, setPinned?: (pinned: boolean) => void) => {
-        pinnedImage.setPinned && pinnedImage.setPinned(false);
+        try {
+            pinnedImage.setPinned && pinnedImage.setPinned(false);
+        } catch (e) {
+        }
         setPinned && setPinned(true);
         setPinnedImage({pinnedImage: image, setPinned: setPinned});
     }
@@ -65,7 +68,7 @@ export function ClusteringTool({ matches, index, visible, extra_toolbar_items}: 
                     <div className="toolbar-item toolbar-btn">
                         {isFinal ?
                         <IconBtn icon="mdi:autorenew" onClick={() => setFinal(false)} label="Redo automatic clustering" /> :
-                        <IconBtn className="is-link" icon="mdi:content-save" onClick={() => setFinal(true)} label="Apply clustering" />}
+                        <IconBtn className="is-link" icon="mdi:check-bold" onClick={() => setFinal(true)} label="Apply clustering" />}
                     </div>
                 </div>
             </div>
