@@ -28,13 +28,31 @@ class Regions(AbstractAPITaskOnDataset("regions")):
         self.status = "PROCESSING RESULTS"
         self.result_full_path.mkdir(parents=True, exist_ok=True)
 
+        self.regions = {}
+
         if data is not None:
             output = data.get("output", {})
             if not output:
                 self.on_task_error({"error": "No output data"})
                 return
+            # self.regions = output.get("annotations", {})
+            # with open(self.task_full_path / f"{self.dataset.id}.json", "w") as f:
+            #     json.dump(self.regions, f)
 
-            self.regions = output.get("annotations", {})
+            for doc_annotations in output.get("annotations", []):
+                # digit_annotations is supposed to be {doc.uid: result_url}
+                doc_uid, annotation_url = next(iter(doc_annotations.items()))
+                try:
+                    response = requests.get(annotation_url, stream=True)
+                    response.raise_for_status()
+                    # self.regions[doc_uid] = response.json()
+                    extraction_ref = annotation_url.split("/")[-1]
+                    self.regions[extraction_ref] = response.json()
+                except Exception:
+                    raise ValueError(
+                        f"Could not retrieve annotation from {annotation_url}"
+                    )
+
             with open(self.task_full_path / f"{self.dataset.id}.json", "w") as f:
                 json.dump(self.regions, f)
 
