@@ -46,7 +46,7 @@ export function ImageTooltip({ image, transpositions }: TooltipProps) {
             <div className="display-image">
                 <img src={image.url} alt={image.id} className={"display-img " + (transpositions?.join(" "))} />
             </div>
-            <h4 className="mt-2">{getTitle(image)}</h4>
+            <h4 className="mt-2">Image #{image.num}: {getTitle(image)}</h4>
             <p>{getSubtitle(image)}</p>
         </div>
     );

@@ -23,7 +23,9 @@ export function ImageSimBrowser({ index, matches, extra_toolbar_items }: { index
     const [filter_by_source, setFilterBySource] = React.useState<Document | null>(null);
     const [page, setPage] = React.useState(1);
     const [highlit, setHighlit] = React.useState<ImageInfo | null>(null);
-    const [threshold, setThreshold] = React.useState(50);
+    const minThreshold = Math.min(...matches.map(match => Math.min(...match.matches.map(m => m.similarity))));
+    const maxThreshold = Math.max(...matches.map(match => Math.max(...match.matches.map(m => m.similarity))));
+    const [threshold, setThreshold] = React.useState(minThreshold + 0.5*(maxThreshold-minThreshold));
     const nameProvider = React.useContext(NameProviderContext);
 
     const matches_filtered = filter_by_source ? matches.filter(match => match.query.document === filter_by_source) : matches;
@@ -46,7 +48,7 @@ export function ImageSimBrowser({ index, matches, extra_toolbar_items }: { index
     };
 
     const matchesHref = (watermark: ImageInfo) => {
-        const watermark_index = watermark.id!;
+        const watermark_index = watermark.num!;
         return `#match-${watermark_index}`;
     }
 
@@ -80,19 +82,21 @@ export function ImageSimBrowser({ index, matches, extra_toolbar_items }: { index
                 <div className="toolbar-content">
                     {extra_toolbar_items}
                     <div className="toolbar-item">
-                        <label className="checkbox is-normal">
-                            <input type="checkbox" className="checkbox mr-2" name="group-by-source" id="group-by-source" checked={group_by_source} onChange={toggleGroupBySource} />
-                            Group by source document
-                        </label>
-                    </div>
-                    <div className="toolbar-item">
                         <label className="label is-expanded">
                             Similarity threshold:
                         </label>
                         <div className="field">
-                            <input type="range" min="30" max="100" value={threshold} onChange={(e) => setThreshold(parseInt(e.target.value))} />
-                            <span className="m-3">{threshold}%</span>
+                            <input type="range" min={minThreshold} max={maxThreshold} step={0.01} value={threshold} onChange={(e) => setThreshold(parseFloat(e.target.value))} />
+                            <span className="m-3">{threshold.toPrecision(4)}</span>
                         </div>
+                    </div>
+                    {index.sources.length > 1 &&
+                    <React.Fragment>
+                    <div className="toolbar-item">
+                        <label className="checkbox is-normal">
+                            <input type="checkbox" className="checkbox mr-2" name="group-by-source" id="group-by-source" checked={group_by_source} onChange={toggleGroupBySource} />
+                            Group by source document
+                        </label>
                     </div>
                     <div className="toolbar-item">
                         <label className="label">
@@ -109,6 +113,7 @@ export function ImageSimBrowser({ index, matches, extra_toolbar_items }: { index
                         </div>
                         </div>
                     </div>
+                    </React.Fragment>}
                 </div>
                 <Pagination page={actual_page} setPage={toPage} total_pages={total_pages} />
             </div>

@@ -11,6 +11,7 @@ export function unserializeSimilarityIndex(index: SimilarityIndexRaw): Similarit
     const source_images: ImageInfo[] = index.images.map((image, i) => (
         {
             id: image.id,
+            num: i,
             src: image.src,
             url: image.url,
             document: source_documents[image.doc_uid],

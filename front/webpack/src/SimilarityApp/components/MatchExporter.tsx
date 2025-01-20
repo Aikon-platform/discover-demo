@@ -52,7 +52,7 @@ export function MatchCSVExporter({ matches, threshold }: { matches: SimilarityMa
     const exportCSV = async () => {
         setExporting(true);
         try {
-            const ematches = matches.matches.filter(m => !threshold || m.similarity > threshold/100);
+            const ematches = matches.matches.filter(m => !threshold || m.similarity >= threshold);
             // add query
             ematches.unshift({image: matches.query, similarity: 1, q_transposition: "none", m_transposition: "none"});
             const csv = await exportMatchesCSV(ematches, nameProvider);

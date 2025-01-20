@@ -3,7 +3,7 @@ import { SimilarityMatches } from "../types";
 import { ImageDisplay } from "../../shared/ImageDisplay";
 import { MatchGroup } from "./MatchGroup";
 import { MatchCSVExporter } from "./MatchExporter";
-import { getSourceName, NameProviderContext } from "../../shared/naming";
+import { getImageName, getSourceName, NameProviderContext } from "../../shared/naming";
 import { SimilarityHrefContext } from "./ImageSimBrowser";
 
 interface MatchRowProps {
@@ -32,7 +32,7 @@ export function MatchRow({matches, group_by_source, highlit, threshold}: MatchRo
     return (
         <div className={"match-row columns " + (highlit?"highlit":"")} ref={scrollRef}>
             <div className="column match-query">
-                <h4>{getSourceName(nameProvider, matches.query.document) || matches.query.id}</h4>
+                <p>Image #{matches.query.num}: {getImageName(nameProvider, matches.query) || matches.query.name}</p>
                 <div className="columns is-multiline match-items is-centered">
                     <ImageDisplay image={matches.query} href={matchesRef(matches.query)}/>
                 </div>

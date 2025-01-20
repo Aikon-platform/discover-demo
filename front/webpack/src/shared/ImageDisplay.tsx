@@ -7,6 +7,7 @@ import { TooltipContext } from "./ImageTooltip";
 
 export interface ImageToDisplay {
     id: string;
+    num: number;
     url: string;
     link?: string;
     title?: string;
@@ -60,7 +61,7 @@ export function ImageDisplay({image, similarity, transpositions, comparison, hre
                     <Icon icon="mdi:image-search" />
                 </a>}
             </div>
-            {similarity && <span className="similarity">{(similarity*100).toFixed(0)}%</span>}
+            {similarity && <span className="similarity">{similarity}</span>}
         </div>
     );
 }

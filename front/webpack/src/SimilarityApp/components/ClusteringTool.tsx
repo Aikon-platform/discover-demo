@@ -17,15 +17,17 @@ interface Pinned {
 
 export function ClusteringTool({ matches, index, visible, extra_toolbar_items}: { matches: SimilarityMatches[], index: SimilarityIndex, visible: boolean, extra_toolbar_items?: React.ReactNode }) {
 
-    const [threshold, setThreshold] = React.useState(80);
+    const minThreshold = Math.min(...matches.map(match => Math.min(...match.matches.map(m => m.similarity))));
+    const maxThreshold = Math.max(...matches.map(match => Math.max(...match.matches.map(m => m.similarity))));
+    const [threshold, setThreshold] = React.useState(minThreshold + 0.8*(maxThreshold-minThreshold));
     const graph = graphFromSimilarityMatches(index, matches);
-    const [clusters, setClusters] = React.useState(connectedComponents(graph, threshold/100, index.images.length));
+    const [clusters, setClusters] = React.useState(connectedComponents(graph, threshold, index.images.length));
     const [isFinal, setFinal] = React.useState(false);
     const [pinnedImage, setPinnedImage] = React.useState<Pinned>({});
     const magnifyingContext = React.useContext(MagnifyingContext);
 
     React.useEffect(() => {
-        setClusters(connectedComponents(graph, threshold/100, index.images.length));
+        setClusters(connectedComponents(graph, threshold, index.images.length));
     }, [threshold]);
 
     if (!visible) {
@@ -61,8 +63,12 @@ export function ClusteringTool({ matches, index, visible, extra_toolbar_items}: 
                             Clustering threshold:
                         </label>
                         <div className="field">
-                            <input type="range" min="30" max="100" value={threshold} onChange={(e) => setThreshold(parseInt(e.target.value))} />
-                            <span className="m-3">{threshold}%</span>
+                            <div className="control">
+                            <input type="range" min={minThreshold} max={maxThreshold} step={0.001} value={threshold} onChange={(e) => setThreshold(parseFloat(e.target.value))} />
+                            </div>
+                            <div className="control">
+                                <input type="number" className="input" value={threshold} onChange={(e) => setThreshold(parseFloat(e.target.value))} />
+                            </div>
                         </div>
                     </div>}
                     <div className="toolbar-item toolbar-btn">

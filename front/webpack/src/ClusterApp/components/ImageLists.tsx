@@ -54,7 +54,7 @@ export function ClusterImage(props: { image: ClusterImageInfo; transformed: bool
       {props.selectable && <a href="javascript:void(0)" className="cl-selecter"></a>}
       <ImageDisplay image={{
         ...image,
-        id: image.iid.toString(),
+        id: image.num.toString(),
         url: (editorContext?.state.base_url || "") + ((props.transformed && image.tsf_url) ? image.tsf_url : image.url),
       }} disable_magnify={props.selectable} />
     </div>

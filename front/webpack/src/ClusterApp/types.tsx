@@ -32,7 +32,6 @@ export interface ClusteringFileRaw {
 // TYPES
 
 export interface ClusterImageInfo extends ImageInfo {
-    iid: number;
     tsf_url?: string; // transformed url (for DTI)
     distance?: number; // distance to center (for DTI)
 }
@@ -102,7 +101,7 @@ export function unserializeImageInfo(image: ClusterImageInfoRaw): ClusterImageIn
     return {
         ...image,
         id: image.path,
-        iid: image.id,
+        num: image.id,
         url: image.raw_url,
     };
 }
@@ -111,7 +110,7 @@ function serializeImageInfo(image: ClusterImageInfo): ClusterImageInfoRaw {
     return {
       ...image,
       path: image.id,
-      id: image.iid,
+      id: image.num,
       raw_url: image.url
     };
 }

@@ -57,7 +57,7 @@ export function ImageMagnifier({ image, transpositions, comparison }: MagnifyPro
                             <img src={comparison.url} alt={comparison.id} className="display-img" />
                         </div>
                         <div className="magnifying-info">
-                            <h4 className="mt-2">Query: {getTitle(comparison) || comparison.title || comparison.id}</h4>
+                            <h4 className="mt-2">Query Image #{comparison.num}: {getTitle(comparison) || comparison.title || comparison.id}</h4>
                             <p>{getSubtitle(comparison) || comparison.subtitle}</p>
                             {comparison.link && <p><a href={comparison.link} target="_blank">See in context</a></p>}
                         </div>
@@ -68,7 +68,7 @@ export function ImageMagnifier({ image, transpositions, comparison }: MagnifyPro
                         <img src={image.url} alt={image.id} className={"display-img " + (transf.join(" "))} />
                     </div>
                     <div className="magnifying-info">
-                        <h4 className="mt-2">{getTitle(image)}</h4>
+                        <h4 className="mt-2">Image #{image.num}: {getTitle(image)}</h4>
                         <p>{getSubtitle(image)}</p>
                         <p className="actions">
                             <IconBtn icon="mdi:rotate-left" onClick={() => manualTransform(-90, false)} />

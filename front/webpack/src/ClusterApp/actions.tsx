@@ -11,7 +11,7 @@ export const ClusterEditorContext = React.createContext<EditorContext | undefine
 function eraseImagesMetadata(images: ClusterImageInfo[]): ClusterImageInfo[] {
   return images.map((image) => {
     const { tsf_url, ...rest } = image;
-    return { ...rest, distance: image.iid + 10 };
+    return { ...rest, distance: image.num + 10 };
   });
 }
 

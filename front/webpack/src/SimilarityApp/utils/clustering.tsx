@@ -78,7 +78,6 @@ export function convertToClusteringFile(index: SimilarityIndex, matches: Similar
             const image = index.images[i];
             return {
                 ...image,
-                iid: i,
                 raw_url: image.url,
                 path: image.url,
                 name: image.name || "",

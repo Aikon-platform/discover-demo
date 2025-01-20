@@ -11,6 +11,7 @@ export interface Document {
 
 export interface ImageInfo {
     id: string;
+    num: number;
     url: string;
     src?: string;
     name?: string;

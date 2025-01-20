@@ -29,11 +29,11 @@ export function SimilarityApp(props: SimilarityProps) {
     }, []);
 
     const getTitle = (image: ImageInfo) => {
-        return getSourceName(nameProvider, image.document) || image.document?.name || image.id;
+        return getImageName(nameProvider, image) || image.document?.name || image.id;
     }
 
     const getSubtitle = (image: ImageInfo) => {
-        return getImageName(nameProvider, image);
+        return getSourceName(nameProvider, image.document) || image.document?.name || "";
     }
 
     const addtitional_toolbar = (
