@@ -32,7 +32,10 @@ export function MatchGroup({ matches, grouped, threshold, wref }: MatchGroupProp
                     <Icon icon="mdi:folder"></Icon>
                     {getSourceName(nameProvider, matches[0].image.document)}
                 </React.Fragment> :
-                <span>Image #{matches[0].image.num}: {getImageName(nameProvider, matches[0].image) || matches[0].image.name}</span>
+                <span>
+                    <span className="tag is-light is-bold mb-3">Image #{matches[0].image.num}</span><br/>
+                    <span>{getImageName(nameProvider, matches[0].image) || matches[0].image.name}</span>
+                </span>
                 }</p>
             <div className="columns is-multiline match-items">
                 {matches.map((match, idx) => (

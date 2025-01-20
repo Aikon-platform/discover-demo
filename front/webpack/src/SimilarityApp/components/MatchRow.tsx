@@ -32,12 +32,17 @@ export function MatchRow({matches, group_by_source, highlit, threshold}: MatchRo
     return (
         <div className={"match-row columns " + (highlit?"highlit":"")} ref={scrollRef}>
             <div className="column match-query">
-                <p>Image #{matches.query.num}: {getImageName(nameProvider, matches.query) || matches.query.name}</p>
+                <span>
+                    <span className="tag is-light is-bold mb-3">Image #{matches.query.num}</span><br/>
+                    <span>{getImageName(nameProvider, matches.query) || matches.query.name}</span>
+                </span>
                 <div className="columns is-multiline match-items is-centered">
                     <ImageDisplay image={matches.query} href={matchesRef(matches.query)}/>
                 </div>
-                {groups.length > 5 && <p><a href="javascript:void(0)" onClick={toggleShowAll}>{showAll ? "Show only 5 best" : `Show all results`}</a></p>}
-                <MatchCSVExporter matches={matches} threshold={threshold} />
+                {groups.length > 5 && <p><a href="javascript:void(0)"
+                                            onClick={toggleShowAll}>{showAll ? "Show only 5 best" : `Show all results`}</a>
+                </p>}
+                <MatchCSVExporter matches={matches} threshold={threshold}/>
             </div>
             <div className="column columns match-results">
                 {groups.slice(0, showAll ? groups.length : 5).map((grouped_by_source, k) => (
