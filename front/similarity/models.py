@@ -49,7 +49,8 @@ class Similarity(AbstractAPITaskOnCrops("similarity")):
                 self.on_task_error({"error": "No output data"})
                 return
 
-            self.save_similarity(output.get("annotations", {}))
+            # TODO download annotations file
+            # self.save_similarity(output.get("annotations", {}))
 
             dataset_url = output.get("dataset_url")
             if dataset_url:
