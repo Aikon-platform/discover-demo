@@ -18,6 +18,7 @@ export interface ImageInfo {
     document?: Document;
     link?: string;
     metadata?: { [key: string]: string; };
+    subtitle?: string | undefined;
 }// CONTEXT
 
 export interface NameProvider {

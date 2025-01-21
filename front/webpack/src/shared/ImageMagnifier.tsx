@@ -2,6 +2,7 @@ import React from "react";
 import { IconBtn } from "./IconBtn";
 import { MatchTransposition } from "../SimilarityApp/types";
 import { ImageToDisplay } from "./ImageDisplay";
+import {ImageIdentification} from "./ImageIdentification";
 
 
 export interface MagnifyProps {
@@ -14,8 +15,6 @@ export interface MagnifyingContext {
     // Context to manage focusing on a Watermark
     magnify?: ({image, transpositions, comparison}:MagnifyProps) => void;
     setComparison?: (comparison?: ImageToDisplay | undefined, setPinned?: (pinned: boolean) => void) => void;
-    getTitle?: (image: ImageToDisplay) => string;
-    getSubtitle?: (image: ImageToDisplay) => string;
 }
 
 export const MagnifyingContext = React.createContext<MagnifyingContext>({});
@@ -26,8 +25,6 @@ export function ImageMagnifier({ image, transpositions, comparison }: MagnifyPro
     */
     const context = React.useContext(MagnifyingContext);
     const setMagnifying = context.magnify!;
-    const getTitle = context.getTitle || ((image: ImageToDisplay) => image.title);
-    const getSubtitle = context.getSubtitle || ((image: ImageToDisplay) => image.subtitle);
     const [transf, setTransf] = React.useState<MatchTransposition[]>(transpositions || []);
 
     const manualTransform = (deltaRot: 0 | 90 | -90, hflip: boolean) => {
@@ -57,8 +54,7 @@ export function ImageMagnifier({ image, transpositions, comparison }: MagnifyPro
                             <img src={comparison.url} alt={comparison.id} className="display-img" />
                         </div>
                         <div className="magnifying-info">
-                            <h4 className="mt-2">Query Image #{comparison.num}: {getTitle(comparison) || comparison.title || comparison.id}</h4>
-                            <p>{getSubtitle(comparison) || comparison.subtitle}</p>
+                            <ImageIdentification image={comparison} isTitle={true} prefix={"Query"}/>
                             {comparison.link && <p><a href={comparison.link} target="_blank">See in context</a></p>}
                         </div>
                     </div>
@@ -68,9 +64,8 @@ export function ImageMagnifier({ image, transpositions, comparison }: MagnifyPro
                         <img src={image.url} alt={image.id} className={"display-img " + (transf.join(" "))} />
                     </div>
                     <div className="magnifying-info">
-                        <h4 className="mt-2">Image #{image.num}: {getTitle(image)}</h4>
-                        <p>{getSubtitle(image)}</p>
-                        <p className="actions">
+                        <ImageIdentification image={image} isTitle={true}/>
+                        <p className="actions my-2">
                             <IconBtn icon="mdi:rotate-left" onClick={() => manualTransform(-90, false)} />
                             <IconBtn icon="mdi:rotate-right" onClick={() => manualTransform(90, false)} />
                             <IconBtn icon="mdi:flip-horizontal" onClick={() => manualTransform(0, true)} />

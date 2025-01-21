@@ -6,6 +6,7 @@ import { Icon } from "@iconify/react";
 import { IconBtn } from "../../shared/IconBtn";
 import { NameProviderContext, getImageName, getSourceName } from "../../shared/naming";
 import { SimilarityHrefContext } from "./ImageSimBrowser";
+import {ImageIdentification} from "../../shared/ImageIdentification";
 
 interface MatchGroupProps {
     matches: SimilarityMatch[];
@@ -32,10 +33,7 @@ export function MatchGroup({ matches, grouped, threshold, wref }: MatchGroupProp
                     <Icon icon="mdi:folder"></Icon>
                     {getSourceName(nameProvider, matches[0].image.document)}
                 </React.Fragment> :
-                <span title={getImageName(nameProvider, matches[0].image)}>
-                    <span className="tag is-light is-bold mb-3">Image #{matches[0].image.num}</span><br/>
-                    <span>{getImageName(nameProvider, matches[0].image, true) || matches[0].image.name}</span>
-                </span>
+                <ImageIdentification image={matches[0].image}/>
                 }</p>
             <div className="columns is-multiline match-items">
                 {matches.map((match, idx) => (

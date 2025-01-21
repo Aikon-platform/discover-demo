@@ -60,7 +60,7 @@ export function Magnifier({ watermark, transformations, wref }: MagnifyProps) {
                     </div>
                     <h4 className="mt-2">{watermark.source?.name || watermark.name}</h4>
                     <p>{watermark.source && watermark.name}</p>
-                    <p className="actions">
+                    <p className="actions my-2">
                         <IconBtn icon="mdi:rotate-left" onClick={() => manualTransform(-90, false)} />
                         <IconBtn icon="mdi:rotate-right" onClick={() => manualTransform(90, false)} />
                         <IconBtn icon="mdi:flip-horizontal" onClick={() => manualTransform(0, true)} />

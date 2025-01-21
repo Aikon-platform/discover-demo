@@ -153,6 +153,11 @@
     z-index: 1000;
 }
 
+.viewer-table {
+    width: 80vw;
+    margin: auto;
+}
+
 .toolbar {
     margin: 1em -2em;
     position: sticky;
@@ -161,6 +166,7 @@
     background-color: white;
     box-shadow: 0 0 5px 0 rgba(0, 0, 0, 0.2);
     padding: 1em 3em;
+    width: 100vw;
 
     .toolbar-content {
         display: flex;

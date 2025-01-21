@@ -28,14 +28,6 @@ export function SimilarityApp(props: SimilarityProps) {
         fetchIIIFNames(props.index.sources, (ncontext: NameProvider) => setContext({ ...nameProvider, ...ncontext }));
     }, []);
 
-    const getTitle = (image: ImageInfo) => {
-        return getImageName(nameProvider, image) || image.document?.name || image.id;
-    }
-
-    const getSubtitle = (image: ImageInfo) => {
-        return getSourceName(nameProvider, image.document) || image.document?.name || "";
-    }
-
     const addtitional_toolbar = (
         <div className="toolbar-item toolbar-btn">
             {mode != "browse" && <IconBtn icon="mdi:folder" onClick={() => setMode("browse")} label="Switch to Browse Mode" />}
@@ -45,8 +37,8 @@ export function SimilarityApp(props: SimilarityProps) {
 
     return (
     <NameProviderContext.Provider value={nameProvider}>
-        <TooltipContext.Provider value={{ getTitle, getSubtitle, setTooltip }}>
-            <MagnifyingContext.Provider value={{ magnify: setMagnifying, getTitle, getSubtitle }}>
+        <TooltipContext.Provider value={{ setTooltip }}>
+            <MagnifyingContext.Provider value={{ magnify: setMagnifying }}>
                 {mode === "browse" && <ImageSimBrowser index={props.index} matches={props.matches} extra_toolbar_items={addtitional_toolbar} />}
                 <ClusteringTool index={props.index} matches={props.matches} visible={mode == "cluster"} extra_toolbar_items={addtitional_toolbar} />
                 {magnifying && <ImageMagnifier {...magnifying} />}
