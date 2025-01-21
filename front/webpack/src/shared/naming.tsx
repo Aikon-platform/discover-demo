@@ -5,11 +5,13 @@ import { Document, ImageInfo } from "./types";
 
 export const NameProviderContext = React.createContext<NameProvider>({});
 
-export function getImageName(context: NameProvider, image: ImageInfo): string {
+export function getImageName(context: NameProvider, image: ImageInfo, ellipsis=false): string {
     let name = (image.document && context[image.document.uid]?.images[image.src || image.id]) || image.id;
-    name = name.split('.').slice(0, -1).join('.');
-    if (name.length >= 16){
-        name = name.slice(0, 5) + "..." + name.slice(-10);
+    if (ellipsis) {
+        name = name.split('.').slice(0, -1).join('.');
+        if (name.length >= 16){
+            name = name.slice(0, 5) + "..." + name.slice(-10);
+        }
     }
     return name;
 }
