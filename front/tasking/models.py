@@ -35,8 +35,8 @@ API_URL = getattr(settings, "API_URL", "http://localhost:5000")
 BASE_URL = getattr(settings, "BASE_URL", "http://localhost:8000")
 
 
-def AbstractAPITask(task_prefix: str):
-    class AbstractAPITask(models.Model):
+def AbstractTask(task_prefix: str):
+    class AbstractTask(models.Model):
         """
         Abstract model for tasks that are sent to the API
         """
@@ -63,11 +63,17 @@ def AbstractAPITask(task_prefix: str):
             User, null=True, on_delete=models.SET_NULL, editable=False
         )
 
-        api_tracking_id = models.UUIDField(null=True, editable=False)
-        api_endpoint_prefix = f"{API_URL}/{task_prefix}"
         django_app_name = task_prefix
 
         parameters = models.JSONField(null=True)
+
+        pipeline = models.ForeignKey(
+            "pipelines.Pipeline",
+            null=True,
+            blank=True,
+            on_delete=models.SET_NULL,
+            related_name=f"{task_prefix}_tasks",
+        )
 
         class Meta:
             abstract = True
@@ -170,6 +176,209 @@ def AbstractAPITask(task_prefix: str):
             """
             Start the task
             """
+            raise NotImplementedError()
+
+        def cancel_task(self, endpoint: str = "cancel"):
+            """
+            Cancel the task
+            """
+            raise NotImplementedError()
+
+        def on_task_success(self, data):
+            """
+            Handle the end of the task
+            """
+            self.terminate_task("SUCCESS")
+
+        def on_task_error(self, data):
+            """
+            Handle the end of the task
+            """
+            self.terminate_task("ERROR", data.get("error", "Unknown error"))
+
+        def terminate_task(self, status="SUCCESS", error=None, notify=True):
+            """
+            Called when the task is finished
+            """
+            self.status = status
+            if error:
+                self.write_log(error)
+            self.is_finished = True
+            self.save()
+
+            if notify and self.notify_email:
+                try:
+                    send_mail(
+                        f"[discover-demo] Task {self.status}",
+                        f"Your task {self} on discover-demo has finished with status {self.status}.\n\nYou can access the results at: {BASE_URL}{self.get_absolute_url()}",
+                        settings.DEFAULT_FROM_EMAIL,
+                        [self.requested_by.email],
+                        fail_silently=False,
+                    )
+                except:
+                    self.write_log(f"Error sending email: {traceback.format_exc()}")
+
+            if self.pipeline:
+                self.pipeline.on_task_finished(self)
+
+        def receive_notification(self, data: dict):
+            """
+            Called by the API when tasks events happen (@notifying)
+            """
+            event = data["event"]
+            if event == "STARTED":
+                self.status = "PROGRESS"
+                self.save()
+                return
+            elif event == "SUCCESS":
+                self.on_task_success(data)
+            elif event == "ERROR":
+                self.on_task_error(data)
+
+        def get_progress(self):
+            """
+            Queries the API to get the task progress
+            """
+            raise NotImplementedError()
+
+        @classmethod
+        def get_frontend_monitoring(cls):
+            """
+            Returns a dict with the monitoring data
+            """
+            total_size = 0
+            for f in Path(settings.MEDIA_ROOT).glob("**/*"):
+                if f.is_file():
+                    total_size += f.stat().st_size
+            n_datasets = (
+                Dataset.objects.count()
+            )  # TODO filter to keep only Datasets used by tasks
+            n_experiments = cls.objects.count()
+
+            return {
+                "total_size": total_size,
+                "n_datasets": n_datasets,
+                "n_experiments": n_experiments,
+            }
+
+        @classmethod
+        def clear_old_tasks(cls, days_before: int = 30) -> Dict[str, int]:
+            """
+            Clears all tasks older than days_before days
+            """
+            # TODO Needs to be adapted to the new Dataset model
+            # remove all tasks and datasets except those younger than days_before days
+            from_date = timezone.now() - timezone.timedelta(days=days_before)
+
+            cleared_data = {
+                "cleared_experiments": 0,
+                "cleared_datasets": 0,
+            }
+
+            try:
+                old_exp = cls.objects.filter(requested_on__lte=from_date)
+
+                for exp in old_exp:
+                    shutil.rmtree(exp.result_full_path, ignore_errors=True)
+                    cleared_data["cleared_experiments"] += 1
+
+                # TODO change that to fit to new Dataset / delete even crops of the dataset
+                # old_datasets = Dataset.objects.exclude(
+                #     dticlustering__requested_on__gt=from_date
+                # )
+                old_datasets = []
+                for d in old_datasets:
+                    try:
+                        d.delete()
+                        cleared_data["cleared_datasets"] += 1
+                    except Exception as e:
+                        cleared_data["error"] = f"Error when clearing old datasets: {e}"
+
+                # remove records
+                old_exp.delete()
+            except Exception as e:
+                cleared_data["error"] = f"Error when clearing old tasks: {e}"
+
+            return cleared_data
+
+        def clear_task(self) -> Dict[str, int]:
+            """
+            Clears the files of a given task
+            """
+            try:
+                shutil.rmtree(self.task_full_path, ignore_errors=True)
+                # TODO do not work with Vectorisation
+                cleared = 1
+            except Exception:
+                cleared = 0
+
+            return {
+                "cleared_files": cleared,
+            }
+
+    @receiver(pre_delete, sender=AbstractTask)
+    def pre_delete_task(sender, instance: AbstractTask, **kwargs):
+        # Clear files on the API server
+        instance.clear_task()
+        return
+
+    return AbstractTask
+
+
+def AbstractTaskOnDataset(task_prefix: str):
+    class AbstractTaskOnDataset(AbstractTask(task_prefix)):
+        """
+        Abstract model for tasks on dataset of images that are sent to the API
+        """
+
+        dataset = models.ForeignKey(
+            Dataset,
+            verbose_name="Use existing dataset...",
+            null=True,
+            blank=True,
+            on_delete=models.SET_NULL,
+            related_name=f"{task_prefix}_tasks",
+        )
+        # parameters = models.JSONField(null=True)
+
+        class Meta:
+            abstract = True
+            ordering = ["-requested_on"]
+
+        def get_dataset_id(self):
+            return self.dataset.id
+            # return self.zip_dataset.id
+
+        def get_task_kwargs(self):
+            kwargs = super().get_task_kwargs()
+            kwargs.update(
+                {
+                    "documents": self.dataset.documents_for_api(),
+                    # "parameters": self.parameters,
+                }
+            )
+            return kwargs
+
+    return AbstractTaskOnDataset
+
+
+def AbstractAPITaskOnDataset(task_prefix: str):
+    class AbstractAPITaskOnDataset(AbstractTaskOnDataset(task_prefix)):
+        """
+        Abstract model for tasks that are sent to the API
+        """
+
+        api_tracking_id = models.UUIDField(null=True, editable=False)
+        api_endpoint_prefix = f"{API_URL}/{task_prefix}"
+
+        class Meta:
+            abstract = True
+            ordering = ["-requested_on"]
+
+        def start_task(self, endpoint: str = "start"):
+            """
+            Start the task
+            """
             data = {
                 "experiment_id": str(self.id),
                 "notify_url": self.get_notify_url(),
@@ -234,54 +443,6 @@ def AbstractAPITask(task_prefix: str):
                 self.is_finished = True
             self.save()
 
-        def on_task_success(self, data):
-            """
-            Handle the end of the task
-            """
-            self.terminate_task("SUCCESS")
-
-        def on_task_error(self, data):
-            """
-            Handle the end of the task
-            """
-            self.terminate_task("ERROR", data.get("error", "Unknown error"))
-
-        def terminate_task(self, status="SUCCESS", error=None, notify=True):
-            """
-            Called when the task is finished
-            """
-            self.status = status
-            if error:
-                self.write_log(error)
-            self.is_finished = True
-            self.save()
-
-            if notify and self.notify_email:
-                try:
-                    send_mail(
-                        f"[discover-demo] Task {self.status}",
-                        f"Your task {self} on discover-demo has finished with status {self.status}.\n\nYou can access the results at: {BASE_URL}{self.get_absolute_url()}",
-                        settings.DEFAULT_FROM_EMAIL,
-                        [self.requested_by.email],
-                        fail_silently=False,
-                    )
-                except:
-                    self.write_log(f"Error sending email: {traceback.format_exc()}")
-
-        def receive_notification(self, data: dict):
-            """
-            Called by the API when tasks events happen (@notifying)
-            """
-            event = data["event"]
-            if event == "STARTED":
-                self.status = "PROGRESS"
-                self.save()
-                return
-            elif event == "SUCCESS":
-                self.on_task_success(data)
-            elif event == "ERROR":
-                self.on_task_error(data)
-
         def get_progress(self):
             """
             Queries the API to get the task progress
@@ -324,66 +485,6 @@ def AbstractAPITask(task_prefix: str):
                 return {"error": "Error when reading monitoring data"}
 
         @classmethod
-        def get_frontend_monitoring(cls):
-            """
-            Returns a dict with the monitoring data
-            """
-            total_size = 0
-            for f in Path(settings.MEDIA_ROOT).glob("**/*"):
-                if f.is_file():
-                    total_size += f.stat().st_size
-            n_datasets = (
-                Dataset.objects.count()
-            )  # TODO filter to keep only Datasets used by tasks
-            n_experiments = cls.objects.count()
-
-            return {
-                "total_size": total_size,
-                "n_datasets": n_datasets,
-                "n_experiments": n_experiments,
-            }
-
-        @classmethod
-        def clear_old_tasks(cls, days_before: int = 30) -> Dict[str, int]:
-            """
-            Clears all tasks older than days_before days
-            """
-            # TODO Needs to be adapted to the new Dataset model
-            # remove all tasks and datasets except those younger than days_before days
-            from_date = timezone.now() - timezone.timedelta(days=days_before)
-
-            cleared_data = {
-                "cleared_experiments": 0,
-                "cleared_datasets": 0,
-            }
-
-            try:
-                old_exp = cls.objects.filter(requested_on__lte=from_date)
-
-                for exp in old_exp:
-                    shutil.rmtree(exp.result_full_path, ignore_errors=True)
-                    cleared_data["cleared_experiments"] += 1
-
-                # TODO change that to fit to new Dataset / delete even crops of the dataset
-                # old_datasets = Dataset.objects.exclude(
-                #     dticlustering__requested_on__gt=from_date
-                # )
-                old_datasets = []
-                for d in old_datasets:
-                    try:
-                        d.delete()
-                        cleared_data["cleared_datasets"] += 1
-                    except Exception as e:
-                        cleared_data["error"] = f"Error when clearing old datasets: {e}"
-
-                # remove records
-                old_exp.delete()
-            except Exception as e:
-                cleared_data["error"] = f"Error when clearing old tasks: {e}"
-
-            return cleared_data
-
-        @classmethod
         def clear_api_old_tasks(cls, days_before: int = 30) -> Dict[str, Any]:
             """
             Clears all tasks older than days_before days from the API server
@@ -408,21 +509,6 @@ def AbstractAPITask(task_prefix: str):
                     "output": api_query.text,
                 }
 
-        def clear_task(self) -> Dict[str, int]:
-            """
-            Clears the files of a given task
-            """
-            try:
-                shutil.rmtree(self.task_full_path, ignore_errors=True)
-                # TODO do not work with Vectorisation
-                cleared = 1
-            except Exception:
-                cleared = 0
-
-            return {
-                "cleared_files": cleared,
-            }
-
         @classmethod
         def clear_api_task(cls, tracking_id: str) -> Dict[str, Any]:
             """
@@ -443,48 +529,11 @@ def AbstractAPITask(task_prefix: str):
                     "output": api_query.text,
                 }
 
-    @receiver(pre_delete, sender=AbstractAPITask)
-    def pre_delete_task(sender, instance: AbstractAPITask, **kwargs):
+    @receiver(pre_delete, sender=AbstractAPITaskOnDataset)
+    def pre_delete_task(sender, instance: AbstractAPITaskOnDataset, **kwargs):
         # Clear files on the API server
         sender.clear_api_task(instance.api_tracking_id)
         instance.clear_task()
         return
-
-    return AbstractAPITask
-
-
-def AbstractAPITaskOnDataset(task_prefix: str):
-    class AbstractAPITaskOnDataset(AbstractAPITask(task_prefix)):
-        """
-        Abstract model for tasks on dataset of images that are sent to the API
-        """
-
-        dataset = models.ForeignKey(
-            Dataset,
-            verbose_name="Use existing dataset...",
-            null=True,
-            blank=True,
-            on_delete=models.SET_NULL,
-            related_name=f"{task_prefix}_tasks",
-        )
-        # parameters = models.JSONField(null=True)
-
-        class Meta:
-            abstract = True
-            ordering = ["-requested_on"]
-
-        def get_dataset_id(self):
-            return self.dataset.id
-            # return self.zip_dataset.id
-
-        def get_task_kwargs(self):
-            kwargs = super().get_task_kwargs()
-            kwargs.update(
-                {
-                    "documents": self.dataset.documents_for_api(),
-                    # "parameters": self.parameters,
-                }
-            )
-            return kwargs
 
     return AbstractAPITaskOnDataset

@@ -92,28 +92,10 @@ class Similarity(AbstractAPITaskOnCrops("similarity")):
             return orjson.loads(f.read())
 
     def get_similarity_matrix_for_display(self, as_list=True):
-        # TODO improve!!!
         images = self.similarity_index.get("images", [])
         similarities = {}
 
-        # for q_idx, s_idx, score in self.similarity_matrix:
-        #     query = images[q_idx].copy()
-        #     sim = images[s_idx].copy()
-        #
-        #     if query["id"] not in similarities:
-        #         similarities[query["id"]] = {"query": query, "sim": []}
-        #     if sim["id"] not in similarities:
-        #         similarities[sim["id"]] = {"query": sim, "sim": []}
-        #
-        #     sim_copy = sim.copy()
-        #     query_copy = query.copy()
-        #
-        #     sim_copy["score"] = float(score)
-        #     query_copy["score"] = float(score)
-        #
-        #     similarities[query["id"]]["sim"].append(sim_copy)
-        #     similarities[sim["id"]]["sim"].append(query_copy)
-        for q_idx, s_idx, score in self.similarity_matrix:
+        for q_idx, s_idx, score, *tr in self.similarity_matrix:
             for img1, img2 in [
                 (images[q_idx], images[s_idx]),
                 (images[s_idx], images[q_idx]),

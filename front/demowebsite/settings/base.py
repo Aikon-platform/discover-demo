@@ -14,6 +14,7 @@ DEMO_APPS = [
     "similarity",
     "watermarks",
     "regions",
+    "pipelines",
 ]
 
 INSTALLED_APPS = [
@@ -101,9 +102,9 @@ DRAMATIQ_BROKER = {
 }
 
 
-MAX_UPLOAD_SIZE = ENV("MAX_UPLOAD_SIZE", default=150 * 1024 * 1024)  # 150MB
+MAX_UPLOAD_SIZE = ENV("MAX_UPLOAD_SIZE", default=250 * 1024 * 1024)  # 250MB
 DATA_UPLOAD_MAX_MEMORY_SIZE = ENV(
-    "DATA_UPLOAD_MAX_MEMORY_SIZE", default=100 * 1024 * 1024
+    "DATA_UPLOAD_MAX_MEMORY_SIZE", default=25 * 1024 * 1024
 )
 
 LOGOUT_REDIRECT_URL = reverse_lazy("home")

@@ -23,8 +23,8 @@
         {% if object.status == "SUCCESS" and not object.get_bounding_boxes %}
             <p class="status">No watermarks detected</p>
         {% endif %}
-        <div class="watermark-viewer">
-            <div class="watermark">
+        <div class="regions-viewer">
+            <div class="regions">
                 <img src="{{ object.image.url }}" alt="Detected watermark">
                 {% for bbox in object.get_bounding_boxes_for_display %}
                     <div class="bbox" style="left: {{ bbox.x }}%; top: {{ bbox.y }}%; width: {{ bbox.width }}%; height: {{ bbox.height }}%; opacity: {{ bbox.score }}"><span class="score">{{ bbox.score|floatformat:2 }}</span></div>

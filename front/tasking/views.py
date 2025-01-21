@@ -11,7 +11,7 @@ from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 import json
 
-from .models import AbstractAPITask
+from .models import AbstractTask
 from datasets.forms import DATASET_FIELDS
 
 LOGIN_REQUIRED = getattr(settings, "LOGIN_REQUIRED", True)
@@ -20,7 +20,7 @@ LOGIN_REQUIRED = getattr(settings, "LOGIN_REQUIRED", True)
 class TaskMixin:
     app_name = None
     task_name = None
-    model: AbstractAPITask = None
+    model: AbstractTask = None
     form_class = None
     task_data = None
 

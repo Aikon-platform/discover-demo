@@ -1,8 +1,11 @@
 import React, { useEffect } from "react";
-import { SimilarityMatches, SimilarityMatch } from "../types";
-import { ImageDisplay } from "./ImageDisplay";
+import { SimilarityMatches } from "../types";
+import { ImageDisplay } from "../../shared/ImageDisplay";
 import { MatchGroup } from "./MatchGroup";
 import { MatchCSVExporter } from "./MatchExporter";
+import { getImageName, getSourceName, NameProviderContext } from "../../shared/naming";
+import { SimilarityHrefContext } from "./ImageSimBrowser";
+import {ImageIdentification} from "../../shared/ImageIdentification";
 
 interface MatchRowProps {
     matches: SimilarityMatches;
@@ -18,6 +21,8 @@ export function MatchRow({matches, group_by_source, highlit, threshold}: MatchRo
     const [showAll, toggleShowAll] = React.useReducer((showAll) => !showAll, false);
     const groups = group_by_source ? matches.matches_by_document : matches.matches.map(m => [m]);
     const scrollRef = React.useRef<HTMLDivElement>(null);
+    const nameProvider = React.useContext(NameProviderContext);
+    const matchesRef = React.useContext(SimilarityHrefContext).matchesHref || (() => undefined);
 
     useEffect(() => {
         if (highlit) {
@@ -28,12 +33,16 @@ export function MatchRow({matches, group_by_source, highlit, threshold}: MatchRo
     return (
         <div className={"match-row columns " + (highlit?"highlit":"")} ref={scrollRef}>
             <div className="column match-query">
-                <h4>{matches.query.document?.name || matches.query.id}</h4>
+                <ImageIdentification image={matches.query}/>
                 <div className="columns is-multiline match-items is-centered">
-                    <ImageDisplay image={matches.query} />
+                    <ImageDisplay image={matches.query} href={matchesRef(matches.query)}/>
                 </div>
-                {groups.length > 5 && <p><a href="javascript:void(0)" onClick={toggleShowAll}>{showAll ? "Show only 5 best" : `Show all results`}</a></p>}
-                <MatchCSVExporter matches={matches} threshold={threshold} />
+                {groups.length > 5 && <p>
+                    <a href="javascript:void(0)" onClick={toggleShowAll}>
+                        {showAll ? "Show only 5 best" : `Show all results`}
+                    </a>
+                </p>}
+                <MatchCSVExporter matches={matches} threshold={threshold}/>
             </div>
             <div className="column columns match-results">
                 {groups.slice(0, showAll ? groups.length : 5).map((grouped_by_source, k) => (

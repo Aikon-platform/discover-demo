@@ -1,3 +1,3 @@
 import { ClusterApp } from './components/ClusterApp';
 
-export { ClusterApp }
+export { ClusterApp as ClusterApp }
