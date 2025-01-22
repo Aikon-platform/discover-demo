@@ -6,7 +6,7 @@ import traceback
 
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Dict, List
+from typing import Dict, List, Optional
 from PIL import Image as PImage
 
 from django.contrib.auth import get_user_model
@@ -72,7 +72,7 @@ class Document:
     @property
     def mapping_path(self):
         """
-        DEPRECATED: JSON file containing mapping in the form of
+        @deprecated: JSON file containing mapping in the form of
         {
             "image_name_front.jpg": "image_name_api.jpg",
             "image_name_front.png": "image_name_api.png",
@@ -124,9 +124,14 @@ class Document:
 
     def _list_img_dir(self):
         return [
-            Image(id=str(p.name), path=p, src=str(p.name), document=self)
-            for p in self.img_path.iterdir()
-            if p.suffix.lower() in IMG_EXTENSIONS
+            Image(
+                id=str(p.relative_to(self.img_path)),
+                path=p,
+                src=str(p.relative_to(self.img_path)),
+                document=self,
+            )
+            for p in self.img_path.rglob("*")
+            if p.is_file() and p.suffix.lower() in IMG_EXTENSIONS
         ]
 
     def _legacy_list_img_mapping(self):
@@ -149,8 +154,7 @@ class Document:
                 data = json.load(f)
             return [Image.from_dict(im, self) for im in data]
 
-        images = self._list_img_dir()
-        return images
+        return self._list_img_dir()
 
 
 @dataclass
@@ -158,7 +162,7 @@ class Image:
     id: str
     src: str
     path: Path
-    metadata: Dict[str, str] = None
+    metadata: Optional[Dict[str, str]] = None
     document: "Document" = None
 
     def to_dict(self, relpath: Path = None) -> Dict:
@@ -305,6 +309,19 @@ class Dataset(AbstractDataset):
         if len(doc_to_extract) == 0:
             return
 
+        """
+        api_info = {
+            'documents': [{
+                'download': 'API_URL/datasets/document/<doc_type>/<doc_uid>/download',
+                'src': 'FRONT_URL/media/datasets/<original_file>.<ext>',
+                'type': '<doc_type>',
+                'uid': '<doc_uid>',
+                'url': 'API_URL/datasets/document/<doc_type>/<doc_uid>'
+            }, {...}],
+            'uid': '<dataset_uid>',
+            'url': '<dataset_url>'
+        }
+        """
         api_info = requests.get(self.api_url).json()
 
         for doc in api_info["documents"]:
@@ -421,6 +438,7 @@ class Dataset(AbstractDataset):
 
         """
         try:
+            # download the images if not already done
             docs = self.get_doc_image_mapping()
         except Exception as e:
             return {
@@ -453,8 +471,9 @@ class Dataset(AbstractDataset):
                     try:
                         with PImage.open(img.path) as img:
                             for idx, crop in enumerate(crops):
-                                crop_id = crop.get("crop_id", None)
-                                if crop_id is None:
+                                crop_id = crop.get("crop_id", "")
+
+                                if not crop_id:
                                     crop_id = f"{Path(img_name).stem}_crop_{idx + 1}"
 
                                 bbox = crop["relative"]
@@ -475,8 +494,11 @@ class Dataset(AbstractDataset):
                                 if cropped.size[0] == 0 or cropped.size[1] == 0:
                                     continue
 
+                                crop_file = crops_path / f"{crop_id}.jpg"
+                                crop_file.parent.mkdir(parents=True, exist_ok=True)
+
                                 cropped.save(
-                                    crops_path / f"{crop_id}.jpg",
+                                    crop_file,
                                     "JPEG",
                                 )
                                 extracted += 1

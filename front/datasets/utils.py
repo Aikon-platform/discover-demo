@@ -28,7 +28,7 @@ class PathAndRename(object):
 
 
 def unzip_on_the_fly(
-    zip_url_or_path: str | Path, target_path: str, allowed_extensions=None
+    zip_url_or_path: str | Path, target_path: str | Path, allowed_extensions=None
 ) -> List[Path]:
     """
     Unzip an internet file in a streaming fashion
