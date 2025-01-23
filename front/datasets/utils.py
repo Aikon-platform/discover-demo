@@ -7,6 +7,7 @@ import requests
 from stream_unzip import stream_unzip
 import re
 
+from shared.utils import pprint
 
 IMG_EXTENSIONS = {".jpg", ".jpeg", ".png", ".gif", ".tiff"}
 
@@ -43,7 +44,6 @@ def unzip_on_the_fly(
     Returns:
         A list of all the files extracted
     """
-
     if isinstance(zip_url_or_path, str) and "://" in zip_url_or_path:
 
         def zipped_chunks():
@@ -90,7 +90,7 @@ def sanitize_str(string: str) -> str:
     (remove http, https, www, /, ., :, spaces)
     """
     return (
-        re.sub(r"^https?\:\/\/|www\.|\.|\:|\s", "", string.strip())
+        re.sub(r"^https?\:\/\/|www\.|\.|:|%|\s", "", string.strip())
         .replace("/", "^")
         .replace(" ", "_")
     )

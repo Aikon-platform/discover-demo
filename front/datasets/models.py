@@ -16,6 +16,7 @@ from django.conf import settings
 from django.db.models.signals import pre_delete
 from django.dispatch.dispatcher import receiver
 
+from shared.utils import pprint
 from .utils import PathAndRename, IMG_EXTENSIONS, unzip_on_the_fly, sanitize_str
 from .fields import URLListModelField
 
@@ -62,7 +63,7 @@ class Document:
     ):
         self.dtype = dtype
         self.src = src or ""
-        self.uid = uid or sanitize_str(src)
+        self.uid = sanitize_str(uid or src)
         self.path = (
             Path(path)
             if path is not None
@@ -103,18 +104,27 @@ class Document:
         }
 
     def is_extracted(self) -> bool:
+        if not self.path.exists():
+            self.path.mkdir(parents=True, exist_ok=True)
+            return False
         return (self.path / "extracted").exists()
 
     def extract_from_zip(self, source_zip: str | Path):
         """
         Extract the content of the zip file
         """
-        extracted_touch = self.path / "extracted"
-        if extracted_touch.exists():
+        extracted = self.path / "extracted"
+        if self.is_extracted():
             return
 
-        unzip_on_the_fly(source_zip, self.path, [".json", *IMG_EXTENSIONS])
-        extracted_touch.touch()
+        extracted_files = unzip_on_the_fly(
+            source_zip, self.path, [".json", *IMG_EXTENSIONS]
+        )
+
+        if len(extracted_files) == 0:
+            raise Exception("No files were extracted")
+
+        extracted.touch()
 
     @property
     def images(self) -> List["Image"]:
@@ -322,11 +332,16 @@ class Dataset(AbstractDataset):
             'url': '<dataset_url>'
         }
         """
-        api_info = requests.get(self.api_url).json()
+        try:
+            api_info = requests.get(self.api_url).json()
+        except Exception as e:
+            print(f"Error fetching dataset info: {e}")
+            return
 
-        for doc in api_info["documents"]:
+        for doc in api_info.get("documents", []):
             if doc["uid"] not in doc_to_extract:
                 continue
+
             doc_to_extract[doc["uid"]].extract_from_zip(doc["download"])
             del doc_to_extract[doc["uid"]]
 
