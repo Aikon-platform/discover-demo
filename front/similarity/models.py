@@ -25,11 +25,15 @@ class Similarity(AbstractAPITaskOnCrops("similarity")):
             return [("", f"Error fetching models: {e}")]
 
     def save_similarity(self, similarity: dict):
+        if not self.dataset:
+            return
         with open(self.task_full_path / f"{self.dataset.id}.json", "wb") as f:
             f.write(orjson.dumps(similarity))
         self._similarity = similarity
 
     def _load_similarity(self):
+        if not self.dataset:
+            return {}
         with open(self.task_full_path / f"{self.dataset.id}.json", "rb") as f:
             return orjson.loads(f.read())
 

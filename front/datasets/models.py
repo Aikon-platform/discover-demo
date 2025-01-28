@@ -6,7 +6,7 @@ import traceback
 
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Dict, List
+from typing import Dict, List, Optional
 from PIL import Image as PImage
 
 from django.contrib.auth import get_user_model
@@ -16,6 +16,7 @@ from django.conf import settings
 from django.db.models.signals import pre_delete
 from django.dispatch.dispatcher import receiver
 
+from shared.utils import pprint
 from .utils import PathAndRename, IMG_EXTENSIONS, unzip_on_the_fly, sanitize_str
 from .fields import URLListModelField
 
@@ -62,7 +63,7 @@ class Document:
     ):
         self.dtype = dtype
         self.src = src or ""
-        self.uid = uid or sanitize_str(src)
+        self.uid = sanitize_str(uid or src)
         self.path = (
             Path(path)
             if path is not None
@@ -72,7 +73,7 @@ class Document:
     @property
     def mapping_path(self):
         """
-        DEPRECATED: JSON file containing mapping in the form of
+        @deprecated: JSON file containing mapping in the form of
         {
             "image_name_front.jpg": "image_name_api.jpg",
             "image_name_front.png": "image_name_api.png",
@@ -103,18 +104,27 @@ class Document:
         }
 
     def is_extracted(self) -> bool:
+        if not self.path.exists():
+            self.path.mkdir(parents=True, exist_ok=True)
+            return False
         return (self.path / "extracted").exists()
 
     def extract_from_zip(self, source_zip: str | Path):
         """
         Extract the content of the zip file
         """
-        extracted_touch = self.path / "extracted"
-        if extracted_touch.exists():
+        extracted = self.path / "extracted"
+        if self.is_extracted():
             return
 
-        unzip_on_the_fly(source_zip, self.path, [".json", *IMG_EXTENSIONS])
-        extracted_touch.touch()
+        extracted_files = unzip_on_the_fly(
+            source_zip, self.path, [".json", *IMG_EXTENSIONS]
+        )
+
+        if len(extracted_files) == 0:
+            raise Exception("No files were extracted")
+
+        extracted.touch()
 
     @property
     def images(self) -> List["Image"]:
@@ -124,9 +134,14 @@ class Document:
 
     def _list_img_dir(self):
         return [
-            Image(id=str(p.name), path=p, src=str(p.name), document=self)
-            for p in self.img_path.iterdir()
-            if p.suffix.lower() in IMG_EXTENSIONS
+            Image(
+                id=str(p.relative_to(self.img_path)),
+                path=p,
+                src=str(p.relative_to(self.img_path)),
+                document=self,
+            )
+            for p in self.img_path.rglob("*")
+            if p.is_file() and p.suffix.lower() in IMG_EXTENSIONS
         ]
 
     def _legacy_list_img_mapping(self):
@@ -149,8 +164,7 @@ class Document:
                 data = json.load(f)
             return [Image.from_dict(im, self) for im in data]
 
-        images = self._list_img_dir()
-        return images
+        return self._list_img_dir()
 
 
 @dataclass
@@ -158,7 +172,7 @@ class Image:
     id: str
     src: str
     path: Path
-    metadata: Dict[str, str] = None
+    metadata: Optional[Dict[str, str]] = None
     document: "Document" = None
 
     def to_dict(self, relpath: Path = None) -> Dict:
@@ -305,11 +319,29 @@ class Dataset(AbstractDataset):
         if len(doc_to_extract) == 0:
             return
 
-        api_info = requests.get(self.api_url).json()
+        """
+        api_info = {
+            'documents': [{
+                'download': 'API_URL/datasets/document/<doc_type>/<doc_uid>/download',
+                'src': 'FRONT_URL/media/datasets/<original_file>.<ext>',
+                'type': '<doc_type>',
+                'uid': '<doc_uid>',
+                'url': 'API_URL/datasets/document/<doc_type>/<doc_uid>'
+            }, {...}],
+            'uid': '<dataset_uid>',
+            'url': '<dataset_url>'
+        }
+        """
+        try:
+            api_info = requests.get(self.api_url).json()
+        except Exception as e:
+            print(f"Error fetching dataset info: {e}")
+            return
 
-        for doc in api_info["documents"]:
+        for doc in api_info.get("documents", []):
             if doc["uid"] not in doc_to_extract:
                 continue
+
             doc_to_extract[doc["uid"]].extract_from_zip(doc["download"])
             del doc_to_extract[doc["uid"]]
 
@@ -421,6 +453,7 @@ class Dataset(AbstractDataset):
 
         """
         try:
+            # download the images if not already done
             docs = self.get_doc_image_mapping()
         except Exception as e:
             return {
@@ -453,8 +486,9 @@ class Dataset(AbstractDataset):
                     try:
                         with PImage.open(img.path) as img:
                             for idx, crop in enumerate(crops):
-                                crop_id = crop.get("crop_id", None)
-                                if crop_id is None:
+                                crop_id = crop.get("crop_id", "")
+
+                                if not crop_id:
                                     crop_id = f"{Path(img_name).stem}_crop_{idx + 1}"
 
                                 bbox = crop["relative"]
@@ -475,8 +509,11 @@ class Dataset(AbstractDataset):
                                 if cropped.size[0] == 0 or cropped.size[1] == 0:
                                     continue
 
+                                crop_file = crops_path / f"{crop_id}.jpg"
+                                crop_file.parent.mkdir(parents=True, exist_ok=True)
+
                                 cropped.save(
-                                    crops_path / f"{crop_id}.jpg",
+                                    crop_file,
                                     "JPEG",
                                 )
                                 extracted += 1

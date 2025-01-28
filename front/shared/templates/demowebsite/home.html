@@ -8,16 +8,36 @@
         <div class="columns is-vcentered">
             <section class="is-6 column is-large">
                 <h1 class="is-title is-size-2 py-3 is-link">Research demos</h1>
-                <p class="notification is-light">
-                    This project is supported by <strong>ERC project DISCOVER</strong> funded by the European Union’s
-                    Horizon Europe Research and Innovation program under grant agreement No. 101076028.
-                </p>
+                <div class="notification is-light">
+                    <p>
+                        These demos were created as part of the <strong>ERC project DISCOVER</strong> funded by the
+                        European Union’s Horizon Europe Research and Innovation program under
+                        grant agreement No. 101076028.
+                    </p>
+                    <div class="message mt-5 is-small">
+                        <div class="message-body">
+                            <p>
+                                Discover project is supported by a network of collaborators:
+                            </p>
+                            <ul>
+                                <li>
+                                    <strong>EiDA</strong>
+                                    (<a href="https://anr.fr/Projet-ANR-22-CE38-0014" class="has-text-link">ANR-22-CE38-0014</a>)
+                                </li>
+                                <li>
+                                    <strong>VHS</strong>
+                                    (<a href="https://anr.fr/Projet-ANR-21-CE38-0008" class="has-text-link">ANR-21-CE38-0008</a>)
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
             </section>
         </div>
         <div class="columns is-vcentered">
 
-{#            {% include "includes/demo-card.html" with demo="dticlustering" demo_title="DTI clustering" demo_subtitle="Group images dataset on content" %}#}
-            {% include "includes/demo-card.html" with demo="watermarks" demo_title="Watermark detection" demo_subtitle="Detect a historical watermark in a page" %}
+            {# {% include "includes/demo-card.html" with demo="dticlustering" demo_title="DTI clustering" demo_subtitle="Group images dataset on content" %}#}
+            {% include "includes/demo-card.html" with demo="pipelines" demo_title="Watermark detection" demo_subtitle="Detect a historical watermark in a page" %}
             {% include "includes/demo-card.html" with demo="regions" demo_title="Regions extraction" demo_subtitle="Extract visual elements from a document" %}
             {% include "includes/demo-card.html" with demo="similarity" demo_title="Similarity retrieval" demo_subtitle="Find most similar images in a dataset" %}
 

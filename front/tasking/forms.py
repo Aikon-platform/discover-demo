@@ -158,11 +158,13 @@ class AbstractTaskOnCropsForm(AbstractTaskOnDatasetForm):
             }
 
         super().__init__(*args, **kwargs)
-        self.fields["crops"].queryset = self.fields["crops"].queryset.filter(
+        crops_queryset = self.fields["crops"].queryset.filter(
             regions__isnull=False,
-            requested_by=self._user,
             status="SUCCESS",
         )
+        if not self._user.is_superuser:
+            crops_queryset = crops_queryset.filter(requested_by=self._user)
+        self.fields["crops"].queryset = crops_queryset
 
         self.order_fields(list(AbstractTaskOnDatasetForm.Meta.fields) + ["crops"])
 
