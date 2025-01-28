@@ -163,7 +163,7 @@ class AbstractTaskOnCropsForm(AbstractTaskOnDatasetForm):
             status="SUCCESS",
         )
         if not self._user.is_superuser:
-            crops_queryset = crops_queryset.filter(created_by=self._user)
+            crops_queryset = crops_queryset.filter(requested_by=self._user)
         self.fields["crops"].queryset = crops_queryset
 
         self.order_fields(list(AbstractTaskOnDatasetForm.Meta.fields) + ["crops"])
