@@ -8,22 +8,6 @@ from regions.models import AbstractAPITaskOnCrops
 
 
 class Similarity(AbstractAPITaskOnCrops("similarity")):
-    @classmethod
-    def get_available_models(cls):
-        try:
-            response = requests.get(f"{cls.api_endpoint_prefix}/models")
-            response.raise_for_status()
-            models = response.json()
-            if not models:
-                return [("", "No models available")]
-            # models = { "ref": { "name": "Display Name", "model": "filename", "desc": "Description" }, ... }
-            return [
-                (info["model"], f"{info['name']} ({info['desc']})")
-                for info in models.values()
-            ]
-        except Exception as e:
-            return [("", f"Error fetching models: {e}")]
-
     def save_similarity(self, similarity: dict):
         if not self.dataset:
             return

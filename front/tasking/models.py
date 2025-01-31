@@ -316,6 +316,23 @@ def AbstractTask(task_prefix: str):
                 "cleared_files": cleared,
             }
 
+        @classmethod
+        def get_available_models(cls):
+            try:
+                response = requests.get(f"{cls.api_endpoint_prefix}/models")
+                response.raise_for_status()
+                models = response.json()
+            except Exception as e:
+                return [("", f"Unable to fetch available models: {e}")]
+            if not models:
+                return [("", "No available models")]
+
+            # models = { "ref": { "name": "Display Name", "model": "filename", "desc": "Description" }, ... }
+            return [
+                (info["model"], f"{info['name']} ({info['desc']})")
+                for info in models.values()
+            ]
+
     @receiver(pre_delete, sender=AbstractTask)
     def pre_delete_task(sender, instance: AbstractTask, **kwargs):
         # Clear files on the API server

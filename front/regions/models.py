@@ -154,23 +154,6 @@ class Regions(AbstractAPITaskOnDataset("regions")):
 
         return bbox
 
-    @classmethod
-    def get_available_models(cls):
-        try:
-            response = requests.get(f"{cls.api_endpoint_prefix}/models")
-            response.raise_for_status()
-            models = response.json()
-        except Exception as e:
-            print(e)
-            return [("", "Unable to fetch available models")]
-        if not models:
-            return [("", "No available models for extraction")]
-
-        # models = {model: "date", ...}
-        return [
-            (model, f"{model} (last update: {date})") for model, date in models.items()
-        ]
-
 
 def AbstractAPITaskOnCrops(task_prefix: str):
     class AbstractAPITaskOnCrops(AbstractAPITaskOnDataset(task_prefix)):
