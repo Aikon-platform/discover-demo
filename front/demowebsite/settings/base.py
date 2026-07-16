@@ -17,6 +17,7 @@ DEMO_APPS = [
     "regions",
     "pipelines",
     "search",
+    "paleography",
 ]
 
 INSTALLED_APPS = [
