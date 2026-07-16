@@ -26,11 +26,11 @@ class Paleography(AbstractAPITaskOnDataset("paleography")):
     transcriptions = models.JSONField(null=True, blank=True)
 
     class Meta:
-        verbose_name = "Paleography"
+        verbose_name = "Paléographie"
         ordering = ["-requested_on"]
 
     def __str__(self):
-        name = self.name or "Paleography"
+        name = self.name or "Paléographie"
         return (
             f"{name} on {self.dataset.name}"
             if self.dataset
@@ -67,6 +67,8 @@ class Paleography(AbstractAPITaskOnDataset("paleography")):
             # Persistance sous MEDIA_ROOT, comme les outputs de tâches (décision #7)
             with open(self.task_full_path / f"{self.dataset.id}.json", "w") as f:
                 json.dump(self.transcriptions, f, ensure_ascii=False)
+            # Persiste le champ en base pour que la page de résultat le lise (sinon: "(0)")
+            self.save(update_fields=["transcriptions"])
         except Exception as e:
             self.on_task_error({"error": f"Ingestion des transcriptions échouée:\n{e}"})
             return
