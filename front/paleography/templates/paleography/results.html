@@ -1,0 +1,55 @@
+{% load static %}
+{% if object.status != "SUCCESS" %}
+    {% if object.full_log %}
+        <div class="centerwrap">
+            <details>
+                <summary>Full log</summary>
+                <pre>{{ object.full_log }}</pre>
+            </details>
+        </div>
+    {% endif %}
+{% else %}
+    <div class="centerwrap details-wrapper detailed">
+        <h3>Transcriptions ({{ paleo_rows|length }})</h3>
+        <div class="details-content">
+            {% if paleo_rows %}
+                <table class="table is-fullwidth">
+                    <tbody>
+                        {% for row in paleo_rows %}
+                            <tr class="is-fullwidth">
+                                {# image de ligne à GAUCHE #}
+                                <th class="is-narrow" style="width: 45%; vertical-align: middle;">
+                                    <img class="card"
+                                         src="{{ row.image.url }}"
+                                         alt="{{ row.key }}"
+                                         style="max-width: 100%; display: block; margin: 0;">
+                                </th>
+                                {# transcription à DROITE #}
+                                <td style="vertical-align: middle;">
+                                    <div class="paleo-key" style="font-family: monospace; color: #888; font-size: 0.85em;">
+                                        {{ row.key }}
+                                    </div>
+                                    <div class="paleo-text" style="font-size: 1.1em;">
+                                        {{ row.text }}
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% else %}
+                <div class="message mt-5">
+                    <div class="message-body">
+                        <p>Aucune paire image/transcription à afficher.</p>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+{% endif %}
+
+<style>
+    .paleo-text {
+        line-height: 1.5;
+    }
+</style>
