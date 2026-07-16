@@ -7,12 +7,12 @@ from tasking.views import task_view_set
 @task_view_set
 class PaleographyMixin:
     """
-    Mixin pour les vues Paléographie.
+    Mixin pour les vues Paleography.
     """
 
     model = Paleography
     form_class = PaleographyForm
-    task_name = "Paléographie"
+    task_name = "Paleography"
     app_name = "paleography"
     # NOTE: task_data="dataset" pour utiliser le template de formulaire dataset
     task_data = "dataset"

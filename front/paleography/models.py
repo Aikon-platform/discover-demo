@@ -26,11 +26,11 @@ class Paleography(AbstractAPITaskOnDataset("paleography")):
     transcriptions = models.JSONField(null=True, blank=True)
 
     class Meta:
-        verbose_name = "Paléographie"
+        verbose_name = "Paleography"
         ordering = ["-requested_on"]
 
     def __str__(self):
-        name = self.name or "Paléographie"
+        name = self.name or "Paleography"
         return (
             f"{name} on {self.dataset.name}"
             if self.dataset

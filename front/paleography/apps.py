@@ -1,7 +1,7 @@
 from django.apps import AppConfig
 
 """
-Module Paléographie (D1) : upload d'un dataset d'images de lignes accompagnées de
+Module Paleography (D1) : upload d'un dataset d'images de lignes accompagnées de
 leurs transcriptions (.txt homonymes). Ne lance aucun traitement — le "start" ne
 fait que charger le dataset, qui est alors typé "dataset à transcription".
 """
