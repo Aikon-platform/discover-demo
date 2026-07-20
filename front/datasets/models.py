@@ -20,7 +20,13 @@ from django.db.models.signals import pre_delete
 from django.dispatch.dispatcher import receiver
 
 from shared.utils import pprint
-from .utils import PathAndRename, IMG_EXTENSIONS, unzip_on_the_fly, sanitize_str
+from .utils import (
+    PathAndRename,
+    IMG_EXTENSIONS,
+    unzip_on_the_fly,
+    sanitize_str,
+    pair_transcriptions_from_zip,
+)
 from .fields import URLListModelField
 
 User = get_user_model()
@@ -246,6 +252,14 @@ class Dataset(AbstractDataset):
         blank=True,
         help_text="The URL where the dataset can be accessed through the API",
     )
+    has_transcriptions = models.BooleanField(
+        default=False,
+        verbose_name="Has transcriptions",
+        help_text=(
+            "The zip also contains a .txt transcription next to each image "
+            "(same name, same folder)"
+        ),
+    ) 
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -752,6 +766,45 @@ class Dataset(AbstractDataset):
                     "sources": {k:v for k,v in sources.items() if matched_sources[k]}, 
                     "mapping": image_matches
                 }, f)
+    @property
+    def transcriptions_path(self) -> Path:
+        """JSON des transcriptions du dataset : {"<dossier>/<radical>": "texte"}."""
+        return self.full_path / "transcriptions.json"
+
+    def get_transcriptions(self) -> Dict[str, str]:
+        """
+        Transcriptions du dataset, indexées par identifiant de ligne
+        ("<sous-dossier>/<radical>", sans extension). {} si absentes.
+        """
+        if not self.has_transcriptions:
+            return {}
+        path = self.transcriptions_path
+        if not path.exists():
+            return {}
+        try:
+            with open(path, "r", encoding="utf-8") as f:
+                return json.load(f)
+        except (OSError, json.JSONDecodeError):
+            return {}
+
+    def save_transcriptions(self, transcriptions: Dict[str, str]) -> None:
+        """Écrit les transcriptions sous MEDIA_ROOT (dossier du dataset)."""
+        self.transcriptions_path.parent.mkdir(parents=True, exist_ok=True)
+        with open(self.transcriptions_path, "w", encoding="utf-8") as f:
+            json.dump(transcriptions, f, ensure_ascii=False)
+
+    def extract_transcriptions(self) -> Dict[str, str]:
+        """
+        Extrait les transcriptions (.txt homonymes) du zip uploadé et les persiste.
+        Ne fait rien si le dataset n'est pas déclaré `has_transcriptions` ou n'est
+        pas un zip. Retourne les paires trouvées.
+        """
+        if not self.has_transcriptions or not self.zip_file:
+            return {}
+        result = pair_transcriptions_from_zip(self.zip_file.path)
+        pairs = result["pairs"]
+        self.save_transcriptions(pairs)
+        return pairs
 
 @receiver(pre_delete, sender=Dataset)
 def delete_dataset_files(sender, instance: Dataset, **kwargs):
