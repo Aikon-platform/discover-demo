@@ -6,8 +6,12 @@ from typing import List, Dict
 import requests
 from stream_unzip import stream_unzip
 import re
+import zipfile
 
 from shared.utils import pprint
+from pathlib import PurePosixPath
+
+TXT_EXTENSION = ".txt"
 
 IMG_EXTENSIONS = {".jpg", ".jpeg", ".png", ".gif", ".tiff"}
 
@@ -190,3 +194,64 @@ class TreeDict:
             + subdirarray_to_html(dir["subdirs"], lvl)
         )
         return f"<pre>{dir_to_html(self.tree, 0)}</pre>"
+    
+
+def pair_transcriptions_from_zip(zip_path, *, encoding: str = "utf-8") -> dict:
+    """
+    Apparie les images et les fichiers .txt d'un zip, par (sous-dossier, radical).
+
+    Convention d'import (module paléographie) : un .txt porte le même nom que son
+    image, dans le même dossier. Les sous-dossiers sont autorisés.
+    Seules les PAIRES sont retenues :
+      - image sans .txt        -> ignorée
+      - .txt sans image        -> ignoré
+      - radical d'image ambigu -> ignoré
+
+    Retourne::
+
+        {
+          "pairs": {"<dossier>/<radical>": "<transcription>", ...},
+          "n_images_ignored": int,
+          "n_txt_ignored": int,
+        }
+    """
+    images: dict[tuple, str] = {}
+    txts: dict[tuple, str] = {}
+    dup_images: set[tuple] = set()
+
+    with zipfile.ZipFile(zip_path) as zf:
+        for info in zf.infolist():
+            if info.is_dir():
+                continue
+            p = PurePosixPath(info.filename)
+            if p.name.startswith(".") or "__MACOSX" in p.parts:
+                continue
+            ext = p.suffix.lower()
+            key = (str(p.parent), p.stem)
+            if ext == TXT_EXTENSION:
+                txts[key] = info.filename
+            elif ext in IMG_EXTENSIONS:
+                if key in images:
+                    dup_images.add(key)
+                images[key] = info.filename
+
+        pairs: dict[str, str] = {}
+        for key, img_arc in images.items():
+            if key in dup_images:
+                continue
+            txt_arc = txts.get(key)
+            if txt_arc is None:
+                continue
+            with zf.open(txt_arc) as fh:
+                text = fh.read().decode(encoding, errors="replace")
+            folder, stem = key
+            relkey = stem if folder in (".", "") else f"{folder}/{stem}"
+            pairs[relkey] = text
+
+    n_txt_ignored = sum(1 for k in txts if (k not in images) or (k in dup_images))
+    n_images_ignored = sum(1 for k in images if (k in dup_images) or (k not in txts))
+    return {
+        "pairs": pairs,
+        "n_images_ignored": n_images_ignored,
+        "n_txt_ignored": n_txt_ignored,
+    }
