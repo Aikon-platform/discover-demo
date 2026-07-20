@@ -1,47 +1,54 @@
-import json
-
 from django.db import models
 
 from tasking.models import AbstractAPITaskOnDataset
-from .transcription import pair_transcriptions_from_zip
 
 
 class Paleography(AbstractAPITaskOnDataset("paleography")):
     """
-    Tâche "paléographie" (D1) : upload d'un dataset d'images de lignes + transcriptions.
+    Tâche "paléographie" (D1) : traitement d'un dataset d'images de lignes
+    accompagnées de leurs transcriptions.
 
-    Base = AbstractAPITaskOnDataset (comme Regions), PAS la base non-API :
-      - les IMAGES sont extraites par l'API (le front n'a pas de chemin zip->images
-        local : `Dataset.download_from_api` exige `dataset.api_url`) ;
-      - décision réunion #3 : base API, calquée sur AbstractAPITaskOnCrops.
-    "Pas de traitement" = l'endpoint API /paleography/start ne fait que créer le
+    Base = AbstractAPITaskOnDataset (comme Regions) : les IMAGES sont extraites par
+    l'API (le front n'a pas de chemin zip->images local, `Dataset.download_from_api`
+    exige `dataset.api_url`). L'endpoint API /paleography/start ne fait que créer le
     dataset (aucun algo de vision).
 
-    Les TRANSCRIPTIONS, elles, sont ingérées CÔTÉ FRONT (décision #6) : on relit le
-    zip uploadé (que l'API ignore, cf. extract_from_zip qui ne garde que .json+images)
-    et on apparie .txt <-> image, puis on persiste sous MEDIA_ROOT (décision #7).
+    Les TRANSCRIPTIONS appartiennent au DATASET, pas à la tâche (archi validée avec
+    Paul & Ségolène) : elles sont extraites du zip à l'import
+    (`Dataset.extract_transcriptions`, déclenché depuis le formulaire) et persistées
+    sous MEDIA_ROOT. La tâche se contente de les lire et de vérifier qu'elles sont là.
     """
 
-    # Mapping { "<dossier>/<radical>": "<transcription>" } des paires retenues
-    transcriptions = models.JSONField(null=True, blank=True)
-
     class Meta:
-        verbose_name = "Paléographie"
+        verbose_name = "Paleography"
         ordering = ["-requested_on"]
 
     def __str__(self):
-        name = self.name or "Paléographie"
+        name = self.name or "Paleography"
         return (
-            f"{name} on {self.dataset.name}"
-            if self.dataset
-            else f"{name} #{self.pk}"
+            f"{name} on {self.dataset.name}" if self.dataset else f"{name} #{self.pk}"
         )
+
+    @property
+    def transcriptions(self) -> dict:
+        """
+        Transcriptions du dataset associé (lecture seule).
+        Mapping { "<sous-dossier>/<radical>": "<transcription>" }.
+        """
+        return self.dataset.get_transcriptions() if self.dataset else {}
+
+    @property
+    def has_transcriptions(self) -> bool:
+        return bool(self.transcriptions)
 
     def on_task_success(self, data):
         """
         Appelé quand l'API notifie SUCCESS (dataset créé + images extraites).
-        On y branche l'ingestion des transcriptions, côté front, depuis le zip.
-        Structure mirroir de Regions.on_task_success.
+
+        L'ingestion des .txt a déjà eu lieu à l'import du dataset : on vérifie
+        seulement que les transcriptions sont disponibles avant de valider la tâche
+        (décision réunion : "quand on lance un traitement paleography on vérifie
+        bien que les transcriptions soient disponibles").
         """
         self.status = "PROCESSING RESULTS"
         self.result_full_path.mkdir(parents=True, exist_ok=True)
@@ -52,29 +59,22 @@ class Paleography(AbstractAPITaskOnDataset("paleography")):
         if not self.prepare_dataset_from_api(output):
             return
 
-        # --- Ingestion des transcriptions (CÔTÉ FRONT, depuis le zip uploadé) ---
-        try:
-            zip_field = self.dataset.zip_file
-            if not zip_field:
-                self.on_task_error(
-                    {"error": "Dataset sans zip : l'upload paléographie doit être un Zip (décision #4)."}
-                )
-                return
+        if not self.dataset.has_transcriptions:
+            self.on_task_error(
+                {
+                    "error": "This dataset is not flagged as having  "
+                    'transcriptions: check "Has transcriptions" when importing.'
+                }
+            )
+            return
 
-            result = pair_transcriptions_from_zip(zip_field.path)
-            self.transcriptions = result["pairs"]
-
-            # Persistance sous MEDIA_ROOT, comme les outputs de tâches (décision #7)
-            with open(self.task_full_path / f"{self.dataset.id}.json", "w") as f:
-                json.dump(self.transcriptions, f, ensure_ascii=False)
-            # Persiste le champ en base pour que la page de résultat le lise (sinon: "(0)")
-            self.save(update_fields=["transcriptions"])
-        except Exception as e:
-            self.on_task_error({"error": f"Ingestion des transcriptions échouée:\n{e}"})
+        if not self.transcriptions:
+            self.on_task_error(
+                {
+                    "error": "No transcription found in the zip: each image must "
+                    "come with a .txt file of the same name, in the same folder."
+                }
+            )
             return
 
         return super().on_task_success(data)
-
-    @property
-    def has_transcriptions(self) -> bool:
-        return bool(self.transcriptions)
