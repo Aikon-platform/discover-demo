@@ -112,6 +112,7 @@ class AbstractTaskOnDatasetForm(AbstractTaskForm, AbstractDatasetForm):
         dataset_fields = {
             "name": self.cleaned_data.get("dataset_name", None),
             "created_by": self._user,
+            "has_transcriptions": self.cleaned_data.get("has_transcriptions", False),
         }
 
         data_format = self.cleaned_data.get("format", None)
@@ -120,6 +121,10 @@ class AbstractTaskOnDatasetForm(AbstractTaskForm, AbstractDatasetForm):
             dataset_fields[field_name] = self.cleaned_data[field_name]
 
         self._dataset = Dataset.objects.create(**dataset_fields)
+
+        # Transcriptions : extraites du zip dès l'import (si la case est cochée)
+        if self._dataset.has_transcriptions:
+            self._dataset.extract_transcriptions()
 
     def save(self, commit=True):
         self._populate_dataset()

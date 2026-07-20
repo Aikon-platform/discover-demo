@@ -30,6 +30,7 @@ DATASET_FIELDS = [
     "crops",
     "dataset_name",
     "format",
+    "has_transcriptions",  
 ]
 
 for f in AVAILABLE_FORMATS:
@@ -81,6 +82,15 @@ class AbstractDatasetForm(forms.ModelForm):
         max_size=settings.MAX_UPLOAD_SIZE,
         required=False,
         widget=forms.ClearableFileInput(
+            attrs={"extra-class": "format-zip format-field new-dataset-field"}
+        ),
+    )
+    has_transcriptions = forms.BooleanField(
+        label="Has transcriptions",
+        help_text="Check if the zip contains a .txt transcription next to each image (same name, same folder)",
+        required=False,
+        initial=False,
+        widget=forms.CheckboxInput(
             attrs={"extra-class": "format-zip format-field new-dataset-field"}
         ),
     )
