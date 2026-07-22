@@ -200,18 +200,18 @@ def pair_transcriptions_from_zip(zip_path, *, encoding: str = "utf-8") -> dict:
     """
     Apparie les images et les fichiers .txt d'un zip, par (sous-dossier, radical).
 
-    Convention d'import (module paléographie) : un .txt porte le même nom que son
-    image, dans le même dossier. Les sous-dossiers sont autorisés.
+    Import convention (paleography module): a .txt has the same name as its
+    image, in the same folder. Subfolders are allowed.
 
-    Seules les PAIRES STRICTES sont retenues (décision #5, réunion 15 juil.).
-    Tout le reste est ignoré mais COMPTÉ, pour qu'un dataset mal formé soit
-    visible au lieu de passer inaperçu :
-      - image sans .txt          -> ignorée
-      - .txt sans image          -> ignoré
-      - radical d'image ambigu   -> ignoré (plusieurs images pour un radical)
-      - radical de .txt ambigu   -> ignoré (ex. l1.txt ET l1.TXT : à l'utilisateur
-                                    de trancher, on ne choisit pas)
-      - fichier ni image ni .txt -> ignoré (ex. XML, PDF)
+    Only STRICT PAIRS are kept (decision #5, meeting 15 Jul.).
+    Everything else is ignored but COUNTED, so a malformed dataset is visible
+    instead of passing unnoticed:
+      - image without .txt        -> ignored
+      - .txt without image        -> ignored
+      - ambiguous image stem      -> ignored (several images for one stem)
+      - ambiguous .txt stem       -> ignored (e.g. l1.txt AND l1.TXT: up to the
+                                    user to decide, we do not choose)
+      - neither image nor .txt    -> ignored (e.g. XML, PDF)
 
     Retourne::
 
@@ -220,8 +220,8 @@ def pair_transcriptions_from_zip(zip_path, *, encoding: str = "utf-8") -> dict:
           "n_images_ignored": int,   # en fichiers
           "n_txt_ignored": int,      # en fichiers
           "n_other_files": int,      # fichiers ni image ni .txt
-          "report": str,             # résumé lisible, vide si tout est propre
-          "dropped": {               # détail nominatif (pour debug / affichage)
+          "report": str,             # human-readable summary, empty if clean
+          "dropped": {               # named detail (for debug / display)
               "img_no_txt": [str, ...],
               "txt_no_img": [str, ...],
               "ambiguous_img": [str, ...],
@@ -232,7 +232,7 @@ def pair_transcriptions_from_zip(zip_path, *, encoding: str = "utf-8") -> dict:
     """
     from collections import defaultdict
 
-    # ---- 1er passage : indexer, sans rien décider ----
+    # ---- 1st pass: index everything, decide nothing ----
     by_key: dict[tuple, dict] = defaultdict(
         lambda: {"images": [], "txts": [], "other": []}
     )
@@ -293,16 +293,16 @@ def pair_transcriptions_from_zip(zip_path, *, encoding: str = "utf-8") -> dict:
     n_txt_ignored = len(dropped["txt_no_img"]) + len(dropped["ambiguous_txt"])
     n_other_files = len(dropped["other"])
 
-    # ---- rapport lisible : uniquement ce qui pose problème ----
+    # ---- readable report: only what is problematic ----
     problems = []
     if n_images_ignored:
-        problems.append(f"{n_images_ignored} image(s) sans transcription appariée")
+        problems.append(f"{n_images_ignored} image(s) without matching transcriptions")
     if n_txt_ignored:
-        problems.append(f"{n_txt_ignored} transcription(s) sans image")
+        problems.append(f"{n_txt_ignored} transcription(s) without matching image")
     if dropped["ambiguous_img"] or dropped["ambiguous_txt"]:
-        problems.append("radicaux ambigus détectés (plusieurs fichiers de même nom)")
+        problems.append("ambiguous file stems detected (several files sharing one name)")
     if n_other_files:
-        problems.append(f"{n_other_files} fichier(s) non reconnu(s) (ni image ni .txt)")
+        problems.append(f"{n_other_files} unrecognized file(s) (neither image nor .txt)")
     report = "; ".join(problems)
 
     return {
