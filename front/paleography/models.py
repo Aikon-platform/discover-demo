@@ -5,18 +5,18 @@ from tasking.models import AbstractAPITaskOnDataset
 
 class Paleography(AbstractAPITaskOnDataset("paleography")):
     """
-    Tâche "paléographie" (D1) : traitement d'un dataset d'images de lignes
-    accompagnées de leurs transcriptions.
+    "Paleography" task (D1): processing of a line-image dataset
+    together with their transcriptions.
 
-    Base = AbstractAPITaskOnDataset (comme Regions) : les IMAGES sont extraites par
-    l'API (le front n'a pas de chemin zip->images local, `Dataset.download_from_api`
-    exige `dataset.api_url`). L'endpoint API /paleography/start ne fait que créer le
-    dataset (aucun algo de vision).
+    Base = AbstractAPITaskOnDataset (like Regions): IMAGES are extracted by the
+    API (the front has no local zip->images path, `Dataset.download_from_api`
+    requires `dataset.api_url`). The API endpoint /paleography/start only
+    creates the dataset (no vision algorithm).
 
-    Les TRANSCRIPTIONS appartiennent au DATASET, pas à la tâche (archi validée avec
-    Paul & Ségolène) : elles sont extraites du zip à l'import
-    (`Dataset.extract_transcriptions`, déclenché depuis le formulaire) et persistées
-    sous MEDIA_ROOT. La tâche se contente de les lire et de vérifier qu'elles sont là.
+    TRANSCRIPTIONS belong to the DATASET, not to the task (architecture
+    validated with Paul & Segolene): extracted from the zip at import time
+    (`Dataset.extract_transcriptions`, triggered from the form) and persisted
+    under MEDIA_ROOT. The task only reads them and checks they are present.
     """
 
     class Meta:
@@ -32,7 +32,7 @@ class Paleography(AbstractAPITaskOnDataset("paleography")):
     @property
     def transcriptions(self) -> dict:
         """
-        Transcriptions du dataset associé (lecture seule).
+        Transcriptions of the associated dataset (read-only).
         Mapping { "<sous-dossier>/<radical>": "<transcription>" }.
         """
         return self.dataset.get_transcriptions() if self.dataset else {}
@@ -43,19 +43,19 @@ class Paleography(AbstractAPITaskOnDataset("paleography")):
 
     def on_task_success(self, data):
         """
-        Appelé quand l'API notifie SUCCESS (dataset créé + images extraites).
+        Called when the API notifies SUCCESS (dataset created + images extracted).
 
-        L'ingestion des .txt a déjà eu lieu à l'import du dataset : on vérifie
-        seulement que les transcriptions sont disponibles avant de valider la tâche
-        (décision réunion : "quand on lance un traitement paleography on vérifie
-        bien que les transcriptions soient disponibles").
+        The .txt ingestion already happened at dataset import time: here we
+        only check that transcriptions are available before validating the task
+        (meeting decision: when a paleography treatment is launched, we verify
+        that the transcriptions are indeed available).
         """
         self.status = "PROCESSING RESULTS"
         self.result_full_path.mkdir(parents=True, exist_ok=True)
 
         output = (data or {}).get("output", {})
 
-        # renseigne self.dataset.api_url à partir de output["dataset_url"]
+        # sets self.dataset.api_url from output["dataset_url"]
         if not self.prepare_dataset_from_api(output):
             return
 
@@ -76,5 +76,8 @@ class Paleography(AbstractAPITaskOnDataset("paleography")):
                 }
             )
             return
-
+    
+        report = self.dataset.transcriptions_report()
+        if report:
+            self.write_log(f"Dataset import warnings: {report}\n")
         return super().on_task_success(data)
