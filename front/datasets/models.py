@@ -773,8 +773,8 @@ class Dataset(AbstractDataset):
 
     def get_transcriptions(self) -> Dict[str, str]:
         """
-        Transcriptions du dataset, indexées par identifiant de ligne
-        ("<sous-dossier>/<radical>", sans extension). {} si absentes.
+        Dataset transcriptions, keyed by line id
+        ("<subfolder>/<stem>", no extension). {} if absent.
         """
         if not self.has_transcriptions:
             return {}
@@ -788,23 +788,32 @@ class Dataset(AbstractDataset):
             return {}
 
     def save_transcriptions(self, transcriptions: Dict[str, str]) -> None:
-        """Écrit les transcriptions sous MEDIA_ROOT (dossier du dataset)."""
+        """Write transcriptions under MEDIA_ROOT (dataset folder)."""
         self.transcriptions_path.parent.mkdir(parents=True, exist_ok=True)
         with open(self.transcriptions_path, "w", encoding="utf-8") as f:
             json.dump(transcriptions, f, ensure_ascii=False)
 
     def extract_transcriptions(self) -> Dict[str, str]:
         """
-        Extrait les transcriptions (.txt homonymes) du zip uploadé et les persiste.
-        Ne fait rien si le dataset n'est pas déclaré `has_transcriptions` ou n'est
-        pas un zip. Retourne les paires trouvées.
+        Extract homonymous .txt transcriptions from the uploaded zip and persist
+        them. No-op if the dataset is not flagged `has_transcriptions` or is not a
+        zip. Returns the full result dict (pairs + report of ignored files).
         """
         if not self.has_transcriptions or not self.zip_file:
             return {}
         result = pair_transcriptions_from_zip(self.zip_file.path)
-        pairs = result["pairs"]
-        self.save_transcriptions(pairs)
-        return pairs
+        self.save_transcriptions(result["pairs"])
+        return result
+
+    def transcriptions_report(self) -> str:
+        """
+        Recalcule le rapport d'appariement (fichiers ignores / non reconnus)
+        sans rien reecrire. Chaine vide si le zip est propre. Sert de
+        diagnostic affiche au lancement d'un traitement.
+        """
+        if not self.has_transcriptions or not self.zip_file:
+            return ""
+        return pair_transcriptions_from_zip(self.zip_file.path)["report"]
 
 @receiver(pre_delete, sender=Dataset)
 def delete_dataset_files(sender, instance: Dataset, **kwargs):
