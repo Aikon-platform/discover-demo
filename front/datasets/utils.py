@@ -202,23 +202,40 @@ def pair_transcriptions_from_zip(zip_path, *, encoding: str = "utf-8") -> dict:
 
     Convention d'import (module paléographie) : un .txt porte le même nom que son
     image, dans le même dossier. Les sous-dossiers sont autorisés.
-    Seules les PAIRES sont retenues :
-      - image sans .txt        -> ignorée
-      - .txt sans image        -> ignoré
-      - radical d'image ambigu -> ignoré
+
+    Seules les PAIRES STRICTES sont retenues (décision #5, réunion 15 juil.).
+    Tout le reste est ignoré mais COMPTÉ, pour qu'un dataset mal formé soit
+    visible au lieu de passer inaperçu :
+      - image sans .txt          -> ignorée
+      - .txt sans image          -> ignoré
+      - radical d'image ambigu   -> ignoré (plusieurs images pour un radical)
+      - radical de .txt ambigu   -> ignoré (ex. l1.txt ET l1.TXT : à l'utilisateur
+                                    de trancher, on ne choisit pas)
+      - fichier ni image ni .txt -> ignoré (ex. XML, PDF)
 
     Retourne::
 
         {
           "pairs": {"<dossier>/<radical>": "<transcription>", ...},
-          "n_images_ignored": int,
-          "n_txt_ignored": int,
+          "n_images_ignored": int,   # en fichiers
+          "n_txt_ignored": int,      # en fichiers
+          "n_other_files": int,      # fichiers ni image ni .txt
+          "report": str,             # résumé lisible, vide si tout est propre
+          "dropped": {               # détail nominatif (pour debug / affichage)
+              "img_no_txt": [str, ...],
+              "txt_no_img": [str, ...],
+              "ambiguous_img": [str, ...],
+              "ambiguous_txt": [str, ...],
+              "other": [str, ...],
+          },
         }
     """
-    images: dict[tuple, str] = {}
-    txts: dict[tuple, str] = {}
-    dup_images: set[tuple] = set()
+    from collections import defaultdict
 
+    # ---- 1er passage : indexer, sans rien décider ----
+    by_key: dict[tuple, dict] = defaultdict(
+        lambda: {"images": [], "txts": [], "other": []}
+    )
     with zipfile.ZipFile(zip_path) as zf:
         for info in zf.infolist():
             if info.is_dir():
@@ -226,32 +243,73 @@ def pair_transcriptions_from_zip(zip_path, *, encoding: str = "utf-8") -> dict:
             p = PurePosixPath(info.filename)
             if p.name.startswith(".") or "__MACOSX" in p.parts:
                 continue
-            ext = p.suffix.lower()
             key = (str(p.parent), p.stem)
+            ext = p.suffix.lower()
             if ext == TXT_EXTENSION:
-                txts[key] = info.filename
+                by_key[key]["txts"].append(info.filename)
             elif ext in IMG_EXTENSIONS:
-                if key in images:
-                    dup_images.add(key)
-                images[key] = info.filename
+                by_key[key]["images"].append(info.filename)
+            else:
+                by_key[key]["other"].append(info.filename)
 
+        # ---- 2e passage : classer chaque radical, lire seulement les paires ----
         pairs: dict[str, str] = {}
-        for key, img_arc in images.items():
-            if key in dup_images:
-                continue
-            txt_arc = txts.get(key)
-            if txt_arc is None:
-                continue
-            with zf.open(txt_arc) as fh:
-                text = fh.read().decode(encoding, errors="replace")
-            folder, stem = key
-            relkey = stem if folder in (".", "") else f"{folder}/{stem}"
-            pairs[relkey] = text
+        dropped = {
+            "img_no_txt": [],
+            "txt_no_img": [],
+            "ambiguous_img": [],
+            "ambiguous_txt": [],
+            "other": [],
+        }
 
-    n_txt_ignored = sum(1 for k in txts if (k not in images) or (k in dup_images))
-    n_images_ignored = sum(1 for k in images if (k in dup_images) or (k not in txts))
+        for (folder, stem), e in by_key.items():
+            imgs, txts, other = e["images"], e["txts"], e["other"]
+            dropped["other"].extend(other)
+
+            img_ambiguous = len(imgs) > 1
+            txt_ambiguous = len(txts) > 1
+
+            if img_ambiguous:
+                dropped["ambiguous_img"].extend(imgs)
+            if txt_ambiguous:
+                dropped["ambiguous_txt"].extend(txts)
+
+            # une paire n'existe que si EXACTEMENT une image ET un .txt non ambigus
+            if len(imgs) == 1 and len(txts) == 1:
+                with zf.open(txts[0]) as fh:
+                    text = fh.read().decode(encoding, errors="replace")
+                relkey = stem if folder in (".", "") else f"{folder}/{stem}"
+                pairs[relkey] = text
+                continue
+
+            # sinon, ranger les orphelins non-ambigus dans le bon bucket
+            if imgs and not txts and not img_ambiguous:
+                dropped["img_no_txt"].extend(imgs)
+            if txts and not imgs and not txt_ambiguous:
+                dropped["txt_no_img"].extend(txts)
+
+    # ---- comptes = simple len() des listes, exacts par construction ----
+    n_images_ignored = len(dropped["img_no_txt"]) + len(dropped["ambiguous_img"])
+    n_txt_ignored = len(dropped["txt_no_img"]) + len(dropped["ambiguous_txt"])
+    n_other_files = len(dropped["other"])
+
+    # ---- rapport lisible : uniquement ce qui pose problème ----
+    problems = []
+    if n_images_ignored:
+        problems.append(f"{n_images_ignored} image(s) sans transcription appariée")
+    if n_txt_ignored:
+        problems.append(f"{n_txt_ignored} transcription(s) sans image")
+    if dropped["ambiguous_img"] or dropped["ambiguous_txt"]:
+        problems.append("radicaux ambigus détectés (plusieurs fichiers de même nom)")
+    if n_other_files:
+        problems.append(f"{n_other_files} fichier(s) non reconnu(s) (ni image ni .txt)")
+    report = "; ".join(problems)
+
     return {
         "pairs": pairs,
         "n_images_ignored": n_images_ignored,
         "n_txt_ignored": n_txt_ignored,
+        "n_other_files": n_other_files,
+        "report": report,
+        "dropped": dropped,
     }
