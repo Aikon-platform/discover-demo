@@ -6,7 +6,7 @@ from datasets.utils import pair_transcriptions_from_zip
 
 
 def _make_zip(entries: dict[str, bytes]) -> io.BytesIO:
-    """Construit un zip en mémoire. entries = {nom_dans_archive: contenu bytes}."""
+    """Build an in-memory zip. entries = {archive_name: content bytes}."""
     buf = io.BytesIO()
     with zipfile.ZipFile(buf, "w") as zf:
         for name, content in entries.items():
@@ -16,7 +16,7 @@ def _make_zip(entries: dict[str, bytes]) -> io.BytesIO:
 
 
 class PairTranscriptionsFromZipTests(SimpleTestCase):
-    # SimpleTestCase : pas d'accès base de données requis.
+    # SimpleTestCase: no database access required.
 
     def test_paire_simple(self):
         z = _make_zip({"l1.png": b"img", "l1.txt": "bonjour".encode("utf-8")})
@@ -75,7 +75,7 @@ class PairTranscriptionsFromZipTests(SimpleTestCase):
         r = pair_transcriptions_from_zip(z)
         self.assertEqual(r["pairs"], {"l1": "a"})
         self.assertEqual(r["n_other_files"], 2)
-        self.assertIn("non reconnu", r["report"])
+        self.assertIn("unrecognized", r["report"])
 
     def test_ignore_caches_et_macosx(self):
         z = _make_zip({
