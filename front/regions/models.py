@@ -146,7 +146,7 @@ class Regions(AbstractAPITaskOnDataset("regions")):
             for idx, crop in enumerate(crops):
                 crop_path = self.dataset.get_path_for_crop(crop, doc_uid=doc_uid, i=idx)
                 crop_url = settings.MEDIA_URL + str(
-                    crop_path.relative_to(settings.DATA_DIR)
+                    crop_path.relative_to(settings.MEDIA_ROOT)
                 )
                 relative = crop["relative"]
                 formatted_crops.append(
