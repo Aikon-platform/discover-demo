@@ -201,18 +201,20 @@
         </Toggle.Root>
     </div>
     {#if dataset_reuse_value}
-        <div class="columns"> 
-            <div class="select column">
-                <select bind:value={dataset_reuse_target_value}>
-                    <option value="">Use dataset from</option>
-                    {#each dataset_reuse_target_field.children as option}
-                        {#if option instanceof HTMLOptionElement && option.value != ""}
-                            <option value={option.value}>{option.text}</option>
-                        {/if}
-                    {/each}
-                </select>
+        <div class="is-flex is-flex-direction-column is-align-items-start"> 
+            <div class="m-1">
+                <div class="select">
+                    <select bind:value={dataset_reuse_target_value}>
+                        <option value="">Use dataset from</option>
+                        {#each dataset_reuse_target_field.children as option}
+                            {#if option instanceof HTMLOptionElement && option.value != ""}
+                                <option value={option.value}>{option.text}</option>
+                            {/if}
+                        {/each}
+                    </select>
+                </div>
             </div>
-            <div class="column is-narrow">
+            <div class="m-1">
                 <a class="button" 
                     style={dataset_reuse_target_value ? '' : "cursor: not-allowed; opacity: 0.5"}
                     href={dataset_reuse_target_value ? `/datasets/${dataset_reuse_target_value}/view` : undefined}
