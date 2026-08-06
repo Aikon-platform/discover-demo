@@ -11,6 +11,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 from PIL import Image as PImage
+from pathlib import PurePosixPath
 
 from django.contrib.auth import get_user_model
 from django.urls import reverse
@@ -786,6 +787,32 @@ class Dataset(AbstractDataset):
                 return json.load(f)
         except (OSError, json.JSONDecodeError):
             return {}
+
+    def get_transcription_rows(self) -> list[dict]:
+        """
+        Pair each line image with its transcription for display.
+        Returns [{"image": <Image>, "text": str, "key": str}, ...] sorted by key.
+        """
+        if not self.has_transcriptions:
+            return []
+        transcriptions = self.get_transcriptions()
+        if not transcriptions:
+            return []
+        try:
+            self.get_images()
+        except Exception as e:
+            print(f"[datasets] get_images failed: {e}")
+        rows = []
+        for document in self.documents:
+            for image in document.images:
+                rel = image.id or image.src or ""
+                stem_key = str(PurePosixPath(str(rel)).with_suffix(""))
+                text = transcriptions.get(stem_key)
+                if text is None:
+                    continue
+                rows.append({"image": image, "text": text, "key": stem_key})
+        rows.sort(key=lambda r: r["key"])
+        return rows   
 
     def save_transcriptions(self, transcriptions: Dict[str, str]) -> None:
         """Write transcriptions under MEDIA_ROOT (dataset folder)."""
