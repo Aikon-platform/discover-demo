@@ -27,7 +27,14 @@ class PaleographyStatus(PaleographyMixin.Status):
     extension), car `Document._list_img_dir` pose `image.src = <dossier>/<nom.ext>`
     et nos clés de transcription sont `<dossier>/<nom>` (sans extension).
     """
-
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        task = self.object
+        context["paleo_rows"] = (
+            task.dataset.get_transcription_rows() if task.dataset else []
+        )
+        return context
+"""
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         task = self.object
@@ -58,3 +65,4 @@ class PaleographyStatus(PaleographyMixin.Status):
         rows.sort(key=lambda r: r["key"])
         context["paleo_rows"] = rows
         return context
+"""
