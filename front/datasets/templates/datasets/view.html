@@ -57,6 +57,11 @@
                 <li id="tab-head-images"class="tab-head">
                     <a>Images</a>
                 </li>
+                {% if dataset.has_transcriptions %}
+                <li id="tab-head-transcriptions" class="tab-head">
+                    <a>Transcriptions</a>
+                </li>
+                {% endif %}
             </ul>
         </div>
 
@@ -70,6 +75,30 @@
             <div id="tab-body-images" class="tab-body is-hidden">
                 <div id="document-image-browser"></div>
             </div>
+            {% if dataset.has_transcriptions %}
+            <div id="tab-body-transcriptions" class="tab-body is-hidden">
+                {% with rows=dataset.get_transcription_rows %}
+                {% if rows %}
+                <table class="table is-fullwidth"><tbody>
+                    {% for row in rows %}
+                    <tr class="is-fullwidth">
+                        <th class="is-narrow" style="width: 45%; vertical-align: middle;">
+                            <img class="card" src="{{ row.image.url }}" alt="{{ row.key }}"
+                                 style="max-width: 100%; display: block; margin: 0;">
+                        </th>
+                        <td style="vertical-align: middle;">
+                            <div style="font-family: monospace; color: #888; font-size: 0.85em;">{{ row.key }}</div>
+                            <div style="font-size: 1.1em; line-height: 1.5;">{{ row.text }}</div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody></table>
+                {% else %}
+                <div class="message mt-5"><div class="message-body"><p>Aucune paire image/transcription à afficher.</p></div></div>
+                {% endif %}
+                {% endwith %}
+            </div>
+            {% endif %}
         </div>
     </div>
 
@@ -180,7 +209,7 @@
     }
 
     const taskSlugArray = JSON.parse(document.getElementById('tasks-tab-manager').textContent),
-          contentSlugArray = ["tree", "images"],
+          contentSlugArray = ["tree", "images", "transcriptions"],
           taskWrapperId = "section-task",
           contentWrapperId = "section-content";
 
