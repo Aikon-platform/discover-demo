@@ -47,7 +47,7 @@ class AbstractDataset(models.Model):
 
     @property
     def full_path(self) -> Path:
-        return Path(settings.DATA_DIR) / "datasets" / f"{self.id}"
+        return Path(settings.MEDIA_ROOT) / "datasets" / f"{self.id}"
 
     django_app_name = "datasets"  # must match INSTALLED_APPS and datasets.url.app_name
 
@@ -71,7 +71,7 @@ class Document:
         self.path = (
             Path(path)
             if path is not None
-            else Path(settings.DATA_DIR) / "documents" / self.uid
+            else Path(settings.MEDIA_ROOT) / "documents" / self.uid
         )
         self._document_tree = None
 
@@ -224,7 +224,7 @@ class Image:
 
     @property
     def url(self):
-        return f"{settings.MEDIA_URL}{self.path.relative_to(settings.DATA_DIR)}"
+        return f"{settings.MEDIA_URL}{self.path.relative_to(settings.MEDIA_ROOT)}"
 
 
 class Dataset(AbstractDataset):
@@ -433,7 +433,7 @@ class Dataset(AbstractDataset):
             i: Index of the crop
             doc_uid: The uid of the document
         """
-        return f"{settings.MEDIA_URL}{self.get_path_for_crop(crop, i, doc_uid).relative_to(settings.DATA_DIR)}"
+        return f"{settings.MEDIA_URL}{self.get_path_for_crop(crop, i, doc_uid).relative_to(settings.MEDIA_ROOT)}"
 
     def get_paths_for_crops(self, crops: List[Dict]) -> List[Path]:
         """
@@ -678,7 +678,7 @@ class Dataset(AbstractDataset):
     def cleaned_metadata_url(self) -> str:
         path = self.cleaned_metadata_path
         if path:
-            return f"{settings.MEDIA_URL}{path.relative_to(Path(settings.DATA_DIR))}"
+            return f"{settings.MEDIA_URL}{path.relative_to(Path(settings.MEDIA_ROOT))}"
         return None
 
     def clean_metadata(self):
