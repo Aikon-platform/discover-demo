@@ -57,7 +57,7 @@ class Index(models.Model):
 
     @property
     def index_path(self):
-        return Path(settings.DATA_DIR) / f"search/index-{self.id}.json"
+        return Path(settings.MEDIA_ROOT) / f"search/index-{self.id}.json"
 
     @property
     def index_url(self):
