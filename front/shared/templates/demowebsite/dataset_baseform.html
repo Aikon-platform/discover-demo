@@ -8,7 +8,18 @@
     <h3 class="title mb-2">{{ dataset_label|default:"Dataset" }}</h3>
     <span id="crop-help" class="help">Select either a dataset or crops.</span>
     {% include "includes/form/field_group.html" with included_fields="reuse_dataset" %}
-    {% include "includes/form/field_group.html" with included_fields=dataset_fields|remove_from_list:"reuse_dataset" %}
+    <div class="columns">
+        <div class="column">
+            {% include "includes/form/field_group.html" with included_fields=dataset_fields|remove_from_list:"reuse_dataset" %}
+        </div>
+        {# an anchor to view the dataset after selecting it. only visible if "Reuse dataset" is true; disabled unless a dataset is selected. #}
+        <div id="view-dataset-wrapper" class="column is-narrow is-flex is-flex-direction-row is-align-content-flex-end">
+            <a id="view-dataset" class="button" style="margin-top: auto" disabled>
+                <span class="iconify iconify--mdi" data-icon="mdi:eye"></span>
+                View dataset
+            </a>
+        </div>
+    </div>
 </div>
 
 {% include "includes/form/field_group.html" with excluded_fields=excluded_fields|add_to_list:dataset_fields|add_to_list:"name,notify_email" %}
@@ -19,6 +30,9 @@
         const formatSelect = document.getElementById("id_format");
         const formatFields = document.querySelectorAll(".format-field");
         const reuseCheck = document.getElementById("id_reuse_dataset");
+        const viewDatasetBtn = document.getElementById("view-dataset");
+        const datasetSelect = document.getElementById("id_dataset");
+
         const is_crops = Boolean(document.getElementById("id_crops"));
 
         function toggleFormatField() {
@@ -28,6 +42,33 @@
             });
         }
 
+        /** 
+         * set the state of `viewDatasetBtn`: 
+         * - if reuseCheck is checked, the button is visible (but disabled by default). otherwise, the button is not visible.
+         * - if an existing dataset is selected, the button becomes usable and its href is defined. otherwise, it's visible but disabled. 
+         */
+        function setViewDataset(e) {
+            const datasetId = e?.target.value || datasetSelect.value;
+            if (reuseCheck.checked) {
+                viewDatasetBtn.style.display = "block";
+                if (datasetId) {
+                    viewDatasetBtn.href = `/datasets/${datasetId}/view`;
+                    viewDatasetBtn.removeAttribute("disabled");
+                } else {
+                    viewDatasetBtn.disabled = true;
+                    viewDatasetBtn.setAttribute("disabled", "");
+                    viewDatasetBtn.removeAttribute("href");  // removing href prevents redirects on click.
+                }
+            } else {
+                viewDatasetBtn.style.display = "none";
+            }
+        }
+
+        /** 
+         * depending on the value of `reuseCheck`,
+         * - show or hide dataset form fields 
+         * - trigger `setViewDataset` to change the display of `viewDatasetBtn`
+         */
         function toggleDatasetFields() {
             const existingDataset = document.querySelectorAll(".old-dataset-field");
             const newDataset = document.querySelectorAll(".new-dataset-field");
@@ -45,6 +86,7 @@
                 reuseHelp.style.display = "none";
                 toggleFormatField();
             }
+            setViewDataset();
         }
 
         if (formatSelect) {
@@ -55,6 +97,8 @@
             reuseCheck.addEventListener("change", toggleDatasetFields);
             toggleDatasetFields();
         }
+
+        datasetSelect.addEventListener("change", setViewDataset);
      });
     </script>
 {% endblock %}

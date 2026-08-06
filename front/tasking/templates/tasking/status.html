@@ -17,7 +17,7 @@
             Requested by {{ object.requested_by }}
             {% if object.dataset %}
                 on dataset
-                <a class="is-hoverable" href="{% url url_prefix|add:'list_perdataset' object.dataset.pk %}">
+                <a class="is-hoverable" href="{% url 'datasets:view' pk=object.dataset.pk %}">
                     <span class="id-main">{{ object.dataset.name }}</span>
                     <span class="id-suffix">{{ object.dataset.id }}</span>
                 </a>
