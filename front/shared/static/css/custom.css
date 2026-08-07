@@ -1,8 +1,17 @@
+/** all page titles */ 
+.content h1:not(:first-child) {
+    margin-top: 0;
+    margin-bottom: 0.1em;
+}
+
 .box {
     box-shadow: none;
     border-style: solid;
     border-radius: var(--bulma-box-radius);
     border-color: var(--bulma-link-75);
-    border-width: var(--bulma-control-border-width)
-  
+    border-width: var(--bulma-control-border-width);
+}
+
+.content p.breadcrumbs {
+    margin-bottom: 0;
 }

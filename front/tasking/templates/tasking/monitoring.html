@@ -14,9 +14,11 @@
         {% else %}
             <p class="success">Internal API is online</p>
             {% if api.queues %}
-                {% for q in api.queues.values %}
-                    <p>Queue <code>{{ q.name }}</code> has currently {{ q.size }} items</p>
-                {% endfor %}
+                <ul class="columns is-multiline is-vcentered">
+                    {% for q in api.queues.values %}
+                        <li class="column box m-1">Queue <code>{{ q.name }}</code> has currently {{ q.size }} items</li>
+                    {% endfor %}
+                </ul>
             {% else %}
                 <p>No queues found</p>
             {% endif %}
