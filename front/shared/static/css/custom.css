@@ -1,0 +1,8 @@
+.box {
+    box-shadow: none;
+    border-style: solid;
+    border-radius: var(--bulma-box-radius);
+    border-color: var(--bulma-link-75);
+    border-width: var(--bulma-control-border-width)
+  
+}
