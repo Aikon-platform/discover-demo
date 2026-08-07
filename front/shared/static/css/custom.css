@@ -1,3 +1,8 @@
+pre {
+    background-color: var(--bulma-link-20);
+    color: white;
+}
+
 /** all page titles */ 
 .content h1:not(:first-child) {
     margin-top: 0;
@@ -12,6 +17,23 @@
     border-width: var(--bulma-control-border-width);
 }
 
-.content p.breadcrumbs {
-    margin-bottom: 0;
+/** NOTE style of breadcrumbs is completed by JS in base.html */
+.breadcrumbs-wrapper:has(.breadcrumbs-sticky-sidebar) {
+    height: 0;
+}
+
+.breadcrumbs {   
+    width: fit-content;
+    background-color: white;
+    margin: 1em;
+    border-style: solid;
+    border-radius: var(--bulma-radius-rounded);
+    border-color: var(--bulma-link-75);
+    border-width: var(--bulma-control-border-width);
+}
+
+.breadcrumbs-sticky-sidebar {
+    position: sticky;
+    top: 1em;
+    z-index: 1;
 }

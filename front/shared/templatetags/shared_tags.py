@@ -112,10 +112,6 @@ def has_visible_fields(form, excluded_fields):
     """
     if isinstance(excluded_fields, str):
         excluded_fields = [f.strip() for f in excluded_fields.split(",") if f.strip()]
-    #return any(field.name not in excluded_fields for field in form)
-    print([field.name for field in form])
-    print([not any(field.name.startswith(f) for f in excluded_fields) for field in form])
-    print(not any(any(field.name.startswith(f) for f in excluded_fields) for field in form))
     to_display = []
     for field in form:
         # field.name is not in excluded_fields => field_name will be displayed

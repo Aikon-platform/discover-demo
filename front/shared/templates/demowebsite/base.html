@@ -147,5 +147,37 @@
 </footer>
 {% block extra_js %}{% endblock %}
 <script src="https://code.iconify.design/3/3.1.1/iconify.min.js"></script>
+
+<script type="text/javascript">
+    /**
+     * `.breadcrumbs-sticky-sidebar` is an HTML element present on a lot of pages. it is set to sticky 
+     * (see CSS styles for `.breadcrumbs-sticky-sidebar`), but this leaves a blank space on top of the next 
+     * sibling of `breadcrumbs-sticky-sidebar` the size of `breadcrumbs-sticky-sidebar`. here, we remove 
+     * this blank space in JS and set the stop height to the top margin of `breadcrumbs-sticky-sidebar`
+     */
+    document.addEventListener("DOMContentLoaded", () => {
+        const breadcrumbs = document.querySelector(".breadcrumbs-sticky-sidebar");
+
+        function getOuterHeight(el) {
+            const style = getComputedStyle(el);
+            const marginTop = parseFloat(style.marginTop) || 0;
+            const marginBottom = parseFloat(style.marginBottom) || 0;
+            const rect = el.getBoundingClientRect();
+            return {
+                totalHeight: rect.height + marginTop + marginBottom,
+                height: rect.height,
+                marginTop: marginTop,
+                marginBottom: marginBottom
+            }
+        }
+
+        if (breadcrumbs && getComputedStyle(breadcrumbs).getPropertyValue("position")) {
+            const el = breadcrumbs.nextElementSibling;
+            const { totalHeight, marginTop } = getOuterHeight(breadcrumbs) || 0;
+            el.style.setProperty("margin-top", `${marginTop-totalHeight}px`)
+        }
+    })
+</script>
+
 </body>
 </html>

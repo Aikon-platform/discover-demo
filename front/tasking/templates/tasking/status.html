@@ -4,25 +4,37 @@
 {% block title %}{{ task_name }} experiment #{{ object.name }}-{{ object.id }}{% endblock %}
 
 {% block content %}
-    <div class="centerwrap">
+    {% include "includes/breadcrumbs.html" %}
+    <div class="centerwrap mb-0">
 
-        {% include "includes/breadcrumbs.html" %}
-
-        <h1>
-            {# TODO allow task name modification #}
-            <span class="id-main">{{ object.name|default:task_name }}</span>
-            <span class="id-suffix">#{{ object.id }}</span>
-        </h1>
-        <p>
-            Requested by {{ object.requested_by }}
-            {% if object.dataset %}
-                on dataset
-                <a class="is-hoverable" href="{% url 'datasets:view' pk=object.dataset.pk %}">
-                    <span class="id-main">{{ object.dataset.name }}</span>
-                    <span class="id-suffix">{{ object.dataset.id }}</span>
-                </a>
+        {# title block #}
+        <div class="columns is-vcentered mb-5">
+            <div class="column">
+                <h1>
+                    {# TODO allow task name modification #}
+                    <span class="id-main">{{ object.name|default:task_name }}</span>
+                    <span class="id-suffix">#{{ object.id }}</span>
+                </h1>
+                <p>
+                    Requested by {{ object.requested_by }}
+                    {% if object.dataset %}
+                        on dataset
+                        <a class="is-hoverable" href="{% url 'datasets:view' pk=object.dataset.pk %}">
+                            <span class="id-main">{{ object.dataset.name }}</span>
+                            <span class="id-suffix">{{ object.dataset.id }}</span>
+                        </a>
+                    {% endif %}
+                </p>
+            </div>
+            {% if object.is_finished %}
+                <div class="column is-narrow box is-flex is-flex-direction-column is-flex-align-items-center is-flex-justify-content-center">
+                    <b class="has-text-centered">Status</b>
+                    <span class="tag is-medium status status-{{ object.status }}">{{ object.status }}</span>
+                </div>
             {% endif %}
-        </p>
+        </div>
+
+        {# task mgmt buttons #}
         <p>
             {% if not object.is_finished %}
                 <a href="{% url url_prefix|add:'cancel' object.id %}" class="button is-ghost">
@@ -50,52 +62,102 @@
                 </a>
             {% endif %}
         </p>
-        {% if object.parameters %}
-            <pre>Parameters : {{ object.parameters }}</pre>
-        {% endif %}
 
-        {% if object.pipeline %}
-        <p>
-            Part of pipeline <a href="{{ object.pipeline.get_absolute_url }}">{{ object.pipeline }}</a>
-        </p>
-        {% endif %}
-        {% if object.all_tasks %} {# for pipelines #}
-            <div class="task-list">
-                <h4>Sub-task launched</h4>
-                {% for task in object.all_tasks %}
-                    {% include "includes/list-item.html" %}
-                {% endfor %}
-            </div>
-        {% endif %}
-    </div>
-    {% if object.is_finished %}
-        <div class="centerwrap">
-            <p>Status: <span class="status status-{{ object.status }}">{{ object.status }}</span></p>
+        <hr class="mt-5 mb-1">
+
+        {# general task info #}
+        <div class="mt-5 mb-5">
+            {% if object.parameters %}
+                <div class="columns is-vcentered">
+                    <h4 class="column is-narrow m-0">Parameters:</h4>
+                    <pre class="column">{{ object.parameters }}</pre>
+                </div>
+            {% endif %}
+
+            {% if object.pipeline %}
+                <p>Part of pipeline <a href="{{ object.pipeline.get_absolute_url }}">{{ object.pipeline }}</a></p>
+            {% endif %}
+            {% if object.all_tasks %} {# for pipelines #}
+                <div class="task-list">
+                    <h4>Sub-task launched</h4>
+                    {% for task in object.all_tasks %}
+                        {% include "includes/list-item.html" %}
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+
+        {# logs of finished task #}
+        {% if object.is_finished %}
             {% if object.full_log %}
-                <div class="centerwrap">
-                    <details>
+                <div>
+                    <details id="task-logs">
                         <summary>
-                            <h4 style="display: inline">View Execution Logs</h4>
+                            <h4 class="">
+                                <span class="">Execution logs</span>
+                                <span id="task-logs-eye" class="iconify" data-icon="mdi:eye"></span>
+                            </h4>
                         </summary>
                         <pre class="full-log">{{ object.full_log }}</pre>
                     </details>
                 </div>
             {% endif %}
-        </div>
 
-        {% block results %}
-            {% include results_template %}
-        {% endblock %}
-
-    {% else %}
-        <div class="centerwrap">
+        {# monitoring of ongoing task #}
+        {% else %}
             <div id="tracking"></div>
-
             <script type="text/javascript">
                 document.addEventListener("DOMContentLoaded", () => {
                     DemoTools.initProgressTracker(document.getElementById("tracking"), "{% url url_prefix|add:'progress' object.id %}");
                 });
             </script>
-        </div>
+        {% endif %}
+
+        <hr class="mt-1 mb-0" color="var(--bulma-)">
+    </div>
+
+    {# view results #}
+    {% if object.is_finished %}
+        {% block results %}
+            {% include results_template %}
+        {% endblock %}
     {% endif %}
+
+    <style>
+    #task-logs summary {
+        cursor: pointer;
+    }
+    #task-logs ::marker {
+        content: "";
+    }
+    #task-logs-eye {
+        margin-bottom: -0.15em;
+    }
+    </style>
+
+{% endblock %}
+
+{% block extra_js %}
+    <script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const logsDetails = document.querySelector("#task-logs");
+        const logsDetailsSummary = document.querySelector("#task-logs > summary");
+
+        const toggleEyeSvg = () => {
+            // NOTE: iconify replaces our span #task-logs-eye with an SVG dynamically
+            // => logsDetailsIcon must be selected here to avoid 
+            const eyeSvg = document.querySelector("#task-logs-eye");
+            console.log(eyeSvg);
+            if (eyeSvg) {
+                logsDetails.hasAttribute("open") 
+                    ? eyeSvg.setAttribute("data-icon", "mdi:eye")
+                    : eyeSvg.setAttribute("data-icon", "teenyicons:eye-closed-outline");
+            }
+        }
+
+        if (logsDetailsSummary) {
+            logsDetailsSummary.addEventListener("click", toggleEyeSvg);
+        }
+    })
+    </script>
 {% endblock %}
