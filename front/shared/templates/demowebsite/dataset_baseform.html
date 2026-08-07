@@ -21,8 +21,16 @@
         </div>
     </div>
 </div>
-
-{% include "includes/form/field_group.html" with excluded_fields=excluded_fields|add_to_list:dataset_fields|add_to_list:"name,notify_email" %}
+    
+{% with excluded_fields=excluded_fields|add_to_list:dataset_fields|add_to_list:"name,notify_email,img_files" %}
+    {% if form|has_visible_fields:excluded_fields %}
+        <div class="">
+            <h3 class="title mb-2">Experiment configuration</h3>
+            <hr class="mt-0 mb-1">
+            {% include "includes/form/field_group.html" with excluded_fields=excluded_fields %}
+        </div>
+    {% endif %}
+{% endwith %}
 
 {% block extra_js %}
     <script>

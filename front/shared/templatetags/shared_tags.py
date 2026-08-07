@@ -104,6 +104,24 @@ def can_admin_accounts(user):
 def can_monitor(user, app_name):
     return user.has_perm(f"{app_name}.monitor_{app_name}")
 
+@register.filter
+def has_visible_fields(form, excluded_fields):
+    """
+    returns True if `form` has at least one field not in `excluded_fields`.
+    `excluded_fields` can be a list or a comma-separated string.
+    """
+    if isinstance(excluded_fields, str):
+        excluded_fields = [f.strip() for f in excluded_fields.split(",") if f.strip()]
+    #return any(field.name not in excluded_fields for field in form)
+    print([field.name for field in form])
+    print([not any(field.name.startswith(f) for f in excluded_fields) for field in form])
+    print(not any(any(field.name.startswith(f) for f in excluded_fields) for field in form))
+    to_display = []
+    for field in form:
+        # field.name is not in excluded_fields => field_name will be displayed
+        if not any(field.name.startswith(f) for f in excluded_fields):
+            return True
+    return False
 
 # @register.filter("dump")
 # def dump(value):
