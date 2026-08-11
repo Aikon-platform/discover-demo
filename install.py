@@ -11,6 +11,14 @@ prod  = fully dockerized prod setup, full prompts, app running at the end
 adapted from: https://github.com/Aikon-platform/aikon/blob/main/install.py
 """
 
+import argparse
+import os
+import shutil
+import subprocess
+import sys
+from pathlib import Path
+
+
 ROOT = Path(__file__).resolve().parent
 sys.path.insert(0, str(ROOT / "scripts"))  # import scripts module without an __init__
 import generate_env  # scripts/generate_env.py
