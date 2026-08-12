@@ -7,7 +7,7 @@ DEBUG = False
 SECRET_KEY = ENV("SECRET_KEY")
 
 ADMIN_EMAIL = ENV("ADMIN_EMAIL")
-ADMINS = [(ENV("ADMIN_NAME"), ADMIN_EMAIL)]
+ADMINS = [(ENV("POSTGRES_USER"), ADMIN_EMAIL)]
 
 DATABASES = {
     "default": {
@@ -21,7 +21,7 @@ DATABASES = {
 }
 
 API_URL = ENV("PROD_API_URL")
-BASE_URL = ENV("BASE_URL", default="https://aikon-demo.enpc.fr/")
+BASE_URL = ENV("PROD_URL", default="")
 DOMAIN_NAME = urlparse(BASE_URL).netloc
 
 if ENV.bool("IS_API_ON_SAME_SERVER", default=False):

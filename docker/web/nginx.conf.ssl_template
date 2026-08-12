@@ -20,7 +20,12 @@ server {
     ssl_stapling on;
     ssl_stapling_verify on;
 
-    client_max_body_size 500M;
+    client_max_body_size NGINX_MAX_BODY_SIZE;
+
+    proxy_connect_timeout       NGINX_TIMEOUT;
+    proxy_send_timeout          NGINX_TIMEOUT;
+    proxy_read_timeout          NGINX_TIMEOUT;
+    send_timeout                NGINX_TIMEOUT;
 
     location / {
         proxy_pass http://localhost:NGINX_PORT;

@@ -89,7 +89,7 @@ postgres=# ALTER DATABASE discover OWNER TO discover;
 postgres=# \q
 ```
 
-Copy the file `.env.template` to a file `.env`. Change it to `TARGET=prod`, and indicate the appropriate credentials.
+Copy the file `.env.template` to a file `.env`. Change it to `MODE=prod`, and indicate the appropriate credentials.
 
 Initialize django:
 
