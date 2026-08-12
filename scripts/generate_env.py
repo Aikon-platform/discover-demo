@@ -261,8 +261,7 @@ def generate_nginx_conf(v: dict) -> None:
     # only used in prod
     if v["MODE"] != "prod":
         return
-    # TODO move everything related to the `web` container to docker/web like in AIKON ?
-    for template in (ROOT / "docker").glob("nginx_*.conf.template"):
+    for template in (ROOT / "docker" / "web").glob("nginx_*.conf.template"):
         text = template.read_text()
         for key in ("PROD_URL", "NGINX_PORT", "NGINX_MAX_BODY_SIZE",
                     "NGINX_TIMEOUT", "SSL_CERTIFICATE", "SSL_KEY"):
@@ -316,6 +315,8 @@ def generate(mode: str, assume_yes: bool) -> None:
     print(f"✅ .env files generated (mode: {mode})")
     return v
 
+
+# ENTRYPOINT ****************************************************
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)

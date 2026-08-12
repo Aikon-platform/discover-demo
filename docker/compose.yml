@@ -5,16 +5,51 @@ x-proxy-settings: &proxy-settings
 #  NO_PROXY: "localhost,127.0.0.1,web,nginx,redis,db,.demo_network,::1,8.8.8.8,8.8.4.4,1.1.1.1,smtp.gmail.com"
 
 services:
+
+  # ------------- started in all setups -------------
+  db:
+    image: postgres:13
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    env_file:
+      - ../front/.env
+    networks:
+      - demo_network
+    restart: unless-stopped
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -d $${POSTGRES_DB} -U $${POSTGRES_USER}" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:6
+    volumes:
+      - redisdata:/data
+    networks:
+      - demo_network
+    restart: unless-stopped
+    healthcheck:
+      test: [ "CMD", "redis-cli", "ping" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ------------- only started in local and prod modes (COMPOSE_PROFILES=front) -------------
+
   web:
+    profiles: [front]
     build:
-      context: ..
-      dockerfile: docker/Dockerfile
+      context: ../front
+      dockerfile: ../docker/web/Dockerfile
+      additional_contexts:
+        conf: ./web
       args:
         USERID: ${USERID}
         PORT: ${DJANGO_PORT}
     volumes:
-      - staticfiles:/home/aikondemo/app/staticfiles
       - ${DATA_FOLDER}:/data
+      - staticfiles:/home/aikondemo/app/staticfiles
     env_file:
       - ./.env
       - ../front/.env
@@ -31,22 +66,8 @@ services:
       - demo_network
     restart: unless-stopped
 
-  db:
-    image: postgres:13
-    volumes:
-      - pgdata:/var/lib/postgresql/data
-    env_file:
-      - ../front/.env
-    networks:
-      - demo_network
-    restart: unless-stopped
-    healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -d $${POSTGRES_DB} -U $${POSTGRES_USER}" ]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
   nginx:
+    profiles: [front]
     image: nginx:latest
     env_file:
       - ./.env
@@ -59,7 +80,7 @@ services:
       NGINX_PORT: ${NGINX_PORT:-8080}
     volumes:
       - staticfiles:/usr/share/nginx/html/static:ro
-      - ./nginx_conf:/etc/nginx/nginx.conf:ro
+      - ./web/nginx_conf:/etc/nginx/nginx.conf:ro
       - ${DATA_FOLDER}:/data:ro
       - /etc/ssl:/etc/ssl:ro
     depends_on:
@@ -68,18 +89,6 @@ services:
       - demo_network
     restart: unless-stopped
 
-  redis:
-    image: redis:6
-    volumes:
-      - redisdata:/data
-    networks:
-      - demo_network
-    restart: unless-stopped
-    healthcheck:
-      test: [ "CMD", "redis-cli", "ping" ]
-      interval: 10s
-      timeout: 5s
-      retries: 5
 
 volumes:
   staticfiles:
