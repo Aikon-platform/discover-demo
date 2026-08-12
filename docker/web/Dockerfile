@@ -64,7 +64,7 @@ WORKDIR /home/${USER}
 
 # Copy app files
 COPY --chown=${USER} front /home/${USER}/app
-COPY --chown=${USER} docker/supervisord.conf /home/${USER}/supervisord.conf
+COPY --from=conf --chown=${USER} supervisord.conf /home/${USER}/supervisord.conf
 
 WORKDIR /home/${USER}/app
 
@@ -89,7 +89,7 @@ EXPOSE ${PORT}
 RUN mkdir -p /home/${USER}/app/staticfiles && chown ${USER}:${USER} /home/${USER}/app/staticfiles
 COPY --from=svelte_build --chown=${USER}:${USER} /app/shared/static/dist/ /home/${USER}/app/shared/static/dist/
 
-COPY --chown=${USER} docker/manage.sh /home/${USER}/manage.sh
+COPY --from=conf --chown=${USER} manage.sh /home/${USER}/manage.sh
 RUN chmod +x /home/${USER}/manage.sh
 
 # Launch app

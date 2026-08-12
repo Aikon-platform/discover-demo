@@ -16,6 +16,7 @@ import os
 import shutil
 import subprocess
 import sys
+import platform
 from pathlib import Path
 
 
@@ -145,6 +146,9 @@ def detect_firewall() -> None:
     _sh = lambda cmd: subprocess.run(
         cmd, cwd=ROOT, shell=True, capture_output=True, text=True
     )
+    # bash script is incompatible with windows
+    if platform.system() == "Windows":
+        return
     # 1. ubuntu/debian
     if shutil.which("ufw") and "Status: active" in _sh("sudo ufw status").stdout:
         msg("ufw")

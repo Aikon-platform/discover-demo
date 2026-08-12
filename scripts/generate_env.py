@@ -21,6 +21,7 @@ import os
 import shutil
 import subprocess
 import sys
+import platform
 from pathlib import Path
 from typing import Literal
 
@@ -37,10 +38,14 @@ AUTOGEN = ("POSTGRES_PASSWORD", "SECRET_KEY")
 # the host-side mappings (see docker/compose*.yml)
 INTERNAL_PORTS = {"DB_PORT": "5432", "REDIS_PORT": "6379", "MONGODB_PORT": "27017"}
 
+# cross-platform separator for multiple confs in COMPOSE_FILES 
+# https://docs.docker.com/compose/how-tos/environment-variables/envvars/#compose_file
+SEPARATOR = ";" if platform.system() == "Windows" else ":"
+
 COMPOSE_FILES = {
-    "dev": "compose.yml:compose.dev.yml",
-    "local": "compose.yml:compose.local.yml",
-    "prod": "compose.yml:compose.prod.yml",
+    "dev":   f"compose.yml{SEPARATOR}compose.dev.yml",
+    "local": f"compose.yml{SEPARATOR}compose.local.yml",
+    "prod":  f"compose.yml{SEPARATOR}compose.prod.yml",
 }
 
 # variables prompted per mode; everything else keeps its default/current value

@@ -55,8 +55,8 @@ services:
       - ../front/.env
     environment:
       <<: *proxy-settings
-    ports:
-      - "${DJANGO_PORT:-8000}:${DJANGO_PORT:-8000}"
+    # ports:
+    #   - "${DJANGO_PORT:-8000}:${DJANGO_PORT:-8000}"
     #extra_hosts:
     #  - "smtp:host-gateway"
     depends_on:
@@ -73,7 +73,7 @@ services:
       - ./.env
       - ../front/.env
     ports:
-      - "${NGINX_PORT:-8080}:${NGINX_PORT:-8080}"
+      - "${NGINX_PORT:-8080}:80"
     environment:
       <<: *proxy-settings
       PROD_URL: ${PROD_URL:-localhost}

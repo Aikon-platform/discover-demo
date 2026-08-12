@@ -1,0 +1,13 @@
+# dev mode: the front (and api) run on the host, every service is reachable from localhost
+x-extra-hosts: &extra-hosts
+  extra_hosts:
+    - "host.docker.internal:host-gateway"
+
+
+services:
+  db:
+    ports:
+      - "${DB_PORT}:5432"
+  redis:
+    ports:
+      - "${REDIS_PORT}:6379"
