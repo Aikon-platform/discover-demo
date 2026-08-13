@@ -2,7 +2,7 @@
 FROM node:23 AS svelte_build
 
 WORKDIR /app
-COPY front .
+COPY . .
 WORKDIR /app/interface/
 RUN npm install
 RUN npm run build
@@ -55,15 +55,10 @@ COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 
 RUN useradd -u ${USERID} -m -d /home/${USER} ${USER}
 
-# install UV. https://docs.astral.sh/uv/guides/integration/docker/#installing-uv
-COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
-
-RUN useradd -u ${USERID} -m -d /home/${USER} ${USER}
-
 WORKDIR /home/${USER}
 
 # Copy app files
-COPY --chown=${USER} front /home/${USER}/app
+COPY --chown=${USER} . /home/${USER}/app
 COPY --from=conf --chown=${USER} supervisord.conf /home/${USER}/supervisord.conf
 
 WORKDIR /home/${USER}/app

@@ -1,8 +1,10 @@
+name: aikondemo
+
 x-proxy-settings: &proxy-settings
   HTTP_PROXY: ${HTTP_PROXY}
   HTTPS_PROXY: ${HTTPS_PROXY}
-  NO_PROXY: "localhost,127.0.0.1,web,nginx,redis,db,.demo_network"
-#  NO_PROXY: "localhost,127.0.0.1,web,nginx,redis,db,.demo_network,::1,8.8.8.8,8.8.4.4,1.1.1.1,smtp.gmail.com"
+  NO_PROXY: "localhost,127.0.0.1,web,nginx,redis,db,.aikondemo"
+#  NO_PROXY: "localhost,127.0.0.1,web,nginx,redis,db,.aikondemo,::1,8.8.8.8,8.8.4.4,1.1.1.1,smtp.gmail.com"
 
 services:
 
@@ -14,7 +16,7 @@ services:
     env_file:
       - ../front/.env
     networks:
-      - demo_network
+      - aikondemo
     restart: unless-stopped
     healthcheck:
       test: [ "CMD-SHELL", "pg_isready -d $${POSTGRES_DB} -U $${POSTGRES_USER}" ]
@@ -27,7 +29,7 @@ services:
     volumes:
       - redisdata:/data
     networks:
-      - demo_network
+      - aikondemo
     restart: unless-stopped
     healthcheck:
       test: [ "CMD", "redis-cli", "ping" ]
@@ -63,7 +65,7 @@ services:
       - db
       - redis
     networks:
-      - demo_network
+      - aikondemo
     restart: unless-stopped
 
   nginx:
@@ -80,13 +82,13 @@ services:
       NGINX_PORT: ${NGINX_PORT:-8080}
     volumes:
       - staticfiles:/usr/share/nginx/html/static:ro
-      - ./web/nginx_conf:/etc/nginx/nginx.conf:ro
+      - ./web/nginx.conf:/etc/nginx/nginx.conf:ro
       - ${DATA_FOLDER}:/data:ro
       - /etc/ssl:/etc/ssl:ro
     depends_on:
       - web
     networks:
-      - demo_network
+      - aikondemo
     restart: unless-stopped
 
 
@@ -96,5 +98,5 @@ volumes:
   redisdata:
 
 networks:
-  demo_network:
+  aikondemo:
     driver: bridge
