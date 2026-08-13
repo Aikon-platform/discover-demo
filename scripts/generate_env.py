@@ -18,8 +18,11 @@ adapted from: https://github.com/Aikon-platform/aikon/blob/main/scripts/generate
 
 import argparse
 import os
+import re
 import shutil
 import subprocess
+import socket
+import secrets
 import sys
 import platform
 from pathlib import Path
@@ -36,7 +39,7 @@ AUTOGEN = ("POSTGRES_PASSWORD", "SECRET_KEY")
 
 # containers always use these internal ports; the root .env ports are only
 # the host-side mappings (see docker/compose*.yml)
-INTERNAL_PORTS = {"DB_PORT": "5432", "REDIS_PORT": "6379", "MONGODB_PORT": "27017"}
+INTERNAL_PORTS = {"DB_PORT": "5432", "REDIS_PORT": "6379"}
 
 # cross-platform separator for multiple confs in COMPOSE_FILES 
 # https://docs.docker.com/compose/how-tos/environment-variables/envvars/#compose_file
@@ -51,12 +54,12 @@ COMPOSE_FILES = {
 # variables prompted per mode; everything else keeps its default/current value
 PROMPTED = {
     "local": ("POSTGRES_PASSWORD",),
-    "dev": ("POSTGRES_PASSWORD", "DATA_DIR"),
+    "dev": ("POSTGRES_PASSWORD", "MEDIA_ROOT"),
     "prod": (
         "POSTGRES_PASSWORD",
         "APP_NAME",
         "APP_LANG",
-        "DATA_DIR",
+        "MEDIA_ROOT",
         "GEONAMES_USER",
         "PROD_URL",
         "PROD_API_URL",
@@ -93,11 +96,9 @@ REQUIRED = {
         "REDIS_DB_INDEX",
         "API_URL",
         "BASE_URL",
-        # TODO check name
         "MEDIA_DIR",        
     ),
     "docker/.env": (
-        # TODO check name
         "DATA_FOLDER",
         "USERID",
         "COMPOSE_FILE",
@@ -156,7 +157,7 @@ def prompt(key: str, default: str, desc: str) -> str:
 
 # .ENV GENERATION ****************************************************
 
-def resolve_values(mode: Literal["local"|"dev"|"prod"], assume_yes: bool) -> dict:
+def resolve_values(mode: Literal["local","dev","prod"], assume_yes: bool) -> dict:
     """
     create a dict containing all .env variables and their values, 
     inheriting values from the existing .env and from .env.template  
@@ -176,8 +177,7 @@ def resolve_values(mode: Literal["local"|"dev"|"prod"], assume_yes: bool) -> dic
 
     for key, (default, desc) in env_template.items():
         val = env_current.get(key, default)
-        # TODO change name
-        if key == "DATA_DIR":
+        if key == "MEDIA_ROOT":
             val = str(Path(val or ROOT / "data").resolve())
         if key in AUTOGEN and not val:
             val = secrets.token_urlsafe(40)
@@ -226,8 +226,7 @@ def derive(v: dict, mode: str, in_docker: bool) -> dict:
         "REDIS_HOST": host("redis"),
         "REDIS_PORT": port("REDIS_PORT"),
         "REDIS_DB_INDEX": "2" if mode == "dev" else "0",
-        # TODO check variable name
-        "MEDIA_DIR": "/data/mediafiles" if in_docker else f"{v['DATA_DIR']}/mediafiles",
+        "MEDIA_DIR": "/data/mediafiles" if in_docker else f"{v['MEDIA_ROOT']}/mediafiles",
         "BASE_URL": base,
         "APP_URL_FROM_DOCKER": (
             base if prod
@@ -263,17 +262,26 @@ def write_env(path: Path, variables: dict) -> None:
 
 
 def generate_nginx_conf(v: dict) -> None:
-    # only used in prod
-    if v["MODE"] != "prod":
-        return
-    for template in (ROOT / "docker" / "web").glob("nginx_*.conf.template"):
+    def apply_template(template: str) -> str:
+        # replace all variables with values + rename file + write template to file
         text = template.read_text()
-        for key in ("PROD_URL", "NGINX_PORT", "NGINX_MAX_BODY_SIZE",
+        for key in ("DJANGO_PORT", "PROD_URL", "NGINX_PORT", "NGINX_MAX_BODY_SIZE",
                     "NGINX_TIMEOUT", "SSL_CERTIFICATE", "SSL_KEY"):
-            text = text.replace(key, v[key])
+            if val := v.get(key):
+                text = text.replace(key, val)
         out = template.with_suffix("")  # nginx_external.conf.template → nginx_external.conf
         out.write_text(text)
         print(f"  wrote {out.relative_to(ROOT)}")
+
+    if v["MODE"] == "dev":
+        return
+    elif v["MODE"] == "local":
+        template = ROOT / "docker" / "web" / "nginx.conf.template"
+        apply_template(template)
+        text = template.read_text()
+        return
+    for template in (ROOT / "docker" / "web").glob("nginx_*.conf.template"):
+        apply_template(template)
 
 
 def generate(mode: str, assume_yes: bool) -> None:
@@ -304,7 +312,7 @@ def generate(mode: str, assume_yes: bool) -> None:
         | {k: v[k] for k in INTERNAL_PORTS}
         | {
             "USERID": os.getuid() if hasattr(os, "getuid") else 1000,
-            "DATA_FOLDER": v["DATA_DIR"],
+            "DATA_FOLDER": v["MEDIA_ROOT"],
             "WEB_HOST": "web" if front_in_docker else "host.docker.internal",
             "COMPOSE_FILE": COMPOSE_FILES[mode],
             "COMPOSE_PATH_SEPARATOR": ":",
@@ -312,8 +320,7 @@ def generate(mode: str, assume_yes: bool) -> None:
         },
     )
 
-    # TODO check if needed + check path
-    (Path(v["DATA_DIR"]) / "mediafiles/img").mkdir(parents=True, exist_ok=True)
+    (Path(v["MEDIA_ROOT"]) / "mediafiles/img").mkdir(parents=True, exist_ok=True)
 
     generate_nginx_conf(v)
 
