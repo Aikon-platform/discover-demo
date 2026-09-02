@@ -194,7 +194,7 @@ class TreeDict:
             + subdirarray_to_html(dir["subdirs"], lvl)
         )
         return f"<pre>{dir_to_html(self.tree, 0)}</pre>"
-    
+
 
 def pair_transcriptions_from_zip(zip_path, *, encoding: str = "utf-8") -> dict:
     """
@@ -212,6 +212,7 @@ def pair_transcriptions_from_zip(zip_path, *, encoding: str = "utf-8") -> dict:
       - ambiguous .txt stem       -> ignored (e.g. l1.txt AND l1.TXT: up to the
                                     user to decide, we do not choose)
       - neither image nor .txt    -> ignored (e.g. XML, PDF)
+      - unreadable archive        -> no pair, explicit report (corrupted / not a zip)
 
     Retourne::
 
@@ -232,11 +233,38 @@ def pair_transcriptions_from_zip(zip_path, *, encoding: str = "utf-8") -> dict:
     """
     from collections import defaultdict
 
+    def _empty_result(report: str) -> dict:
+        """Résultat vide bien formé (mêmes clés que le cas nominal)."""
+        return {
+            "pairs": {},
+            "n_images_ignored": 0,
+            "n_txt_ignored": 0,
+            "n_other_files": 0,
+            "report": report,
+            "dropped": {
+                "img_no_txt": [],
+                "txt_no_img": [],
+                "ambiguous_img": [],
+                "ambiguous_txt": [],
+                "other": [],
+            },
+        }
+
+    # ---- garde : l'archive elle-même doit être lisible ----
+    # (upload tronqué, fichier renommé en .zip mais corrompu, etc.)
+    # On ne laisse PAS remonter BadZipFile : on rapporte proprement.
+    try:
+        zf = zipfile.ZipFile(zip_path)
+    except (zipfile.BadZipFile, OSError):
+        return _empty_result(
+            "the uploaded archive could not be read (corrupted or not a valid zip)"
+        )
+
     # ---- 1st pass: index everything, decide nothing ----
     by_key: dict[tuple, dict] = defaultdict(
         lambda: {"images": [], "txts": [], "other": []}
     )
-    with zipfile.ZipFile(zip_path) as zf:
+    with zf:
         for info in zf.infolist():
             if info.is_dir():
                 continue
