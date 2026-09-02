@@ -95,3 +95,10 @@ class PairTranscriptionsFromZipTests(SimpleTestCase):
         self.assertEqual(r["pairs"], {})
         self.assertEqual(r["n_other_files"], 2)
         self.assertNotEqual(r["report"], "")  # le probleme ne passe pas inapercu
+    def test_archive_corrompue(self):
+        # buffer qui n'est pas un zip valide : on ne doit PAS crasher
+        bad = io.BytesIO(b"this is not a zip file at all")
+        r = pair_transcriptions_from_zip(bad)
+        self.assertEqual(r["pairs"], {})
+        self.assertNotEqual(r["report"], "")     # le probleme reste visible
+        self.assertIn("archive", r["report"])
