@@ -11,6 +11,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 from PIL import Image as PImage
+from pathlib import PurePosixPath
 
 from django.contrib.auth import get_user_model
 from django.urls import reverse
@@ -20,7 +21,13 @@ from django.db.models.signals import pre_delete
 from django.dispatch.dispatcher import receiver
 
 from shared.utils import pprint
-from .utils import PathAndRename, IMG_EXTENSIONS, unzip_on_the_fly, sanitize_str
+from .utils import (
+    PathAndRename,
+    IMG_EXTENSIONS,
+    unzip_on_the_fly,
+    sanitize_str,
+    pair_transcriptions_from_zip,
+)
 from .fields import URLListModelField
 
 User = get_user_model()
@@ -246,6 +253,14 @@ class Dataset(AbstractDataset):
         blank=True,
         help_text="The URL where the dataset can be accessed through the API",
     )
+    has_transcriptions = models.BooleanField(
+        default=False,
+        verbose_name="Has transcriptions",
+        help_text=(
+            "The zip also contains a .txt transcription next to each image "
+            "(same name, same folder)"
+        ),
+    ) 
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -752,6 +767,80 @@ class Dataset(AbstractDataset):
                     "sources": {k:v for k,v in sources.items() if matched_sources[k]}, 
                     "mapping": image_matches
                 }, f)
+    @property
+    def transcriptions_path(self) -> Path:
+        """JSON des transcriptions du dataset : {"<dossier>/<radical>": "texte"}."""
+        return self.full_path / "transcriptions.json"
+
+    def get_transcriptions(self) -> Dict[str, str]:
+        """
+        Dataset transcriptions, keyed by line id
+        ("<subfolder>/<stem>", no extension). {} if absent.
+        """
+        if not self.has_transcriptions:
+            return {}
+        path = self.transcriptions_path
+        if not path.exists():
+            return {}
+        try:
+            with open(path, "r", encoding="utf-8") as f:
+                return json.load(f)
+        except (OSError, json.JSONDecodeError):
+            return {}
+
+    def get_transcription_rows(self) -> list[dict]:
+        """
+        Pair each line image with its transcription for display.
+        Returns [{"image": <Image>, "text": str, "key": str}, ...] sorted by key.
+        """
+        if not self.has_transcriptions:
+            return []
+        transcriptions = self.get_transcriptions()
+        if not transcriptions:
+            return []
+        try:
+            self.get_images()
+        except Exception as e:
+            print(f"[datasets] get_images failed: {e}")
+        rows = []
+        for document in self.documents:
+            for image in document.images:
+                rel = image.id or image.src or ""
+                stem_key = str(PurePosixPath(str(rel)).with_suffix(""))
+                text = transcriptions.get(stem_key)
+                if text is None:
+                    continue
+                rows.append({"image": image, "text": text, "key": stem_key})
+        rows.sort(key=lambda r: r["key"])
+        return rows   
+
+    def save_transcriptions(self, transcriptions: Dict[str, str]) -> None:
+        """Write transcriptions under MEDIA_ROOT (dataset folder)."""
+        self.transcriptions_path.parent.mkdir(parents=True, exist_ok=True)
+        with open(self.transcriptions_path, "w", encoding="utf-8") as f:
+            json.dump(transcriptions, f, ensure_ascii=False)
+
+    def extract_transcriptions(self) -> Dict[str, str]:
+        """
+        Extract homonymous .txt transcriptions from the uploaded zip and persist
+        them. No-op if the dataset is not flagged `has_transcriptions` or is not a
+        zip. Returns the full result dict (pairs + report of ignored files).
+        """
+        if not self.has_transcriptions or not self.zip_file:
+            return {}
+        result = pair_transcriptions_from_zip(self.zip_file.path)
+        self.save_transcriptions(result["pairs"])
+        return result
+
+    def transcriptions_report(self) -> str:
+        """
+        Recalcule le rapport d'appariement (fichiers ignores / non reconnus)
+        sans rien reecrire. Chaine vide si le zip est propre. Sert de
+        diagnostic affiche au lancement d'un traitement.
+        """
+        if not self.has_transcriptions or not self.zip_file:
+            return ""
+        return pair_transcriptions_from_zip(self.zip_file.path)["report"]
 
 @receiver(pre_delete, sender=Dataset)
 def delete_dataset_files(sender, instance: Dataset, **kwargs):

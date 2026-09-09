@@ -15,6 +15,7 @@ urlpatterns = [
     path("watermarks/", include("watermarks.urls")),
     path("datasets/", include("datasets.urls")),
     # path("watermarks/", include("pipelines.urls")),
+    path("paleography/", include("paleography.urls")),
 ]
 
 # Serve media files in development
