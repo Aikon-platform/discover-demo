@@ -15,6 +15,11 @@ TXT_EXTENSION = ".txt"
 
 IMG_EXTENSIONS = {".jpg", ".jpeg", ".png", ".gif", ".tiff"}
 
+# Nombre maximum de noms de fichiers listes par categorie dans le rapport.
+# Au-dela, on tronque et on indique combien il en reste, pour qu'un dataset
+# tres mal forme ne produise pas un log de plusieurs centaines de lignes.
+MAX_NAMED_IN_REPORT = 20
+
 
 @deconstructible
 class PathAndRename(object):
@@ -196,6 +201,25 @@ class TreeDict:
         return f"<pre>{dir_to_html(self.tree, 0)}</pre>"
 
 
+def _format_dropped(label: str, names: List[str]) -> str:
+    """
+    Une ligne de rapport nommant les fichiers concernes.
+
+    Les noms viennent de `ZipInfo.filename` : ce sont donc des chemins relatifs
+    au zip, sous-dossier inclus. C'est indispensable ici, car la cle
+    d'appariement est (sous-dossier, radical) : deux sous-datasets peuvent
+    contenir le meme radical, et un message qui ne donnerait que le nom de
+    fichier serait ambigu.
+
+    La liste est tronquee a MAX_NAMED_IN_REPORT, le reste etant resume par un
+    compte, pour rester lisible sur un dataset tres mal forme.
+    """
+    shown = ", ".join(sorted(names)[:MAX_NAMED_IN_REPORT])
+    remaining = len(names) - MAX_NAMED_IN_REPORT
+    suffix = f", and {remaining} more" if remaining > 0 else ""
+    return f"{len(names)} {label}: {shown}{suffix}"
+
+
 def pair_transcriptions_from_zip(zip_path, *, encoding: str = "utf-8") -> dict:
     """
     Apparie les images et les fichiers .txt d'un zip, par (sous-dossier, radical).
@@ -213,6 +237,10 @@ def pair_transcriptions_from_zip(zip_path, *, encoding: str = "utf-8") -> dict:
                                     user to decide, we do not choose)
       - neither image nor .txt    -> ignored (e.g. XML, PDF)
       - unreadable archive        -> no pair, explicit report (corrupted / not a zip)
+
+    Le rapport NOMME les fichiers concernes (demande de Mathieu, reunion du
+    09 sept. 2026) : savoir qu'il manque une transcription ne suffit pas, il
+    faut savoir laquelle. Une categorie par ligne.
 
     Retourne::
 
@@ -321,17 +349,41 @@ def pair_transcriptions_from_zip(zip_path, *, encoding: str = "utf-8") -> dict:
     n_txt_ignored = len(dropped["txt_no_img"]) + len(dropped["ambiguous_txt"])
     n_other_files = len(dropped["other"])
 
-    # ---- readable report: only what is problematic ----
+    # ---- readable report: only what is problematic, and NAMED ----
+    # Une categorie par ligne : les quatre cas ci-dessous sont des problemes
+    # differents, les fusionner en un seul compteur masquerait l'information.
     problems = []
-    if n_images_ignored:
-        problems.append(f"{n_images_ignored} image(s) without matching transcriptions")
-    if n_txt_ignored:
-        problems.append(f"{n_txt_ignored} transcription(s) without matching image")
-    if dropped["ambiguous_img"] or dropped["ambiguous_txt"]:
-        problems.append("ambiguous file stems detected (several files sharing one name)")
-    if n_other_files:
-        problems.append(f"{n_other_files} unrecognized file(s) (neither image nor .txt)")
-    report = "; ".join(problems)
+    if dropped["img_no_txt"]:
+        problems.append(
+            _format_dropped(
+                "image(s) without matching transcription", dropped["img_no_txt"]
+            )
+        )
+    if dropped["txt_no_img"]:
+        problems.append(
+            _format_dropped(
+                "transcription(s) without matching image", dropped["txt_no_img"]
+            )
+        )
+    if dropped["ambiguous_img"]:
+        problems.append(
+            _format_dropped(
+                "ambiguous image stem(s), ignored", dropped["ambiguous_img"]
+            )
+        )
+    if dropped["ambiguous_txt"]:
+        problems.append(
+            _format_dropped(
+                "ambiguous transcription stem(s), ignored", dropped["ambiguous_txt"]
+            )
+        )
+    if dropped["other"]:
+        problems.append(
+            _format_dropped(
+                "unrecognized file(s) (neither image nor .txt)", dropped["other"]
+            )
+        )
+    report = "\n".join(problems)
 
     return {
         "pairs": pairs,
