@@ -124,6 +124,8 @@ def setup_api(mode: str, use_defaults: bool) -> None:
         mode,
         "--root-env",
         str(ROOT / ".env"),
+        "--bundled",
+        "aikon-demo",
     ] + (["--defaults"] if use_defaults else [])
     sh(cmd, cwd=ROOT / "api")
 
