@@ -139,11 +139,20 @@ function initDatasetImageBrowser(
     });
 }
 
+/**
+ * Mount the alignment app in the given target root.
+ * @param target_root the root element to mount the alignment app in
+ * @param alignment_url the url to alignment task results to load, if any
+ */
 function initAlignmentApp(
-    target_root: HTMLElement
+    target_root: HTMLElement,
+    alignment_url?: string,
 ) {
     mount(AlignmentApp, {
-        target: target_root
+        target: target_root,
+        props: {
+            alignment_url,
+        },
     })
 }
 

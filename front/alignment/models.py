@@ -23,7 +23,6 @@ class Alignment(AbstractAPITaskOnCrops("alignment")):
             return
 
         result_urls = output.get("results_url", [])
-        # TODO process the results
 
         alignment_results = {}
         
@@ -89,9 +88,11 @@ class Alignment(AbstractAPITaskOnCrops("alignment")):
         """
         Prepare alignment results for frontend display.
         """
-        # TODO postprocess?
         # The main result file that the frontend will use for display
         if self.alignment_results:
+            self.dataset.add_urls_to_serialization(
+                self.alignment_results.get("index", {}), self.crops
+            )
             with open(self.result_full_path / "alignment.json", "wb") as f:
                 f.write(orjson.dumps(self.alignment_results))
 

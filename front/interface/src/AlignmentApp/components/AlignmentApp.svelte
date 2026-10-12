@@ -5,20 +5,36 @@
     import AlignKeypoints from "./AlignKeypoints.svelte";
     import AlignLayers from "./AlignLayers.svelte";
     import IconBtn from "../../shared/components/IconBtn.svelte";
+    import { loadAlignmentResults } from "../loader";
 
     interface Props {
-        alignmentState: AlignmentState;
+        alignmentState?: AlignmentState;
+        /** URL of alignment task results to load on mount */
+        alignment_url?: string;
     }
 
-    let { alignmentState }: Props = $props();
+    let { alignmentState, alignment_url }: Props = $props();
 
     if (!alignmentState) {
         alignmentState = new AlignmentState();
     }
 
+    let loading = $state(!!alignment_url);
+    let loadError: string | null = $state(null);
+    if (alignment_url) {
+        loadAlignmentResults(alignment_url, alignmentState)
+            .catch((e) => {
+                console.error(e);
+                loadError = `${e}`;
+            })
+            .finally(() => (loading = false));
+    }
+
     // Open the candidates modal by default so the user picks images first;
     // it can be reopened at any time from the toolbar.
-    let showCandidates = $state(alignmentState.images.length === 0);
+    let showCandidates = $state(
+        alignmentState.images.length === 0 && !alignment_url,
+    );
     let showKeypoints = $derived(alignmentState.tool === "keypoints");
 
     // Resizable panel state
@@ -64,6 +80,11 @@
             class="is-link is-light"
             onclick={() => (showCandidates = true)}
         />
+        {#if loading}
+            <span class="ml-3">Loading alignment results…</span>
+        {:else if loadError}
+            <span class="ml-3 has-text-danger">{loadError}</span>
+        {/if}
     </div>
 
     <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->

@@ -37,8 +37,8 @@ class AlignmentForm(AbstractTaskOnCropsForm):
         label="Target Transform",
         help_text="Select the target transform to use for image alignment",
         widget=forms.Select(attrs={"extra-class": "preprocessing-field"}),
-        choices=Alignment.TARGET_TRANSFORMS,
-        initial=Alignment.TARGET_TRANSFORMS[0][0],
+        choices=AVAILABLE_TRANSFORMS,
+        initial=AVAILABLE_TRANSFORMS[0][0],
     )
 
     def save(self, commit=True):

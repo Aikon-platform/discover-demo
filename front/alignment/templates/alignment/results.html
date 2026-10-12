@@ -3,7 +3,7 @@
     <div class="centerwrap details-wrapper detailed">
         <h3>Alignment results</h3>
 
-        {% if object.alignment %}
+        {% if object.alignment_results %}
             <a href="{{ object.get_download_json_url }}"
                class="button is-link" download>
                 <span class="iconify" data-icon="mdi:json"></span>
@@ -25,12 +25,9 @@
 
         <script type="text/javascript">
             document.addEventListener("DOMContentLoaded", () => {
-/*                DemoTools.initAlignmentApp(
-                    document.getElementById("matches"), 
-                    "{{ object.index_url|escapejs }}",
-                    "{{ object.similarity_matrix_url|escapejs }}", 
-                    "browse", 
-                    "{{ object.dataset.cleaned_metadata_url|escapejs }}");*/
+                DemoTools.initAlignmentApp(
+                    document.getElementById("matches"),
+                    "{{ object.alignment_display_url|escapejs }}");
             });
         </script>
     </div>

@@ -38,9 +38,7 @@ class AlignmentDownloadJson(View):
     def get(self, request, pk):
         try:
             alignment = Alignment.objects.get(pk=pk)
-            alignment_results = alignment.get_alignment_results_for_display(
-                as_list=False
-            )
+            alignment_results = alignment.get_alignment_results_for_display()
             return FileResponse(
                 json.dumps(alignment_results, indent=4),
                 as_attachment=True,

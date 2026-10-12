@@ -2,12 +2,16 @@
 {% load shared_tags %} 
 
 {% block form_content %}
-{% include "demowebsite/dataset_baseform.html" with excluded_fields="method,metadata" %}
+{% include "demowebsite/dataset_baseform.html" with excluded_fields="method,target_transform,metadata" %}
 
 <h4 class="mt-4 mb-2">Options</h4>
 <hr class="mt-0 mb-1" />
 
 <div class="field">
     {% include "includes/form/form_field.html" with field=form.method %}
+</div>
+
+<div class="field">
+    {% include "includes/form/form_field.html" with field=form.target_transform %}
 </div>
 {% endblock %}

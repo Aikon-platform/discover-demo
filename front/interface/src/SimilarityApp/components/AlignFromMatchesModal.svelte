@@ -2,7 +2,6 @@
     import { Dialog } from "bits-ui";
     import {
         AlignmentState,
-        type RawImage,
         type AligningImage,
     } from "../../AlignmentApp/state.svelte";
     import type { TSimilarityMatches } from "../types";
@@ -10,6 +9,7 @@
         applyTransform,
         initialMatrix,
     } from "../../AlignmentApp/transform";
+    import { imageInfoToRawImage } from "../../AlignmentApp/loader";
     import AlignmentApp from "../../AlignmentApp/components/AlignmentApp.svelte";
 
     interface Props {
@@ -100,71 +100,6 @@
         }
 
         alignmentState.resync();
-    }
-
-    // Convert TImageInfo to RawImage
-    async function imageInfoToRawImage(image: {
-        id: string;
-        url: string;
-        name?: string;
-        src?: string;
-    }): Promise<RawImage | null> {
-        // Use the URL directly - it could be a direct image URL or IIIF URL
-        const imageUrl = image.url || image.src;
-
-        if (!imageUrl) {
-            return null;
-        }
-
-        // Create an image element to get dimensions
-        const img = new Image();
-
-        // Try loading with timeout
-        const loadWithTimeout = (useCrossOrigin = false): Promise<void> => {
-            return new Promise((resolve, reject) => {
-                const timeoutId = setTimeout(() => {
-                    reject(new Error("Image load timeout"));
-                }, 5000);
-
-                img.onload = () => {
-                    clearTimeout(timeoutId);
-                    resolve();
-                };
-                img.onerror = () => {
-                    clearTimeout(timeoutId);
-                    reject(new Error("Failed to load image"));
-                };
-
-                if (useCrossOrigin) {
-                    img.crossOrigin = "anonymous";
-                }
-                img.src = imageUrl!;
-            });
-        };
-
-        try {
-            // Try without crossOrigin first
-            await loadWithTimeout(false);
-        } catch (error) {
-            // If that fails, try with crossOrigin
-            try {
-                await loadWithTimeout(true);
-            } catch (error2) {
-                console.error("Failed to load image:", image.id, error2);
-                return null;
-            }
-        }
-
-        if (img.width === 0 || img.height === 0) {
-            return null;
-        }
-
-        return {
-            file_name: image.name || image.id,
-            width: img.width,
-            height: img.height,
-            data: imageUrl,
-        };
     }
 
     // Handle close - clean up images

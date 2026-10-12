@@ -1,25 +1,8 @@
-import type { TDocument, TImageInfo, TMatchTransposition } from "../shared/types";
+import type { TImageIndexRaw, TImageIndex, TImageInfo, TMatchTransposition } from "../shared/types";
 
 // RAW TYPES
 
-export interface TSimilarityIndexRaw {
-    sources: {
-        [source_id: string]: {
-            uid: string;
-            src: string;
-            type: string;
-            metadata: { [key: string]: string };
-        }
-    }
-    images: [
-        {
-            id: string;
-            src: string; // e.g. iiif url
-            url: string; // e.g. media url
-            doc_uid: string;
-            metadata?: { [key: string]: string };
-        }
-    ]
+export interface TSimilarityIndexRaw extends TImageIndexRaw {
     transpositions?: (TMatchTransposition | number)[];
 }
 
@@ -35,9 +18,7 @@ export interface TSimilarityMatchRaw {
 
 export type TSimilarityOutputRaw = TSimilarityMatchRaw[][]; // matches for each query image
 
-export interface TSimilarityIndex {
-    sources: TDocument[];
-    images: TImageInfo[];
+export interface TSimilarityIndex extends TImageIndex {
     transpositions: TMatchTransposition[];
 }
 
