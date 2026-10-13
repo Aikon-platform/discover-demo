@@ -21,7 +21,7 @@ export interface TAlignKeypointRaw {
 }
 
 export interface TAlignedImageRaw {
-    image_name: string;
+    image_id: string;
     /** 3x3 rows, image pixels -> reference pixels (null if not estimated) */
     transform_matrix: number[][] | null;
     /** Same order as the reference keypoints, null where unmatched */

@@ -24,6 +24,9 @@ class Alignment(AbstractAPITaskOnCrops("alignment")):
 
         result_urls = output.get("results_url", [])
 
+        if len(result_urls) > 1:
+            raise ValueError("Multiple alignment results not supported")
+
         alignment_results = {}
         
         for result in result_urls:
