@@ -303,7 +303,7 @@ def generate_nginx_conf(v: dict) -> None:
         apply_template(template)
 
 
-def generate(mode: str, assume_yes: bool) -> None:
+def generate(mode: str, assume_yes: bool) -> dict:
     """
     generate and write:
     - the root .env
