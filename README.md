@@ -28,3 +28,12 @@ AIKON-demo provides a frontend on which to upload datasets, run computer vision 
     python run.py
     ```
 
+## Modes
+
+When running `install.py` you will be prompted to chose a `MODE` (`dev`, `local` or `prod`). This mode determines how your app will run:
+- `dev`: a partially dockerized build for cozy development. Frontend and API web apps run on the host machine, everything else is dockerized (Postgres database and Redis server). View the app in your Web browser on `http://localhost:$DJANGO_PORT`.
+- `local`: a fully dockerized instance of the app running entierly on `localhost` for easy demo usage. View the app in your Web browser on `http://localhost:$NGINX_PORT`
+- `prod`: a fully dockerized instance of the app, ready for production. It will run on `$PROD_URL`.
+
+
+
