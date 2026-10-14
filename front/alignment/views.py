@@ -3,7 +3,7 @@ import json
 from django.views.generic import View
 from django.http import FileResponse, Http404, HttpResponse
 
-from .forms import AlignmentForm, AVAILABLE_ALIGNMENT_METHODS
+from .forms import AlignmentForm
 from .models import Alignment
 from tasking.views import task_view_set
 
@@ -23,11 +23,6 @@ class AlignmentMixin:
 
 class AlignmentStart(AlignmentMixin.Start):
     template_name = "alignment/start.html"
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context["available_methods"] = AVAILABLE_ALIGNMENT_METHODS
-        return context
 
 
 class AlignmentStartFrom(AlignmentMixin.StartFrom, AlignmentStart):

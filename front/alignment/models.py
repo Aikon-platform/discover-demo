@@ -11,8 +11,8 @@ class Alignment(AbstractAPITaskOnCrops("alignment")):
     def __str__(self):
         if not self.name:
             param = getattr(self, "parameters", {})
-            method = param.get("method", "sift+ransac")
-            return f"{method} alignment"
+            feature = param.get("ransac_feature", "SIFT")
+            return f"{feature} alignment"
         return self.name
 
     def save(self, *args, **kwargs):
