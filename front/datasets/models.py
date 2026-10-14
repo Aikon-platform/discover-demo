@@ -355,9 +355,7 @@ class Dataset(AbstractDataset):
         def update_url(d: dict) -> dict:
             d["src"] = rewrite_front_url_for_api(d["src"])
             return d
-        print("**** DOC TO DICT PRE  :", [doc.to_dict() for doc in self.documents])
         docs = [update_url(doc.to_dict()) for doc in self.documents]
-        print("**** DOC TO DICT POST :", docs)
         # docs = [doc.to_dict() for doc in self.documents]
         return docs
 

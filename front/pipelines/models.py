@@ -53,7 +53,6 @@ def AbstractPipelineOnDataset(prefix):
         def next(self):
             self.status = "RUNNING"
             for task in self.tasks:
-                print("NEXT TASK IN LIST \n", task, self.get_task(task))
                 if not self.get_task(task):
                     getattr(self, f"start_{task}_task")()
                     return

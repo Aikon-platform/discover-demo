@@ -91,7 +91,6 @@ MEDIA_URL = "media/"
 # on if the app runs in a docker container:
 # "/data/" if in_docker else f"{v['MEDIA_ROOT']}/data"
 MEDIA_ROOT = Path(ENV("MEDIA_DIR", default=BASE_DIR / "data"))
-print("**** DJANGO MEDIA_ROOT", MEDIA_ROOT)
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
@@ -162,5 +161,3 @@ DATABASES = {
         "PORT": ENV.str("DB_PORT", default="5432"),
     }
 }
-
-print(DATABASES)

@@ -148,7 +148,6 @@ class Regions(AbstractAPITaskOnDataset("regions")):
                 crop_url = settings.MEDIA_URL + str(
                     crop_path.relative_to(settings.MEDIA_ROOT)
                 )
-                print("**** CROP_URL", crop_url)
                 relative = crop["relative"]
                 formatted_crops.append(
                     {
