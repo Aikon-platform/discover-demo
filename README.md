@@ -1,25 +1,30 @@
 # AIKON-demo
 A web interface to showcase demos of the AIKON project.
 
-Please refer to [api/README](https://github.com/Aikon-platform/aikon-api/blob/main/README.md) and [front/README](front/README.md) for installing and running each individual part.
+AIKON-demo provides a frontend on which to upload datasets, run computer vision tasks and visualize results. It interacts with [AIKON-API](github.com/Aikon-platform/aikon-api). For a more complete platform integrating computer vision, corpora management and collaborative work, see the [AIKON platform](https://github.com/Aikon-platform/aikon).
 
 ## General requirements
 
 > - **Sudo** privileges
 > - **Python** >= 3.10
+> - **UV** ([install guide](https://docs.astral.sh/uv/getting-started/installation/))
+> - **Node** ([install guide](https://nodejs.org/en/download))
+> - **Docker** ([install guide](https://docs.docker.com/engine/install/))
 > - **Git**:
 >     - `sudo apt install git`
 >     - Having configured [SSH access to GitHub](https://docs.github.com/en/authentication/connecting-to-github-with-ssh)
+> - **CUDA** if you want to run the API with a GPU. See [API guide](ap/README)
 
 ## Development
 
-1. To install the API and Front application following the instructions in [api/README](https://github.com/Aikon-platform/aikon-api/blob/main/README.md) and [front/README](front/README.md)
+1. Install the `api` and `front` apps. The `insall.py` script will walk you through installation options. `.env` creation, Python dependencies installations and so forth. 
     ```bash
-    bash setup.sh
+    python install.py
     ```
-2. Change the `.env.dev` variables to fit your requirements.
-3. To start everything in one killable process, run (after installing each part like advised in the subfolders):
+2. Run the app. `run.py` will run and manageall `front` and `api` processes.
     ```bash
-    bash run.sh
+    # management commands are: python run.py up|down|logs|build
+    # ctrl+c to stop the app (press twice to stop containers as well)
+    python run.py
     ```
-4. Specific optional steps are needed for the front-end development, see [front/interface/README.md](front/interface/README.md).
+
