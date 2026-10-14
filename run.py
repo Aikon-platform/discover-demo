@@ -31,7 +31,7 @@ WIN = os.name == "nt"
 # frontend processes in dev (to have the webapp running on localhost)
 DEV_PROCS = [
     ("django", ["uv", "run", "manage.py", "runserver", "0.0.0.0:{DJANGO_PORT}"], FRONT),
-    ("dramatiq", ["uv", "run", "manage.py", "rundramatiq", "-t", "1", "p", "1"], FRONT),
+    ("dramatiq", ["uv", "run", "manage.py", "rundramatiq", "-t", "1", "-p", "1"], FRONT),
 ]
 
 
