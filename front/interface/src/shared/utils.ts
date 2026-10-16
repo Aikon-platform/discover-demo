@@ -98,3 +98,49 @@ export function updateUrlSearchParams(validateValueFunc: Function|undefined, par
     window.history.pushState(null, '', url.toString());
     return paramValue
 }
+
+/**
+ * split a CSV line into an array of fields, using double-quotes to escape commas
+ */
+export function parseCSVLine(line: string): string[] {
+    if (line.indexOf('"') === -1) return line.split(",");
+
+    const fields: string[] = [];
+    let pos = 0;
+    const len = line.length;
+
+    while (pos <= len) {
+        if (pos < len && line.charCodeAt(pos) === 34 /* " */) {
+            pos++;
+            let end = pos;
+            let hasEscaped = false;
+            while (end < len) {
+                const q = line.indexOf('"', end);
+                if (q === -1) {
+                    end = len;
+                    break;
+                }
+                if (q + 1 < len && line.charCodeAt(q + 1) === 34) {
+                    hasEscaped = true;
+                    end = q + 2;
+                } else {
+                    end = q;
+                    break;
+                }
+            }
+            const raw = line.substring(pos, end);
+            fields.push(hasEscaped ? raw.replaceAll('""', '"') : raw);
+            pos = end + 1;
+            if (pos < len) pos++;
+        } else {
+            const comma = line.indexOf(",", pos);
+            if (comma === -1) {
+                fields.push(line.substring(pos));
+                break;
+            }
+            fields.push(line.substring(pos, comma));
+            pos = comma + 1;
+        }
+    }
+    return fields;
+}

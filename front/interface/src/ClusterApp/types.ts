@@ -28,6 +28,7 @@ export interface TClusterInfoRaw {
 export interface TClusteringFileRaw {
     clusters: Record<string, TClusterInfoRaw>;
     background_urls: string[];
+    csv_export_file?: string;
 }
 
 // TYPES
@@ -53,6 +54,7 @@ export interface TClusterProps {
 export interface TClusteringFile {
     clusters: Record<number, TClusterInfo>;
     background_urls: string[];
+    image_metadata_csv?: string;
 }
 
 export type TActionRequiringAsk = "cluster_merge" | "selection_move";

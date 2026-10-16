@@ -5,6 +5,7 @@
     import Icon from "@iconify/svelte";
     import ClusterCSVExporter from "./ClusterCSVExporter.svelte";
     import ImageList from "./ImageList.svelte";
+    import ClusterAlignModal from "./ClusterAlignModal.svelte";
     import { getNameProvider } from "../../shared/naming.svelte";
 
     interface Props {
@@ -36,6 +37,8 @@
     const n_shown = $derived(N_SHOWN[editor_state.viewer_display]);
 
     let images:TClusterImageInfo[] = $state([]);
+    let alignInit = $state(false);
+    let showAlignModal = $state(false);
 
     // CALLBACKS
     function onRenameSubmit(e: Event) {
@@ -139,6 +142,12 @@
                     {:else}
                         <p>
                             <ClusterCSVExporter clusters={[ cluster ]} />
+                            <IconBtn
+                                icon="mdi:vector-arrange-above"
+                                onclick={() => ((alignInit = true), (showAlignModal = true))}
+                                label="Align images"
+                                class="is-small is-link"
+                            />
                             <!-- {btnExpand} TODO -->
                         </p>
                     {/if}
@@ -216,3 +225,11 @@
         />
     </div>
 </div>
+
+{#if alignInit}
+    <ClusterAlignModal
+        {cluster}
+        bind:open={showAlignModal}
+        onClose={() => (showAlignModal = false)}
+    />
+{/if}

@@ -8,6 +8,7 @@ import type {
 import { getContext, setContext } from "svelte";
 import { SvelteSet } from "svelte/reactivity";
 import NameProvider from "../shared/naming.svelte";
+import { parseImageMetadataCSV, type TImageAlignMetadata } from "./align";
 
 /**
  * Erase the original cluster-specific metadata from the images
@@ -37,6 +38,9 @@ export default class ClusterEditorState implements TEditorState {
     viewer_display: "grid" | "rows" = $state("grid");
     name_provider: NameProvider;
 
+    image_metadata_csv?: string;
+    private image_metadata: Promise<Map<number, TImageAlignMetadata> | null> | null = null;
+
     constructor(data: TClusteringFile, base_url?: string) {
         this.content = $state(
             {
@@ -46,6 +50,30 @@ export default class ClusterEditorState implements TEditorState {
         );
         this.name_provider = new NameProvider();
         this.base_url = base_url || "";
+        this.image_metadata_csv = data.image_metadata_csv;
+    }
+
+    /**
+     * Lazily fetch and parse the image metadata csv (once, unless it fails)
+     * @returns The metadata by image_id, or null if there is no csv
+     * @throws If the csv cannot be fetched or parsed
+     */
+    get_image_metadata(): Promise<Map<number, TImageAlignMetadata> | null> {
+        if (!this.image_metadata_csv) return Promise.resolve(null);
+        if (!this.image_metadata) {
+            const url = this.base_url + this.image_metadata_csv;
+            this.image_metadata = fetch(url)
+                .then((response) => {
+                    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                    return response.text();
+                })
+                .then(parseImageMetadataCSV)
+                .catch((error) => {
+                    this.image_metadata = null;
+                    throw error;
+                });
+        }
+        return this.image_metadata;
     }
 
     select_images(action: "all" | "none" | "invert" | "toggle", image?: TClusterImageInfo) {

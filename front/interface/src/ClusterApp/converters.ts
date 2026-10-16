@@ -44,6 +44,7 @@ export function unserializeClusterFile(file: TClusteringFileRaw): TClusteringFil
             ])
         ),
         background_urls: file.background_urls,
+        image_metadata_csv: file.csv_export_file,
     };
 }
 
