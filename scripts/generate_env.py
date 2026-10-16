@@ -232,7 +232,7 @@ def derive(v: dict, mode: str, in_docker: bool) -> dict:
         "BASE_URL": base,
         "APP_URL_FROM_DOCKER": (
             base if prod
-            else "http://web:8000" if in_docker
+            else f"http://web:8000:{v['DJANGO_PORT']}" if in_docker
             else f"http://host.docker.internal:{v['DJANGO_PORT']}"
         ),
         "APP_URL_FROM_API": (
