@@ -49,7 +49,6 @@ export class AlignmentState {
     /** Fit each image's transform onto the first image from keypoints */
     syncWithKeypoints = $state(true);
     transformModel: TransformModel = $state("scale");
-    keepAspectRatio = $state(true);
     tool: Tool = $state("transform");
 
     /** Image `from` pixels -> image `to` pixels, through world space */
@@ -171,7 +170,6 @@ export class AlignmentState {
             model,
             src,
             dst,
-            this.keepAspectRatio,
         );
         if (!relative) {
             this.setFitWarning(

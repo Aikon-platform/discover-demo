@@ -18,21 +18,6 @@ import type {
 
 export const MAX_KEYPOINTS = 100;
 
-const TARGET_TRANSFORM_MAP: Record<
-    TAlignTargetTransformRaw,
-    { transformModel: TransformModel; keepAspectRatio: boolean }
-> = {
-    scale: { transformModel: "scale", keepAspectRatio: true },
-    scalexy: { transformModel: "scale", keepAspectRatio: false },
-    "scale+rotate": { transformModel: "scale+rotate", keepAspectRatio: true },
-    "scalexy+rotate": {
-        transformModel: "scale+rotate",
-        keepAspectRatio: false,
-    },
-    affine: { transformModel: "affine", keepAspectRatio: false },
-    homographic: { transformModel: "homography", keepAspectRatio: false },
-};
-
 /** 3x3 rows (numpy layout) -> TransformMatrix */
 function unserializeMatrix(rows: number[][]): TransformMatrix {
     const [[a, c, e], [b, d, f], [g, h, i]] = rows;
@@ -86,8 +71,7 @@ export function unserializeAlignmentResults(
 
     return {
         method: raw.parameters.method,
-        ...(TARGET_TRANSFORM_MAP[raw.parameters.target_transform] ??
-            TARGET_TRANSFORM_MAP.homographic),
+        transformModel: raw.parameters.target_transform as TransformModel,
         images: [images[refIdx], ...images.filter((_, i) => i !== refIdx)],
     };
 }

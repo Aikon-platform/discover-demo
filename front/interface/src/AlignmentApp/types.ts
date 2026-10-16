@@ -53,7 +53,6 @@ export interface TAlignedImage {
 export interface TAlignmentResults {
     method: string;
     transformModel: TransformModel;
-    keepAspectRatio: boolean;
     /** Reference first */
     images: TAlignedImage[];
 }

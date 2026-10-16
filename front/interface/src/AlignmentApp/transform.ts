@@ -206,7 +206,7 @@ export function isProperWarp(
 
 // Keypoint-based estimation
 
-export type TransformModel = "scale" | "scale+rotate" | "affine" | "homography";
+export type TransformModel = "scale" | "scalexy" | "scale+rotate" | "scalexy+rotate" | "affine" | "homographic";
 
 // Relative eigenvalue below which a least-squares system is considered singular
 const RANK_EPS = 1e-10;
@@ -454,7 +454,6 @@ export function estimateTransform(
     model: TransformModel,
     src: Point[],
     dst: Point[],
-    keepAspectRatio?: boolean,
 ): TransformMatrix | null {
     if (src.length !== dst.length || src.length < 2) {
         return null;
@@ -469,10 +468,10 @@ export function estimateTransform(
 
     // Fit the appropriate model
     let fit;
-    if (model === "scale") {
-        fit = fitScale(s, d, keepAspectRatio || src.length == 2);
-    } else if (model === "scale+rotate" || src.length < 3) {
-        fit = fitRotation(s, d, keepAspectRatio || src.length == 2);
+    if (model === "scale" || model === "scalexy") {
+        fit = fitScale(s, d, model === "scale" || src.length == 2);
+    } else if (model === "scale+rotate" || model === "scalexy+rotate" || src.length < 3) {
+        fit = fitRotation(s, d, model === "scale+rotate" || src.length == 2);
     } else if (model === "affine" || src.length < 4) {
         fit = fitAffine(s, d);
     } else {

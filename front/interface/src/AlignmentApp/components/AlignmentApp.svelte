@@ -19,6 +19,8 @@
         alignmentState = new AlignmentState();
     }
 
+    $inspect(alignmentState.transformModel);
+
     let loading = $state(!!alignment_url);
     let loadError: string | null = $state(null);
     if (alignment_url) {
@@ -142,31 +144,14 @@
                         onchange={() => alignmentState.resync(true)}
                         title="Transform model"
                     >
-                        <option value="scale">Scale</option>
-                        <option value="scale+rotate">Scale + Rotate</option>
+                        <option value="scale">Uniform Scale</option>
+                        <option value="scalexy">Non-Uniform Scale</option>
+                        <option value="scale+rotate">Uniform Scale + Rotate</option>
+                        <option value="scalexy+rotate">Non-Uniform Scale + Rotate</option>
                         <option value="affine">Affine</option>
-                        <option value="homography">Homography</option>
+                        <option value="homographic">Homography</option>
                     </select>
                 </div>
-                {#if alignmentState.transformModel.startsWith("scale")}
-                    <IconBtn
-                        icon={alignmentState.keepAspectRatio
-                            ? "mdi:link-variant"
-                            : "mdi:link-variant-off"}
-                        label="Isotropic"
-                        class={[
-                            "is-small",
-                            alignmentState.keepAspectRatio
-                                ? "is-link is-light"
-                                : "",
-                        ]}
-                        onclick={() => {
-                            alignmentState.keepAspectRatio =
-                                !alignmentState.keepAspectRatio;
-                            alignmentState.resync();
-                        }}
-                    />
-                {/if}
                 <span class="toolbar-hint">
                     {#if alignmentState.tool === "keypoints"}
                         Keypoints: click: add / drag · ctrl+click: remove ·

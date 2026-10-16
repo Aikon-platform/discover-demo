@@ -42,8 +42,7 @@
             metadata,
         );
         if (prefilled) {
-            alignmentState.transformModel = prefilled === "projective" ? "homography" : "affine";
-            alignmentState.keepAspectRatio = false;
+            alignmentState.transformModel = prefilled === "projective" ? "homographic" : "affine";
         }
         alignmentState.images = images;
         alignmentState.selected = images.length > 1 ? [1] : [];

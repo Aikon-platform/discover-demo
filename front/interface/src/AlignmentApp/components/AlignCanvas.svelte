@@ -402,7 +402,6 @@
                         width={selected.image.width}
                         height={selected.image.height}
                         transformModel={alignmentState.transformModel}
-                        keepAspectRatio={alignmentState.keepAspectRatio}
                         onChange={(m: TransformMatrix) =>
                             onTransformChange(selected, m)}
                     />

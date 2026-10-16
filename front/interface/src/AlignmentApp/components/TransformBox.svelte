@@ -27,8 +27,6 @@
         onDragEnd?: () => void;
         /** Transform model: scale, scale+rotate, affine, homography */
         transformModel: TransformModel;
-        /** Always keep aspect ratio when scaling */
-        keepAspectRatio?: boolean;
     }
 
     let {
@@ -40,14 +38,14 @@
         onDragStart,
         onDragEnd,
         transformModel,
-        keepAspectRatio = true,
     }: Props = $props();
 
     // Derive freeform from transform model
     // freeform is true for homography (perspective): handles move corners.
     // In affine mode, corners scale and side handles skew.
-    const freeform = $derived(transformModel === "homography");
+    const freeform = $derived(transformModel === "homographic");
     const affine = $derived(transformModel === "affine");
+    const keepAspectRatio = $derived(transformModel === "scale" || transformModel === "scale+rotate");
 
     type Point = { x: number; y: number };
 
@@ -212,13 +210,7 @@
         let sx = onX ? (local.x - ax) / dx : 1;
         let sy = onY ? (local.y - ay) / dy : 1;
 
-        // Apply keepAspectRatio based on transform model
-        // For scale and scale+rotate modes, enforce aspect ratio if keepAspectRatio is true
-        const enforceAR =
-            (transformModel === "scale" || transformModel === "scale+rotate") &&
-            keepAspectRatio;
-
-        if (e.shiftKey || enforceAR) {
+        if (e.shiftKey || keepAspectRatio) {
             // Corner: project pointer on the anchor -> handle diagonal
             const s =
                 onX && onY
