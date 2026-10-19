@@ -21,7 +21,7 @@ AIKON-demo provides a frontend on which to upload datasets, run computer vision 
 
 ## Development
 
-1. Install the `api` and `front` apps. The `insall.py` script will walk you through installation options. `.env` creation, Python dependencies installations and so forth. 
+1. Install the `api` and `front` apps. The `insall.py` script will walk you through installation options. `.env` creation, Python dependencies installations and so forth.
     ```bash
     python install.py
     ```

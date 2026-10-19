@@ -94,4 +94,3 @@ export type TEditorAction =
     | { type: "selection_clear" }
     | { type: "selection_move"; cluster_id: number | null; other?: number }
     | { type: "selection_all" };
-

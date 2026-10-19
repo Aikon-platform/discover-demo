@@ -21,7 +21,7 @@
         </div>
     </div>
 </div>
-    
+
 {% with excluded_fields=excluded_fields|add_to_list:dataset_fields|add_to_list:"name,notify_email,img_files" %}
     {% if form|has_visible_fields:excluded_fields %}
         <div class="">
@@ -50,10 +50,10 @@
             });
         }
 
-        /** 
-         * set the state of `viewDatasetBtn`: 
+        /**
+         * set the state of `viewDatasetBtn`:
          * - if reuseCheck is checked, the button is visible (but disabled by default). otherwise, the button is not visible.
-         * - if an existing dataset is selected, the button becomes usable and its href is defined. otherwise, it's visible but disabled. 
+         * - if an existing dataset is selected, the button becomes usable and its href is defined. otherwise, it's visible but disabled.
          */
         function setViewDataset(e) {
             const datasetId = e?.target.value || datasetSelect.value;
@@ -72,9 +72,9 @@
             }
         }
 
-        /** 
+        /**
          * depending on the value of `reuseCheck`,
-         * - show or hide dataset form fields 
+         * - show or hide dataset form fields
          * - trigger `setViewDataset` to change the display of `viewDatasetBtn`
          */
         function toggleDatasetFields() {

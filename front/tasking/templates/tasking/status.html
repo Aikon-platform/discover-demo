@@ -145,11 +145,11 @@
 
         const toggleEyeSvg = () => {
             // NOTE: iconify replaces our span #task-logs-eye with an SVG dynamically
-            // => logsDetailsIcon must be selected here to avoid 
+            // => logsDetailsIcon must be selected here to avoid
             const eyeSvg = document.querySelector("#task-logs-eye");
             console.log(eyeSvg);
             if (eyeSvg) {
-                logsDetails.hasAttribute("open") 
+                logsDetails.hasAttribute("open")
                     ? eyeSvg.setAttribute("data-icon", "mdi:eye")
                     : eyeSvg.setAttribute("data-icon", "teenyicons:eye-closed-outline");
             }

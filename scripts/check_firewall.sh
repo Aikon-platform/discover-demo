@@ -52,4 +52,3 @@ elif command -v firewall-cmd &> /dev/null && sudo firewall-cmd --state 2>/dev/nu
     sudo firewall-cmd --permanent --zone=trusted --add-source="$DOCKER_SUBNET"
     sudo firewall-cmd --reload
 fi
-

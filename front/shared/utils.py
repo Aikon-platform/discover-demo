@@ -95,11 +95,11 @@ def get_url_host_and_scheme(url: str) -> str:
     if not parts.scheme or not parts.hostname:
         raise ValueError(f"not an absolute URL with a host: {url!r}")
 
-    host = parts.hostname # lowercased, IPv6 brackets stripped
-    if ":" in host:       # IPv6 literal needs brackets back
+    host = parts.hostname  # lowercased, IPv6 brackets stripped
+    if ":" in host:  # IPv6 literal needs brackets back
         host = f"[{host}]"
 
-    port = parts.port      # int or None; raises ValueError if invalid
+    port = parts.port  # int or None; raises ValueError if invalid
     base = f"{parts.scheme}://{host}"
     return f"{base}:{port}" if port is not None else base
 
@@ -123,4 +123,3 @@ def rewrite_api_url_for_front(api_url: str) -> str:
     """
     api_url = api_url.replace(get_url_host_and_scheme(api_url), API_URL)
     return api_url
-

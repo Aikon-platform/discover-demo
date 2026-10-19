@@ -13,9 +13,9 @@
         threshold?: number;
         wref?: TImageInfo;
     }
-    
+
     const { matches, grouped, threshold, wref }: Props = $props();
-    
+
     let expanded = $state(false);
 </script>
 

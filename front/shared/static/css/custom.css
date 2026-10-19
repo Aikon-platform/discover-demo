@@ -3,7 +3,7 @@ pre {
     color: white;
 }
 
-/** all page titles */ 
+/** all page titles */
 .content h1:not(:first-child) {
     margin-top: 0;
     margin-bottom: 0.1em;
@@ -22,7 +22,7 @@ pre {
     height: 0;
 }
 
-.breadcrumbs {   
+.breadcrumbs {
     width: fit-content;
     background-color: white;
     margin: 1em;

@@ -201,7 +201,7 @@
         </Toggle.Root>
     </div>
     {#if dataset_reuse_value}
-        <div class="is-flex is-flex-direction-column is-align-items-start"> 
+        <div class="is-flex is-flex-direction-column is-align-items-start">
             <div class="m-1">
                 <div class="select">
                     <select bind:value={dataset_reuse_target_value}>
@@ -215,7 +215,7 @@
                 </div>
             </div>
             <div class="m-1">
-                <a class="button" 
+                <a class="button"
                     style={dataset_reuse_target_value ? '' : "cursor: not-allowed; opacity: 0.5"}
                     href={dataset_reuse_target_value ? `/datasets/${dataset_reuse_target_value}/view` : undefined}
                 >
