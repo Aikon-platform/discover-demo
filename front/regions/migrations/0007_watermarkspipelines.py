@@ -7,18 +7,24 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('regions', '0006_regions_finished_on'),
-        ('watermarks', '0008_watermarkspipelines'),
+        ("regions", "0006_regions_finished_on"),
+        ("watermarks", "0008_watermarkspipelines"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='regions',
-            name='pipeline',
+            model_name="regions",
+            name="pipeline",
         ),
         migrations.AddField(
-            model_name='regions',
-            name='watermarks_pipeline',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='+', to='watermarks.watermarkspipeline'),
+            model_name="regions",
+            name="watermarks_pipeline",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="+",
+                to="watermarks.watermarkspipeline",
+            ),
         ),
     ]

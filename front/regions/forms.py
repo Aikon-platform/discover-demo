@@ -16,19 +16,9 @@ class RegionsForm(AbstractTaskOnDatasetForm):
         label="Model",
         help_text="Model used to extract image regions in the dataset",
         choices=[],  # dynamically set in __init__
-        widget=forms.RadioSelect,
+        widget=forms.Select,
         required=True,
     )
-
-    # postprocess = forms.ChoiceField(
-    #     choices=[
-    #         ("", "No postprocessing"),
-    #         ("watermarks", "Squarify and add 5% margin to crops"),
-    #         ("character_line_extraction", r"Add 10% horizontal margin and 30% vertical margin")
-    #     ],
-    #     required=False
-    # )
-
     squarify = forms.BooleanField(
         label="Squarify",
         help_text="Squarify extracted regions",

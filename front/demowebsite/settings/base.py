@@ -87,7 +87,10 @@ STATIC_URL = "static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
 MEDIA_URL = "media/"
-MEDIA_ROOT = Path(ENV("MEDIA_ROOT", default=BASE_DIR / "media"))
+# MEDIA_DIR is the path to media files, defined conditionnally depending
+# on if the app runs in a docker container:
+# "/data/" if in_docker else f"{v['MEDIA_ROOT']}/data"
+MEDIA_ROOT = Path(ENV("MEDIA_DIR", default=BASE_DIR / "data"))
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
@@ -145,3 +148,16 @@ LOGGING = {
 }
 
 LOGOUT_REDIRECT_URL = reverse_lazy("home")
+
+DATABASES = {
+    "default": {
+        "ENGINE": "django.db.backends.postgresql",
+        "NAME": ENV.str("POSTGRES_DB", default="demowebsite"),
+        "USER": ENV.str("POSTGRES_USER", default="demowebsite"),
+        "PASSWORD": ENV.str("POSTGRES_PASSWORD"),
+        # in dev, it would be "localhost". in local/prod, "db".
+        # DB_HOST value is set by generate_env depending on install mode.
+        "HOST": ENV.str("DB_HOST", default="db"),
+        "PORT": ENV.str("DB_PORT", default="5432"),
+    }
+}

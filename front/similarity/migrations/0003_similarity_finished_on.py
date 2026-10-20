@@ -6,13 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('similarity', '0002_similarity_pipeline'),
+        ("similarity", "0002_similarity_pipeline"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='similarity',
-            name='finished_on',
+            model_name="similarity",
+            name="finished_on",
             field=models.DateTimeField(blank=True, editable=False, null=True),
         ),
     ]

@@ -15,11 +15,16 @@ dependencies = [
     "requests>=2.34.2",
     "stream-unzip>=0.0.101",
     "stream-zip>=0.0.84",
+    "psycopg2-binary>=2.9.12"
 ]
 
 [dependency-groups]
+dev = [
+    "pre-commit>=2.19.0",
+    "black>=26.5.1",
+    "pylint"
+]
 prod = [
     "gevent>=26.5.0",
     "gunicorn>=26.0.0",
-    "psycopg2-binary>=2.9.12",
 ]

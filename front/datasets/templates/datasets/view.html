@@ -4,10 +4,8 @@
 {% block title %}Dataset {{ dataset.id }}{% endblock %}
 
 {% block content %}
+{% include "datasets/includes/breadcrumbs.html" %}
 <div class="centerwrap">
-
-    {% include "datasets/includes/breadcrumbs.html" %}
-
     <!-- TITLE SECTION -->
     <div class="columns is-vcentered">
         <div class="column is-two-thirds">

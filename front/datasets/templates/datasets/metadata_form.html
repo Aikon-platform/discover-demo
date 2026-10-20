@@ -4,9 +4,10 @@
 {% block title %}Dataset {{ dataset.id }}{% endblock %}
 
 {% block content %}
-<div class="centerwrap">
 
-    {% include "datasets/includes/breadcrumbs.html" %}
+{% include "datasets/includes/breadcrumbs.html" %}
+
+<div class="centerwrap">
 
     <h1>Add metadata to dataset {{ dataset.id }}</h1>
     <form method="post" enctype="multipart/form-data">

@@ -196,13 +196,13 @@ def AbstractAPITaskOnCrops(task_prefix: str):
             if self.crops:
                 kwargs["crops"] = self.crops.get_bounding_boxes()
             return kwargs
-        
+
         def prepare_dataset_from_api(self, output: dict) -> bool:
             """
             Handle the connection between the dataset served by the API and the front-end dataset
             Also crops the images if needed
             """
-            
+
             if not super().prepare_dataset_from_api(output):
                 return False
 

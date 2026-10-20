@@ -7,13 +7,17 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('datasets', '0005_delete_zippeddataset_remove_dataset_format_and_more'),
+        ("datasets", "0005_delete_zippeddataset_remove_dataset_format_and_more"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='dataset',
-            name='metadata_file',
-            field=models.FileField(max_length=500, null=True, upload_to=datasets.utils.PathAndRename('datasets/')),
+            model_name="dataset",
+            name="metadata_file",
+            field=models.FileField(
+                max_length=500,
+                null=True,
+                upload_to=datasets.utils.PathAndRename("datasets/"),
+            ),
         ),
     ]

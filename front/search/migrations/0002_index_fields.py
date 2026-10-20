@@ -6,18 +6,18 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('search', '0001_initial'),
+        ("search", "0001_initial"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='index',
-            name='description',
-            field=models.TextField(blank=True, default=''),
+            model_name="index",
+            name="description",
+            field=models.TextField(blank=True, default=""),
         ),
         migrations.AddField(
-            model_name='index',
-            name='feat_net',
-            field=models.CharField(blank=True, default='', max_length=511),
+            model_name="index",
+            name="feat_net",
+            field=models.CharField(blank=True, default="", max_length=511),
         ),
     ]

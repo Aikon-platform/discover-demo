@@ -1,5 +1,6 @@
 {% if request.user.is_authenticated %}
-    <p class="breadcrumbs">
+    {# NOTE style of breadcrumbs-sticky-sidebar is polished by JS in base.html  #}        
+    <p class="breadcrumbs breadcrumbs-sticky-sidebar">
         <a class="button is-text" href="{% url url_prefix|add:'list' %}">
             <span class="iconify" data-icon="mdi:arrow-left"></span>
             All {{ task_name }} experiments

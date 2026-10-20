@@ -127,8 +127,8 @@ class TreeDict:
                     self.tree["subdirs"].append(TreeDict(el_abspath))
 
     def to_html_list(self) -> str:
-        filearray_to_html = (
-            lambda files: f"""
+        filearray_to_html = lambda files: (
+            f"""
             <li>Files:
                 <ul>
                     {"".join(f"<li>{f}</li>" for f in files)}
@@ -139,8 +139,8 @@ class TreeDict:
             else ""
         )
 
-        subdirarray_to_html = (
-            lambda subdirs: f"""
+        subdirarray_to_html = lambda subdirs: (
+            f"""
             <li>Directories:
                 <ul>
                     {"".join(f"{dir_to_html(d)}" for d in subdirs)}
@@ -151,8 +151,7 @@ class TreeDict:
             else ""
         )
 
-        dir_to_html = (
-            lambda dir: f"""
+        dir_to_html = lambda dir: f"""
             <li>{dir["curdir"]}/
                 <ul>
                     {filearray_to_html(dir["files"])}
@@ -160,7 +159,6 @@ class TreeDict:
                 </ul>
             </li>
         """
-        )
         return f"<ul>{dir_to_html(self.tree)}</ul>"
 
     # as pre
@@ -168,18 +166,14 @@ class TreeDict:
         num_spaces = 4
         indent = lambda lvl, spaces: " " * (lvl * spaces)
 
-        filearray_to_html = (
-            lambda files, lvl: (
-                "".join(f"{indent(num_spaces, lvl+1)}{f}\n" for f in files)
-            )
+        filearray_to_html = lambda files, lvl: (
+            ("".join(f"{indent(num_spaces, lvl+1)}{f}\n" for f in files))
             if len(files)
             else ""
         )
 
-        subdirarray_to_html = (
-            lambda subdirs, lvl: (
-                "".join(f"{dir_to_html(d.tree, lvl+1)}\n" for d in subdirs)
-            )
+        subdirarray_to_html = lambda subdirs, lvl: (
+            ("".join(f"{dir_to_html(d.tree, lvl+1)}\n" for d in subdirs))
             if len(subdirs)
             else ""
         )

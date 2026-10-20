@@ -5,43 +5,171 @@ from django.db import migrations, models
 import django.db.models.deletion
 import uuid
 
+
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('datasets', '0005_delete_zippeddataset_remove_dataset_format_and_more'),
-        ('search', '0002_index_fields'),
-        ('similarity', '0004_alter_similarity_crops'),
-        ('regions', '0006_regions_finished_on'),
+        ("datasets", "0005_delete_zippeddataset_remove_dataset_format_and_more"),
+        ("search", "0002_index_fields"),
+        ("similarity", "0004_alter_similarity_crops"),
+        ("regions", "0006_regions_finished_on"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
-        ('watermarks', '0007_watermarkprocessing_finished_on'),
-        ('pipelines', '0002_pipeline_finished_on'),
+        ("watermarks", "0007_watermarkprocessing_finished_on"),
+        ("pipelines", "0002_pipeline_finished_on"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='WatermarksPipeline',
+            name="WatermarksPipeline",
             fields=[
-                ('id', models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True, serialize=False)),
-                ('name', models.CharField(blank=True, help_text='Optional name to identify this watermarks experiment', max_length=64, verbose_name='Experiment name')),
-                ('notify_email', models.BooleanField(blank=True, default=True, help_text='Send an email when the watermarks task is finished', verbose_name='Notify by email')),
-                ('status', models.CharField(default='PENDING', editable=False, max_length=20)),
-                ('is_finished', models.BooleanField(default=False, editable=False)),
-                ('requested_on', models.DateTimeField(auto_now_add=True)),
-                ('finished_on', models.DateTimeField(blank=True, editable=False, null=True)),
-                ('parameters', models.JSONField(null=True)),
-                ('analysis_type', models.CharField(choices=[('similarity', 'Compare watermarks inside dataset'), ('indexing', 'Index this dataset for future queries'), ('query', 'Search inside an indexed dataset')], default='similarity', max_length=10, verbose_name='Analysis type')),
-                ('need_regions', models.BooleanField(blank=True, default=True, help_text='Disable if your images are already cropped', verbose_name='Detect and crop watermarks')),
-                ('dataset', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='watermarks_tasks', to='datasets.dataset', verbose_name='Use existing dataset...')),
-                ('indexing_task', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='+', to='search.indexing', verbose_name='Indexing task')),
-                ('query_target_index', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='+', to='search.index', verbose_name='Query target index')),
-                ('query_task', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='+', to='search.query', verbose_name='Query task')),
-                ('regions_task', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='+', to='regions.regions', verbose_name='Watermarks detection task')),
-                ('requested_by', models.ForeignKey(editable=False, null=True, on_delete=django.db.models.deletion.SET_NULL, to=settings.AUTH_USER_MODEL)),
-                ('similarity_task', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='+', to='similarity.similarity', verbose_name='Watermarks similarity task')),
-                ('watermarks_pipeline', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='+', to='watermarks.watermarkspipeline')),
+                (
+                    "id",
+                    models.UUIDField(
+                        default=uuid.uuid4,
+                        editable=False,
+                        primary_key=True,
+                        serialize=False,
+                    ),
+                ),
+                (
+                    "name",
+                    models.CharField(
+                        blank=True,
+                        help_text="Optional name to identify this watermarks experiment",
+                        max_length=64,
+                        verbose_name="Experiment name",
+                    ),
+                ),
+                (
+                    "notify_email",
+                    models.BooleanField(
+                        blank=True,
+                        default=True,
+                        help_text="Send an email when the watermarks task is finished",
+                        verbose_name="Notify by email",
+                    ),
+                ),
+                (
+                    "status",
+                    models.CharField(default="PENDING", editable=False, max_length=20),
+                ),
+                ("is_finished", models.BooleanField(default=False, editable=False)),
+                ("requested_on", models.DateTimeField(auto_now_add=True)),
+                (
+                    "finished_on",
+                    models.DateTimeField(blank=True, editable=False, null=True),
+                ),
+                ("parameters", models.JSONField(null=True)),
+                (
+                    "analysis_type",
+                    models.CharField(
+                        choices=[
+                            ("similarity", "Compare watermarks inside dataset"),
+                            ("indexing", "Index this dataset for future queries"),
+                            ("query", "Search inside an indexed dataset"),
+                        ],
+                        default="similarity",
+                        max_length=10,
+                        verbose_name="Analysis type",
+                    ),
+                ),
+                (
+                    "need_regions",
+                    models.BooleanField(
+                        blank=True,
+                        default=True,
+                        help_text="Disable if your images are already cropped",
+                        verbose_name="Detect and crop watermarks",
+                    ),
+                ),
+                (
+                    "dataset",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name="watermarks_tasks",
+                        to="datasets.dataset",
+                        verbose_name="Use existing dataset...",
+                    ),
+                ),
+                (
+                    "indexing_task",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name="+",
+                        to="search.indexing",
+                        verbose_name="Indexing task",
+                    ),
+                ),
+                (
+                    "query_target_index",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name="+",
+                        to="search.index",
+                        verbose_name="Query target index",
+                    ),
+                ),
+                (
+                    "query_task",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name="+",
+                        to="search.query",
+                        verbose_name="Query task",
+                    ),
+                ),
+                (
+                    "regions_task",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name="+",
+                        to="regions.regions",
+                        verbose_name="Watermarks detection task",
+                    ),
+                ),
+                (
+                    "requested_by",
+                    models.ForeignKey(
+                        editable=False,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
+                (
+                    "similarity_task",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name="+",
+                        to="similarity.similarity",
+                        verbose_name="Watermarks similarity task",
+                    ),
+                ),
+                (
+                    "watermarks_pipeline",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name="+",
+                        to="watermarks.watermarkspipeline",
+                    ),
+                ),
             ],
             options={
-                'abstract': False,
+                "abstract": False,
             },
         ),
     ]

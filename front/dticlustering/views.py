@@ -186,9 +186,11 @@ class ClearOldClusterings(DTIClusteringMixin, ClearOldResultsView):
         if output is None or output.get("error"):
             messages.error(
                 self.request,
-                output["error"]
-                if output
-                else "Unknown error when clearing old clusterings",
+                (
+                    output["error"]
+                    if output
+                    else "Unknown error when clearing old clusterings"
+                ),
             )
         else:
             messages.success(
@@ -212,9 +214,11 @@ class ClearAPIOldClusterings(DTIClusteringMixin, ClearAPIOldResultsView):
         if output is None or output.get("error"):
             messages.error(
                 self.request,
-                output["error"]
-                if output
-                else "Unknown error when clearing old clusterings",
+                (
+                    output["error"]
+                    if output
+                    else "Unknown error when clearing old clusterings"
+                ),
             )
         else:
             messages.success(

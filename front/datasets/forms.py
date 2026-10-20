@@ -131,6 +131,7 @@ class DatasetForm(AbstractDatasetForm):
         model = Dataset
         fields = AbstractDatasetForm.Meta.fields
 
+
 class DatasetAddMetadataForm(forms.ModelForm):
     metadata_file = ContentRestrictedFileField(
         label="Metadata",
@@ -140,6 +141,7 @@ class DatasetAddMetadataForm(forms.ModelForm):
         max_size=settings.MAX_UPLOAD_SIZE,
         widget=forms.ClearableFileInput(),
     )
+
     class Meta:
         model = Dataset
         fields = ["metadata_file"]

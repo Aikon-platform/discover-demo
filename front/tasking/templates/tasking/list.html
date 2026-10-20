@@ -4,9 +4,12 @@
 {% block title %}List of {{ task_name }} experiments{% endblock %}
 
 {% block content %}
+    {% if filter %}
+        {% include "includes/breadcrumbs.html" %}
+    {% endif %}
+
     <div class="centerwrap">
         {% if filter %}
-            {% include "includes/breadcrumbs.html" %}
             <h1 class="is-title is-size-2 py-3">{{ filter }}</h1>
         {% else %}
             <h1 class="is-title is-size-2 py-3">All {{ task_name }} experiments</h1>

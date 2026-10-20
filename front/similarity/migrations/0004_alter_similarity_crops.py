@@ -7,14 +7,21 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('regions', '0006_regions_finished_on'),
-        ('similarity', '0003_similarity_finished_on'),
+        ("regions", "0006_regions_finished_on"),
+        ("similarity", "0003_similarity_finished_on"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='similarity',
-            name='crops',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='+', to='regions.regions', verbose_name='Use crops from...'),
+            model_name="similarity",
+            name="crops",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="+",
+                to="regions.regions",
+                verbose_name="Use crops from...",
+            ),
         ),
     ]

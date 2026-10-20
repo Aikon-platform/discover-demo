@@ -1,10 +1,14 @@
 from .base import ENV
 
-# Load the appropriate settings file based on the TARGET environment variable
+# Load the appropriate settings file based on the MODE environment variable
 
-if ENV("TARGET", default="").strip() == "dev":
+mode = ENV("MODE", default="").strip()
+
+if mode in ("dev", "local"):
     from .dev import *
-elif ENV("TARGET", default="").strip() == "prod":
+elif mode == "prod":
     from .prod import *
 else:
-    raise ValueError("TARGET environment variable must be either 'dev' or 'prod'")
+    raise ValueError(
+        f"MODE environment variable must be either 'dev', 'prod' or 'local'. got: '{mode}'"
+    )

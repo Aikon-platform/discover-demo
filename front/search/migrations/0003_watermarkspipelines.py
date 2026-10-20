@@ -7,27 +7,39 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('search', '0002_index_fields'),
-        ('watermarks', '0008_watermarkspipelines'),
+        ("search", "0002_index_fields"),
+        ("watermarks", "0008_watermarkspipelines"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='indexing',
-            name='pipeline',
+            model_name="indexing",
+            name="pipeline",
         ),
         migrations.RemoveField(
-            model_name='query',
-            name='pipeline',
+            model_name="query",
+            name="pipeline",
         ),
         migrations.AddField(
-            model_name='indexing',
-            name='watermarks_pipeline',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='+', to='watermarks.watermarkspipeline'),
+            model_name="indexing",
+            name="watermarks_pipeline",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="+",
+                to="watermarks.watermarkspipeline",
+            ),
         ),
         migrations.AddField(
-            model_name='query',
-            name='watermarks_pipeline',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='+', to='watermarks.watermarkspipeline'),
+            model_name="query",
+            name="watermarks_pipeline",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="+",
+                to="watermarks.watermarkspipeline",
+            ),
         ),
     ]

@@ -103,7 +103,6 @@ class WatermarksPipeline(AbstractPipelineOnDataset("watermarks")):
     def analysis_task(self):
         return getattr(self, f"{self.analysis_type}_task")
 
-
     def start_regions_task(self):
         self.regions_task = Regions.objects.create(
             dataset=self.dataset,

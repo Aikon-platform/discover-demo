@@ -2,7 +2,7 @@
 FROM node:23 AS svelte_build
 
 WORKDIR /app
-COPY front .
+COPY . .
 WORKDIR /app/interface/
 RUN npm install
 RUN npm run build
@@ -55,22 +55,18 @@ COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 
 RUN useradd -u ${USERID} -m -d /home/${USER} ${USER}
 
-# install UV. https://docs.astral.sh/uv/guides/integration/docker/#installing-uv
-COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
-
-RUN useradd -u ${USERID} -m -d /home/${USER} ${USER}
-
 WORKDIR /home/${USER}
 
 # Copy app files
-COPY --chown=${USER} front /home/${USER}/app
-COPY --chown=${USER} docker/supervisord.conf /home/${USER}/supervisord.conf
+COPY --chown=${USER} . /home/${USER}/app
+COPY --from=conf --chown=${USER} supervisord.conf /home/${USER}/supervisord.conf
 
 WORKDIR /home/${USER}/app
 
 # Install UV/python dependencies
 RUN uv python install 3.11
-RUN uv sync --locked --group=prod
+RUN --mount=type=cache,target=${UV_CACHE_DIR},id=uv-cache \
+    uv sync --locked --group=prod
 
 # TODO less aggrssive permissions ?
 # Set permissions on UV and NPM directories
@@ -83,14 +79,13 @@ RUN \
     find ${UV_PYTHON_INSTALL_DIR} -print0 | xargs -0 -P ${N_PROCESS} chmod a+rX & \
     wait
 
-# Must match the PORT in docker.sh
-EXPOSE ${PORT}
-
 RUN mkdir -p /home/${USER}/app/staticfiles && chown ${USER}:${USER} /home/${USER}/app/staticfiles
 COPY --from=svelte_build --chown=${USER}:${USER} /app/shared/static/dist/ /home/${USER}/app/shared/static/dist/
 
-COPY --chown=${USER} docker/manage.sh /home/${USER}/manage.sh
+COPY --from=conf --chown=${USER} manage.sh /home/${USER}/manage.sh
 RUN chmod +x /home/${USER}/manage.sh
+
+EXPOSE ${PORT}
 
 # Launch app
 CMD /home/${USER}/manage.sh && \

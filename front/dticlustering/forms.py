@@ -4,7 +4,6 @@ from shared.forms import HiddenJsonField
 from .models import DTIClustering, SavedClustering
 from tasking.forms import AbstractTaskOnCropsForm
 
-
 LEARNING_RATE_CHOICES = [
     (1e-5, "0.00001 (Minimum)"),
     (5e-5, "0.00005 (Very Slow)"),

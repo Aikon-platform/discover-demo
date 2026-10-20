@@ -3,25 +3,27 @@
 {% block form_content %}
     {% include "demowebsite/dataset_baseform.html" with excluded_fields="squarify,h_margin,v_margin,metadata" %}
 
-    <h4 class="mt-4 mb-2">Post-processing</h4>
-    <hr class="mt-0 mb-1">
+    <div class="mt-5">
+        <h3 class="title mb-2">Post-processing</h4>
+        <hr class="mt-0 mb-1">
 
-    <div class="columns is-flex is-align-items-center is-justify-content-space-between pb-2 m-0">
-        <div class="column pl-0 pt-0 is-one-fifth">
-            <div class="field ">
-                <div class="pb-1">
-                    <label for="id_squarify" class="label">
-                        Resize
-                    </label>
+        <div class="columns is-flex is-align-items-center is-justify-content-space-between pb-2 m-0">
+            <div class="column pl-0 pt-0 is-one-fifth">
+                <div class="field ">
+                    <div class="pb-1">
+                        <label for="id_squarify" class="label">
+                            Resize
+                        </label>
+                    </div>
+                    {% include "includes/form/form_field.html" with field=form.squarify %}
                 </div>
-                {% include "includes/form/form_field.html" with field=form.squarify %}
             </div>
-        </div>
-        <div class="column">
-            {% include "includes/form/form_field.html" with field=form.h_margin %}
-        </div>
-        <div class="column pr-0">
-            {% include "includes/form/form_field.html" with field=form.v_margin %}
+            <div class="column">
+                {% include "includes/form/form_field.html" with field=form.h_margin %}
+            </div>
+            <div class="column pr-0">
+                {% include "includes/form/form_field.html" with field=form.v_margin %}
+            </div>
         </div>
     </div>
 {% endblock %}

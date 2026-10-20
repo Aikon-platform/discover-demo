@@ -10,7 +10,9 @@ class WatermarksPipelineForm(AbstractPipelineOnDatasetForm):
     class Meta(AbstractPipelineOnDatasetForm.Meta):
         model = WatermarksPipeline
         fields = AbstractPipelineOnDatasetForm.Meta.fields + (
-            "analysis_type", "need_regions", "query_target_index"
+            "analysis_type",
+            "need_regions",
+            "query_target_index",
         )
 
     query_target_index = forms.ModelChoiceField(
@@ -22,18 +24,21 @@ class WatermarksPipelineForm(AbstractPipelineOnDatasetForm):
     )
 
     are_sketches = forms.BooleanField(
-        label="The images are (Briquet) sketches",
-        required=False
+        label="The images are (Briquet) sketches", required=False
     )
 
     def __init__(self, *args, **kwargs):
         selected_index = kwargs.pop("query_target_index", None)
         analysis_type = kwargs.pop("analysis_type", None)
         super().__init__(*args, **kwargs)
-        query_index_queryset = Index.available_indexes(self._user).filter(feat_net__contains=WATERMARKS_FEAT_NET)
+        query_index_queryset = Index.available_indexes(self._user).filter(
+            feat_net__contains=WATERMARKS_FEAT_NET
+        )
 
         self.fields["query_target_index"].queryset = query_index_queryset
-        self.fields["query_target_index"].widget.set_index_to_name_map(query_index_queryset)  # to set custom HTML attributes with extra data
+        self.fields["query_target_index"].widget.set_index_to_name_map(
+            query_index_queryset
+        )  # to set custom HTML attributes with extra data
         self.fields["query_target_index"].initial = selected_index
         self.fields["analysis_type"].initial = analysis_type or ""
 

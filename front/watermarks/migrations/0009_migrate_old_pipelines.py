@@ -5,12 +5,13 @@ from django.db import migrations, models
 import django.db.models.deletion
 import uuid
 
+
 # migrate old Pipelines to new WatermarksPipeline
 def migrate_pipelines(apps, schema_editor):
-    Pipeline = apps.get_model('pipelines', 'Pipeline')
-    WatermarksPipeline = apps.get_model('watermarks', 'WatermarksPipeline')
-    Regions = apps.get_model('regions', 'Regions')
-    Similarity = apps.get_model('similarity', 'Similarity')
+    Pipeline = apps.get_model("pipelines", "Pipeline")
+    WatermarksPipeline = apps.get_model("watermarks", "WatermarksPipeline")
+    Regions = apps.get_model("regions", "Regions")
+    Similarity = apps.get_model("similarity", "Similarity")
     for pipeline in Pipeline.objects.all():
         regions_task_id = pipeline.regions_task_id
         similarity_task_id = pipeline.similarity_task_id
@@ -24,7 +25,7 @@ def migrate_pipelines(apps, schema_editor):
             similarity_task = Similarity.objects.get(pk=similarity_task_id)
         except Similarity.DoesNotExist:
             similarity_task = None
-        
+
         new_pipeline = WatermarksPipeline.objects.create(
             analysis_type="similarity",
             need_regions=True,
@@ -54,24 +55,25 @@ def migrate_pipelines(apps, schema_editor):
             similarity_task.watermarks_pipeline = new_pipeline
             similarity_task.save()
 
+
 class Migration(migrations.Migration):
 
     dependencies = [
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
-        ('watermarks', '0008_watermarkspipelines'),
-        ('regions', '0007_watermarkspipelines'),
-        ('similarity', '0005_watermarkspipelines'),
-        ('dticlustering', '0013_watermarkspipelines'),
-        ('search', '0003_watermarkspipelines'),
-        ('pipelines', '0002_pipeline_finished_on'),
+        ("watermarks", "0008_watermarkspipelines"),
+        ("regions", "0007_watermarkspipelines"),
+        ("similarity", "0005_watermarkspipelines"),
+        ("dticlustering", "0013_watermarkspipelines"),
+        ("search", "0003_watermarkspipelines"),
+        ("pipelines", "0002_pipeline_finished_on"),
     ]
 
     operations = [
         migrations.RunPython(migrate_pipelines),
         migrations.DeleteModel(
-            name='WatermarkProcessing',
+            name="WatermarkProcessing",
         ),
         migrations.DeleteModel(
-            name='WatermarksSource',
+            name="WatermarksSource",
         ),
     ]

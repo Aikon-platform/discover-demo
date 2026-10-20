@@ -4,6 +4,7 @@ from tasking.forms import AbstractTaskOnCropsForm
 from django import forms
 from .widgets import IndexRadioSelect
 
+
 class IndexingForm(AbstractTaskOnCropsForm):
     """Form for creating indexing tasks."""
 
@@ -34,7 +35,11 @@ class IndexingForm(AbstractTaskOnCropsForm):
 
         parameters = {
             "feat_net": self.cleaned_data["feat_net"],
-            "transpositions": ["none"] if not self.cleaned_data["use_transpositions"] else ["none", "hflip"]
+            "transpositions": (
+                ["none"]
+                if not self.cleaned_data["use_transpositions"]
+                else ["none", "hflip"]
+            ),
         }
         instance.parameters = parameters
 
@@ -42,6 +47,7 @@ class IndexingForm(AbstractTaskOnCropsForm):
             instance.save()
 
         return instance
+
 
 class IndexEditForm(forms.ModelForm):
     class Meta:
@@ -53,13 +59,14 @@ class IndexEditForm(forms.ModelForm):
             "description": "Description of the index",
         }
 
+
 class QueryForm(AbstractTaskOnCropsForm):
     """Form for creating query tasks."""
 
     class Meta(AbstractTaskOnCropsForm.Meta):
         model = Query
         fields = AbstractTaskOnCropsForm.Meta.fields + ("target_index",)
-    
+
     target_index = forms.ModelChoiceField(
         queryset=Index.objects.filter(public=True),
         label="Index",
@@ -86,7 +93,8 @@ class QueryForm(AbstractTaskOnCropsForm):
 
         parameters = {
             "transpositions": (
-                ["none"] if not self.cleaned_data["use_transpositions"]
+                ["none"]
+                if not self.cleaned_data["use_transpositions"]
                 else ["none", "rot90", "rot180", "rot270"]
             )
         }

@@ -7,28 +7,23 @@ DEBUG = False
 SECRET_KEY = ENV("SECRET_KEY")
 
 ADMIN_EMAIL = ENV("ADMIN_EMAIL")
-ADMINS = [(ENV("ADMIN_NAME"), ADMIN_EMAIL)]
-
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.postgresql",
-        "NAME": ENV.str("POSTGRES_DB", default="demowebsite"),
-        "USER": ENV.str("POSTGRES_USER", default="demowebsite"),
-        "PASSWORD": ENV.str("POSTGRES_PASSWORD"),
-        "HOST": ENV.str("DB_HOST", default="db"),
-        "PORT": ENV.str("DB_PORT", default="5432"),
-    }
-}
+ADMINS = [(ENV("POSTGRES_USER"), ADMIN_EMAIL)]
 
 API_URL = ENV("PROD_API_URL")
-BASE_URL = ENV("BASE_URL", default="https://aikon-demo.enpc.fr/")
-DOMAIN_NAME = urlparse(BASE_URL).netloc
+BASE_URL = ENV("PROD_URL", default="")
 
 if ENV.bool("IS_API_ON_SAME_SERVER", default=False):
     DOCKER_PORT = ENV.int("DJANGO_PORT", 8000)
     INTERNAL_URL = f"http://web:{DOCKER_PORT}"
 else:
     INTERNAL_URL = BASE_URL
+
+# URL for the API to send HTTP requests to the Django app
+# if the API is dockerized with the frontend, container name is used;
+# otherwise, a localhost URL or actual URL will be used
+APP_URL_FROM_API = ENV.str("APP_URL_FROM_API", default=BASE_URL)
+
+DOMAIN_NAME = urlparse(BASE_URL).netloc
 
 hosts = ENV.list("ALLOWED_HOSTS", default=[]) + [DOMAIN_NAME, "localhost"]
 hosts += ["web"]  # for docker nginx service

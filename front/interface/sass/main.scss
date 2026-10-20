@@ -68,8 +68,9 @@ a {
 .centerwrap {
     max-width: 900px;
     width: 100%;
-    margin: 1% auto;
-    padding-top: 2em;
+    margin: 1% auto;/* 
+    padding-top: 2em; */
+    padding-top: 0.5em;
 }
 
 .hidden {
@@ -294,6 +295,7 @@ ul.messages {
     display: flex;
     width: 100%;
     align-items: center;
+    font-size: var(--bulma-size-small);
 
     .pagination-list {
         flex: 1;

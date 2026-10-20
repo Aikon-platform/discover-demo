@@ -69,7 +69,6 @@ Thumbs.db
 .env.prod
 .env.dev
 .venv
-supervisord.conf
 .*hash
 env/
 venv/
@@ -102,5 +101,6 @@ node_modules/
 front/shared/static/dist/main.css.map
 front/shared/static/dist/*
 
-nginx_conf
-nginx_ssl
+**/nginx.conf
+**/nginx_conf
+**/nginx_ssl

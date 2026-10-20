@@ -6,13 +6,21 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('watermarks', '0009_migrate_old_pipelines'),
+        ("watermarks", "0009_migrate_old_pipelines"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='watermarkspipeline',
-            name='analysis_type',
-            field=models.CharField(choices=[('similarity', 'Compare watermarks inside dataset'), ('indexing', 'Index this dataset for future queries'), ('query', 'Search inside an indexed dataset')], max_length=10, verbose_name='Analysis type'),
+            model_name="watermarkspipeline",
+            name="analysis_type",
+            field=models.CharField(
+                choices=[
+                    ("similarity", "Compare watermarks inside dataset"),
+                    ("indexing", "Index this dataset for future queries"),
+                    ("query", "Search inside an indexed dataset"),
+                ],
+                max_length=10,
+                verbose_name="Analysis type",
+            ),
         ),
     ]

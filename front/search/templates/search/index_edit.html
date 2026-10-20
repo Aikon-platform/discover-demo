@@ -3,9 +3,8 @@
 {% block title %}Start a new {{ task_name }} task{% endblock %}
 
 {% block content %}
+{% include "includes/breadcrumbs.html" %}
 <div class="centerwrap">
-
-    {% include "includes/breadcrumbs.html" %}
 
     <h1 class="is-title is-size-2 py-3">Edit index {{ object.name }}</h1>
     <form action="" method="post" enctype="multipart/form-data">

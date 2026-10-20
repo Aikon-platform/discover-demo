@@ -6,13 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('watermarks', '0006_watermarkprocessing_dataset_and_more'),
+        ("watermarks", "0006_watermarkprocessing_dataset_and_more"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='watermarkprocessing',
-            name='finished_on',
+            model_name="watermarkprocessing",
+            name="finished_on",
             field=models.DateTimeField(blank=True, editable=False, null=True),
         ),
     ]

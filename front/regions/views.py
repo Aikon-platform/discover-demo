@@ -65,8 +65,8 @@ class RegionsDownloadZip(View):
             # disable nginx buffering for this route. this avoids timeouts
             # when sending a large amount of data, which can happen here
             # since we zip images.
-            response['X-Accel-Buffering'] = 'no'
-            response['Cache-Control'] = 'no-cache'
+            response["X-Accel-Buffering"] = "no"
+            response["Cache-Control"] = "no-cache"
             return response
 
         except Regions.DoesNotExist:

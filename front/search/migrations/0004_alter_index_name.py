@@ -6,13 +6,15 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('search', '0003_watermarkspipelines'),
+        ("search", "0003_watermarkspipelines"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='index',
-            name='name',
-            field=models.CharField(blank=True, default=None, max_length=511, unique=True),
+            model_name="index",
+            name="name",
+            field=models.CharField(
+                blank=True, default=None, max_length=511, unique=True
+            ),
         ),
     ]

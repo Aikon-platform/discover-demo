@@ -1,4 +1,5 @@
 import json
+from urllib.parse import urlsplit
 from stat import S_IFREG
 from stream_zip import ZIP_64, ZIP_32, stream_zip
 from typing import List, Tuple, Iterable, Generator, Union
@@ -6,6 +7,9 @@ from typing import List, Tuple, Iterable, Generator, Union
 from pathlib import Path
 import os
 from datetime import datetime
+
+from demowebsite.settings import BASE_URL, API_URL, APP_URL_FROM_API
+
 
 TPath = Union[str, Path]
 
@@ -35,9 +39,9 @@ def zip_on_the_fly(files: List[Tuple[str, TPath]]) -> Iterable[bytes]:
             while chunk := f.read(65536):
                 yield chunk
 
-    def iter_files() -> Generator[
-        Tuple[str, int, int, int, Generator[bytes, None, None]], None, None
-    ]:
+    def iter_files() -> (
+        Generator[Tuple[str, int, int, int, Generator[bytes, None, None]], None, None]
+    ):
         for i, (name, path) in enumerate(files):
             # NOTE: we zip the 1st file with ZIP_32, the others with ZIP_64.
             # on MacOS Safari, "Open after downloading", if the 1st file in the zip
@@ -48,7 +52,7 @@ def zip_on_the_fly(files: List[Tuple[str, TPath]]) -> Iterable[bytes]:
             # - max size of a single file in the zip is 4GB
             # see warnings on ZIP_64 here: https://stream-zip.docs.trade.gov.uk/api/methods/#the-64-methods
             # NOTE: only possible pitfall: if the 1st file is >4GB, it can't be zipped with ZIP_32 => archive creation will fail.
-            zip_type = ZIP_32 if i==0 else ZIP_64
+            zip_type = ZIP_32 if i == 0 else ZIP_64
             if not os.path.exists(path):
                 print(f"File {path} does not exist")
                 continue
@@ -80,3 +84,43 @@ def pprint(o):
             return dict_str
     else:
         return str(o)
+
+
+def get_url_host_and_scheme(url: str) -> str:
+    """
+    return 'scheme://host' or 'scheme://host:port' (port only if explicit).
+    works for local, domain-names and docker URLs.
+    """
+    parts = urlsplit(url)
+    if not parts.scheme or not parts.hostname:
+        raise ValueError(f"not an absolute URL with a host: {url!r}")
+
+    host = parts.hostname # lowercased, IPv6 brackets stripped
+    if ":" in host:       # IPv6 literal needs brackets back
+        host = f"[{host}]"
+
+    port = parts.port      # int or None; raises ValueError if invalid
+    base = f"{parts.scheme}://{host}"
+    return f"{base}:{port}" if port is not None else base
+
+
+def rewrite_front_url_for_api(front_url: str) -> str:
+    """
+    rewrite an URL to the front so that it can be reached fron API when mode==local
+    (in these cases, the api URL should be: `http://front:$FRONT_PORT` since API and front
+    are bundled in a docker network)
+    """
+    front_url = front_url.replace(BASE_URL, APP_URL_FROM_API)
+    return front_url
+
+
+@staticmethod
+def rewrite_api_url_for_front(api_url: str) -> str:
+    """
+    rewrite an URL to the api so that it can be reached from the front when mode==local
+    (in these cases, the front URL should be: `http://api:$API_PORT` since API and front
+    are bundled in a docker network)
+    """
+    api_url = api_url.replace(get_url_host_and_scheme(api_url), API_URL)
+    return api_url
+

@@ -96,7 +96,10 @@ class DatasetMainView(DatasetMixin, DetailView):
 
     template_name = "datasets/view.html"
 
-class DatasetAddMetadataView(DatasetMixin, LoginRequiredIfConfProtectedMixin, UpdateView):
+
+class DatasetAddMetadataView(
+    DatasetMixin, LoginRequiredIfConfProtectedMixin, UpdateView
+):
     """
     Add metadata to a dataset
     """

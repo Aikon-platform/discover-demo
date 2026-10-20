@@ -6,28 +6,28 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('pipelines', '0002_pipeline_finished_on'),
-        ('watermarks', '0009_migrate_old_pipelines'),
+        ("pipelines", "0002_pipeline_finished_on"),
+        ("watermarks", "0009_migrate_old_pipelines"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='pipeline',
-            name='dataset',
+            model_name="pipeline",
+            name="dataset",
         ),
         migrations.RemoveField(
-            model_name='pipeline',
-            name='regions_task',
+            model_name="pipeline",
+            name="regions_task",
         ),
         migrations.RemoveField(
-            model_name='pipeline',
-            name='requested_by',
+            model_name="pipeline",
+            name="requested_by",
         ),
         migrations.RemoveField(
-            model_name='pipeline',
-            name='similarity_task',
+            model_name="pipeline",
+            name="similarity_task",
         ),
         migrations.DeleteModel(
-            name='Pipeline',
+            name="Pipeline",
         ),
     ]

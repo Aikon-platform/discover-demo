@@ -29,9 +29,9 @@ class TaskMixin:
         context["app_name"] = self.model.django_app_name
         context["task_data"] = self.task_data
         context["url_prefix"] = self.model.url_prefix
-        context[
-            "results_template"
-        ] = f"{self.model.url_prefix.replace(':','/')}results.html"
+        context["results_template"] = (
+            f"{self.model.url_prefix.replace(':','/')}results.html"
+        )
         return context
 
 
@@ -309,9 +309,9 @@ class TaskByDatasetList(TaskListView):
 
     def get_context_data(self, **kwargs) -> dict[str, Any]:
         context = super().get_context_data(**kwargs)
-        context[
-            "filter"
-        ] = f"{context['task_name']} results on dataset {self.kwargs['dataset_pk']}"
+        context["filter"] = (
+            f"{context['task_name']} results on dataset {self.kwargs['dataset_pk']}"
+        )
         return context
 
 
@@ -341,9 +341,11 @@ class ClearOldResultsView(LoginRequiredIfConfProtectedMixin, TaskMixin, View):
         if output is None or output.get("error"):
             messages.error(
                 self.request,
-                output["error"]
-                if output
-                else "Unknown error when clearing old experiments",
+                (
+                    output["error"]
+                    if output
+                    else "Unknown error when clearing old experiments"
+                ),
             )
         else:
             output_str = " / ".join(

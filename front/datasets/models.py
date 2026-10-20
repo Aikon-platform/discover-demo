@@ -19,7 +19,7 @@ from django.conf import settings
 from django.db.models.signals import pre_delete
 from django.dispatch.dispatcher import receiver
 
-from shared.utils import pprint
+from shared.utils import pprint, rewrite_api_url_for_front, rewrite_front_url_for_api
 from .utils import PathAndRename, IMG_EXTENSIONS, unzip_on_the_fly, sanitize_str
 from .fields import URLListModelField
 
@@ -352,7 +352,12 @@ class Dataset(AbstractDataset):
         return sum(len(doc.images) for doc in self.documents)
 
     def documents_for_api(self) -> List[Dict]:
-        return [doc.to_dict() for doc in self.documents]
+        def update_url(d: dict) -> dict:
+            d["src"] = rewrite_front_url_for_api(d["src"])
+            return d
+        docs = [update_url(doc.to_dict()) for doc in self.documents]
+        # docs = [doc.to_dict() for doc in self.documents]
+        return docs
 
     def download_from_api(self, doc_to_extract=None) -> None:
         if len(doc_to_extract) == 0:
@@ -673,7 +678,7 @@ class Dataset(AbstractDataset):
         if self.metadata_file:
             return self.full_path / "metadata.json"
         return None
-    
+
     @property
     def cleaned_metadata_url(self) -> str:
         path = self.cleaned_metadata_path
@@ -687,7 +692,7 @@ class Dataset(AbstractDataset):
         """
         if not self.metadata_file:
             return
-        
+
         with open(self.metadata_file.path, "r") as f:
             reader = csv.reader(f)
             rows = list(reader)
@@ -712,19 +717,18 @@ class Dataset(AbstractDataset):
 
         def clean_source(row):
             source = {
-                "name": row[col_title-1],
-                "description": row[col_desc-1],
-                "url": row[col_url-1] if col_url is not None else None,
+                "name": row[col_title - 1],
+                "description": row[col_desc - 1],
+                "url": row[col_url - 1] if col_url is not None else None,
                 "metadata": {
-                    k: v for i, (k, v) in enumerate(zip(labels[1:], row)) if normalized_labels[i+1] not in ["title", "description", "url"]
-                }
+                    k: v
+                    for i, (k, v) in enumerate(zip(labels[1:], row))
+                    if normalized_labels[i + 1] not in ["title", "description", "url"]
+                },
             }
             return source
 
-        sources = {
-            key: clean_source(row)
-            for key, *row in rows[1:]
-        }
+        sources = {key: clean_source(row) for key, *row in rows[1:]}
         max_keylen = max(len(key) for key in sources.keys())
 
         images = [im for doc in self.documents for im in doc.images]
@@ -738,20 +742,24 @@ class Dataset(AbstractDataset):
                     return path[:k]
             return None
 
-        image_matches = {
-            str(im.src): best_match(str(im.src)) for im in images
-        }
+        image_matches = {str(im.src): best_match(str(im.src)) for im in images}
 
         if not any(matched_sources.values()):
-            print("Some metadata keys were not matched:", [k for k, v in matched_sources.items() if not v])
-        
+            print(
+                "Some metadata keys were not matched:",
+                [k for k, v in matched_sources.items() if not v],
+            )
+
         self.cleaned_metadata_path.parent.mkdir(parents=True, exist_ok=True)
         with open(self.cleaned_metadata_path, "w") as f:
             json.dump(
                 {
-                    "sources": {k:v for k,v in sources.items() if matched_sources[k]}, 
-                    "mapping": image_matches
-                }, f)
+                    "sources": {k: v for k, v in sources.items() if matched_sources[k]},
+                    "mapping": image_matches,
+                },
+                f,
+            )
+
 
 @receiver(pre_delete, sender=Dataset)
 def delete_dataset_files(sender, instance: Dataset, **kwargs):

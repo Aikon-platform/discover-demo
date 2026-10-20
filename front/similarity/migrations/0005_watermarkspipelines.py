@@ -4,22 +4,27 @@ from django.db import migrations, models
 import django.db.models.deletion
 
 
-
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('similarity', '0004_alter_similarity_crops'),
-        ('watermarks', '0008_watermarkspipelines'),
+        ("similarity", "0004_alter_similarity_crops"),
+        ("watermarks", "0008_watermarkspipelines"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='similarity',
-            name='pipeline',
+            model_name="similarity",
+            name="pipeline",
         ),
         migrations.AddField(
-            model_name='similarity',
-            name='watermarks_pipeline',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='+', to='watermarks.watermarkspipeline'),
+            model_name="similarity",
+            name="watermarks_pipeline",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="+",
+                to="watermarks.watermarkspipeline",
+            ),
         ),
     ]

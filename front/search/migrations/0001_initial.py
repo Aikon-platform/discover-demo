@@ -11,76 +11,240 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
-        ('regions', '0006_regions_finished_on'),
-        ('datasets', '0005_delete_zippeddataset_remove_dataset_format_and_more'),
-        ('pipelines', '0002_pipeline_finished_on'),
+        ("regions", "0006_regions_finished_on"),
+        ("datasets", "0005_delete_zippeddataset_remove_dataset_format_and_more"),
+        ("pipelines", "0002_pipeline_finished_on"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='Index',
+            name="Index",
             fields=[
-                ('id', models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True, serialize=False)),
-                ('name', models.CharField(blank=True, default='', max_length=511)),
-                ('index_id', models.CharField(db_index=True, max_length=511)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('use_transpositions', models.BooleanField(blank=True, default=False)),
-                ('public', models.BooleanField(blank=True, default=False)),
-                ('dataset', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='search_index', to='datasets.dataset')),
+                (
+                    "id",
+                    models.UUIDField(
+                        default=uuid.uuid4,
+                        editable=False,
+                        primary_key=True,
+                        serialize=False,
+                    ),
+                ),
+                ("name", models.CharField(blank=True, default="", max_length=511)),
+                ("index_id", models.CharField(db_index=True, max_length=511)),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("use_transpositions", models.BooleanField(blank=True, default=False)),
+                ("public", models.BooleanField(blank=True, default=False)),
+                (
+                    "dataset",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="search_index",
+                        to="datasets.dataset",
+                    ),
+                ),
             ],
         ),
         migrations.CreateModel(
-            name='Query',
+            name="Query",
             fields=[
-                ('id', models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True, serialize=False)),
-                ('name', models.CharField(blank=True, help_text='Optional name to identify this search/query experiment', max_length=64, verbose_name='Experiment name')),
-                ('notify_email', models.BooleanField(blank=True, default=True, help_text='Send an email when the search/query task is finished', verbose_name='Notify by email')),
-                ('status', models.CharField(default='PENDING', editable=False, max_length=20)),
-                ('is_finished', models.BooleanField(default=False, editable=False)),
-                ('requested_on', models.DateTimeField(auto_now_add=True)),
-                ('finished_on', models.DateTimeField(blank=True, editable=False, null=True)),
-                ('parameters', models.JSONField(null=True)),
-                ('api_tracking_id', models.UUIDField(editable=False, null=True)),
-                ('crops', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='+', to='regions.regions', verbose_name='Use crops from...')),
-                ('dataset', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='search_query_tasks', to='datasets.dataset', verbose_name='Use existing dataset...')),
-                ('pipeline', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='search_query_tasks', to='pipelines.pipeline')),
-                ('requested_by', models.ForeignKey(editable=False, null=True, on_delete=django.db.models.deletion.SET_NULL, to=settings.AUTH_USER_MODEL)),
-                ('target_index', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='queries', to='search.index')),
+                (
+                    "id",
+                    models.UUIDField(
+                        default=uuid.uuid4,
+                        editable=False,
+                        primary_key=True,
+                        serialize=False,
+                    ),
+                ),
+                (
+                    "name",
+                    models.CharField(
+                        blank=True,
+                        help_text="Optional name to identify this search/query experiment",
+                        max_length=64,
+                        verbose_name="Experiment name",
+                    ),
+                ),
+                (
+                    "notify_email",
+                    models.BooleanField(
+                        blank=True,
+                        default=True,
+                        help_text="Send an email when the search/query task is finished",
+                        verbose_name="Notify by email",
+                    ),
+                ),
+                (
+                    "status",
+                    models.CharField(default="PENDING", editable=False, max_length=20),
+                ),
+                ("is_finished", models.BooleanField(default=False, editable=False)),
+                ("requested_on", models.DateTimeField(auto_now_add=True)),
+                (
+                    "finished_on",
+                    models.DateTimeField(blank=True, editable=False, null=True),
+                ),
+                ("parameters", models.JSONField(null=True)),
+                ("api_tracking_id", models.UUIDField(editable=False, null=True)),
+                (
+                    "crops",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name="+",
+                        to="regions.regions",
+                        verbose_name="Use crops from...",
+                    ),
+                ),
+                (
+                    "dataset",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name="search_query_tasks",
+                        to="datasets.dataset",
+                        verbose_name="Use existing dataset...",
+                    ),
+                ),
+                (
+                    "pipeline",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name="search_query_tasks",
+                        to="pipelines.pipeline",
+                    ),
+                ),
+                (
+                    "requested_by",
+                    models.ForeignKey(
+                        editable=False,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
+                (
+                    "target_index",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="queries",
+                        to="search.index",
+                    ),
+                ),
             ],
             options={
-                'abstract': False,
+                "abstract": False,
             },
         ),
         migrations.CreateModel(
-            name='Indexing',
+            name="Indexing",
             fields=[
-                ('id', models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True, serialize=False)),
-                ('name', models.CharField(blank=True, help_text='Optional name to identify this search/indexing experiment', max_length=64, verbose_name='Experiment name')),
-                ('notify_email', models.BooleanField(blank=True, default=True, help_text='Send an email when the search/indexing task is finished', verbose_name='Notify by email')),
-                ('status', models.CharField(default='PENDING', editable=False, max_length=20)),
-                ('is_finished', models.BooleanField(default=False, editable=False)),
-                ('requested_on', models.DateTimeField(auto_now_add=True)),
-                ('finished_on', models.DateTimeField(blank=True, editable=False, null=True)),
-                ('parameters', models.JSONField(null=True)),
-                ('api_tracking_id', models.UUIDField(editable=False, null=True)),
-                ('crops', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='+', to='regions.regions', verbose_name='Use crops from...')),
-                ('dataset', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='search_indexing_tasks', to='datasets.dataset', verbose_name='Use existing dataset...')),
-                ('pipeline', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='search_indexing_tasks', to='pipelines.pipeline')),
-                ('requested_by', models.ForeignKey(editable=False, null=True, on_delete=django.db.models.deletion.SET_NULL, to=settings.AUTH_USER_MODEL)),
+                (
+                    "id",
+                    models.UUIDField(
+                        default=uuid.uuid4,
+                        editable=False,
+                        primary_key=True,
+                        serialize=False,
+                    ),
+                ),
+                (
+                    "name",
+                    models.CharField(
+                        blank=True,
+                        help_text="Optional name to identify this search/indexing experiment",
+                        max_length=64,
+                        verbose_name="Experiment name",
+                    ),
+                ),
+                (
+                    "notify_email",
+                    models.BooleanField(
+                        blank=True,
+                        default=True,
+                        help_text="Send an email when the search/indexing task is finished",
+                        verbose_name="Notify by email",
+                    ),
+                ),
+                (
+                    "status",
+                    models.CharField(default="PENDING", editable=False, max_length=20),
+                ),
+                ("is_finished", models.BooleanField(default=False, editable=False)),
+                ("requested_on", models.DateTimeField(auto_now_add=True)),
+                (
+                    "finished_on",
+                    models.DateTimeField(blank=True, editable=False, null=True),
+                ),
+                ("parameters", models.JSONField(null=True)),
+                ("api_tracking_id", models.UUIDField(editable=False, null=True)),
+                (
+                    "crops",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name="+",
+                        to="regions.regions",
+                        verbose_name="Use crops from...",
+                    ),
+                ),
+                (
+                    "dataset",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name="search_indexing_tasks",
+                        to="datasets.dataset",
+                        verbose_name="Use existing dataset...",
+                    ),
+                ),
+                (
+                    "pipeline",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name="search_indexing_tasks",
+                        to="pipelines.pipeline",
+                    ),
+                ),
+                (
+                    "requested_by",
+                    models.ForeignKey(
+                        editable=False,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
             ],
             options={
-                'abstract': False,
+                "abstract": False,
             },
         ),
         migrations.AddField(
-            model_name='index',
-            name='from_task',
-            field=models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, related_name='index', to='search.indexing'),
+            model_name="index",
+            name="from_task",
+            field=models.OneToOneField(
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="index",
+                to="search.indexing",
+            ),
         ),
         migrations.AddField(
-            model_name='index',
-            name='owner',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='search_index', to=settings.AUTH_USER_MODEL),
+            model_name="index",
+            name="owner",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="search_index",
+                to=settings.AUTH_USER_MODEL,
+            ),
         ),
     ]
