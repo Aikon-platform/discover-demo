@@ -178,7 +178,9 @@ def AbstractTask(task_prefix: str):
             eval: TypeDurationEval = (
                 "short"
                 if delta < timedelta(minutes=30)
-                else "mid" if delta < timedelta(minutes=120) else "long"
+                else "mid"
+                if delta < timedelta(minutes=120)
+                else "long"
             )
             return {"delta": delta, "eval": eval}
 

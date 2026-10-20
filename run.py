@@ -31,7 +31,11 @@ WIN = os.name == "nt"
 # frontend processes in dev (to have the webapp running on localhost)
 DEV_PROCS = [
     ("django", ["uv", "run", "manage.py", "runserver", "0.0.0.0:{DJANGO_PORT}"], FRONT),
-    ("dramatiq", ["uv", "run", "manage.py", "rundramatiq", "-t", "1", "-p", "1"], FRONT),
+    (
+        "dramatiq",
+        ["uv", "run", "manage.py", "rundramatiq", "-t", "1", "-p", "1"],
+        FRONT,
+    ),
 ]
 
 
@@ -134,9 +138,7 @@ def api_dev_procs() -> list:
 # run loop for all processes running on host in dev mode (frontend + api)
 def run_dev() -> None:
     kill_stale("manage.py rundramatiq", "manage.py runserver")
-    procs_def = [
-        (name, cmd, cwd, None) for name, cmd, cwd in DEV_PROCS
-    ]
+    procs_def = [(name, cmd, cwd, None) for name, cmd, cwd in DEV_PROCS]
     if (API / "run.py").exists():
         procs_def += api_dev_procs()
     procs = {name: spawn(name, cmd, cwd, env) for name, cmd, cwd, env in procs_def}
@@ -208,10 +210,11 @@ if __name__ == "__main__":
         else:
             port = ENV.get("NGINX_PORT", "8080")
             url = (
-                f"https://{ENV['PROD_URL']}" if ENV["MODE"] == "prod" else f"http://localhost:{port}"
+                f"https://{ENV['PROD_URL']}"
+                if ENV["MODE"] == "prod"
+                else f"http://localhost:{port}"
             )
             print(f"→ {url} (stop with `python run.py down`)")
     else:
         print(f"❌ Unknown action: '{action}' !")
         print(__doc__)
-

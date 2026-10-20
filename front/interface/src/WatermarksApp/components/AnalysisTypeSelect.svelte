@@ -33,4 +33,3 @@
         <span>I have a <b>set</b> of watermarks that I want to <b>compare</b> to each other</span>
     </ToggleGroup.Item>
 </ToggleGroup.Root>
-

@@ -117,6 +117,7 @@ def setup_dev(v: dict) -> None:
     ensure_docker_db_credentials(v)
     sh([uv, "run", "manage.py", "migrate"], cwd=FRONT_APP)
     sh([uv, "run", "manage.py", "create_superuser_check"], cwd=FRONT_APP)
+    sh(["pre-commit", "install"])
     print("\n✅ dev setup complete. Start everything with:  python run.py")
 
 

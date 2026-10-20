@@ -136,4 +136,3 @@ fresh_shell() {
         exec zsh
     fi
 }
-

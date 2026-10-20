@@ -27,7 +27,7 @@
 
     const name_provider = new NameProvider();
     setNameProvider(name_provider);
-    
+
     onMount(() => {
         Promise.all([
             fetch(source_index_url).then(response => response.json()),

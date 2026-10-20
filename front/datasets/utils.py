@@ -151,7 +151,8 @@ class TreeDict:
             else ""
         )
 
-        dir_to_html = lambda dir: f"""
+        dir_to_html = (
+            lambda dir: f"""
             <li>{dir["curdir"]}/
                 <ul>
                     {filearray_to_html(dir["files"])}
@@ -159,6 +160,7 @@ class TreeDict:
                 </ul>
             </li>
         """
+        )
         return f"<ul>{dir_to_html(self.tree)}</ul>"
 
     # as pre

@@ -46,9 +46,9 @@ INTERNAL_PORTS = {"DB_PORT": "5432", "REDIS_PORT": "6379"}
 SEPARATOR = ";" if platform.system() == "Windows" else ":"
 
 COMPOSE_FILES = {
-    "dev":   f"compose.yml{SEPARATOR}compose.dev.yml",
+    "dev": f"compose.yml{SEPARATOR}compose.dev.yml",
     "local": f"compose.yml{SEPARATOR}compose.local.yml",
-    "prod":  f"compose.yml{SEPARATOR}compose.prod.yml",
+    "prod": f"compose.yml{SEPARATOR}compose.prod.yml",
 }
 
 # variables prompted per mode; everything else keeps its default/current value
@@ -151,13 +151,16 @@ def ask_mode() -> str:
 
 def prompt(key: str, default: str, desc: str) -> str:
     hint = f" | {desc}" if desc else ""
-    val = input(f"{key}{hint} (press Enter for default value)\n  [{default or 'empty'}]: ").strip()
+    val = input(
+        f"{key}{hint} (press Enter for default value)\n  [{default or 'empty'}]: "
+    ).strip()
     return default if not val else "" if val == "x" else val
 
 
 # .ENV GENERATION ****************************************************
 
-def resolve_values(mode: Literal["local","dev","prod"], assume_yes: bool) -> dict:
+
+def resolve_values(mode: Literal["local", "dev", "prod"], assume_yes: bool) -> dict:
     """
     create a dict containing all .env variables and their values,
     inheriting values from the existing .env and from .env.template
@@ -189,7 +192,10 @@ def resolve_values(mode: Literal["local","dev","prod"], assume_yes: bool) -> dic
         if key.endswith("_PORT") and mode != "prod" and key not in env_current:
             free = next_free_port(val)
             if free != int(val):
-                print(f"⚠ port {val} busy → {key}={free} (set {key} in .env to override)", file=sys.stderr)
+                print(
+                    f"⚠ port {val} busy → {key}={free} (set {key} in .env to override)",
+                    file=sys.stderr,
+                )
                 val = free
         v[key] = str(val)
 
@@ -206,7 +212,11 @@ def resolve_values(mode: Literal["local","dev","prod"], assume_yes: bool) -> dic
 def derive(v: dict, mode: str, in_docker: bool) -> dict:
     """set values that depend on the build context (host vs container)."""
     host = lambda svc: svc if in_docker else "localhost"
-    port = lambda key: INTERNAL_PORTS[key] if in_docker and key in INTERNAL_PORTS.keys() else v[key]
+    port = (
+        lambda key: INTERNAL_PORTS[key]
+        if in_docker and key in INTERNAL_PORTS.keys()
+        else v[key]
+    )
     prod = mode == "prod"
     nginx = mode != "dev"  # nginx is the entrypoint whenever the front is containerized
     base = (
@@ -231,18 +241,24 @@ def derive(v: dict, mode: str, in_docker: bool) -> dict:
         "MEDIA_DIR": "/data" if in_docker else f"{v['DATA_DIR']}",
         "BASE_URL": base,
         "APP_URL_FROM_DOCKER": (
-            base if prod
-            else f"http://web:8000:{v['DJANGO_PORT']}" if in_docker
+            base
+            if prod
+            else f"http://web:8000:{v['DJANGO_PORT']}"
+            if in_docker
             else f"http://host.docker.internal:{v['DJANGO_PORT']}"
         ),
         "APP_URL_FROM_API": (
-            base if prod
-            else f"http://web:{v['DJANGO_PORT']}" if in_docker  # local: api container → web
+            base
+            if prod
+            else f"http://web:{v['DJANGO_PORT']}"
+            if in_docker  # local: api container → web
             else f"http://localhost:{v['DJANGO_PORT']}"  # dev: api on host → localhost
         ),
         "API_URL": (
-            v["PROD_API_URL"] if prod
-            else f"http://api:{v['API_PORT']}" if in_docker
+            v["PROD_API_URL"]
+            if prod
+            else f"http://api:{v['API_PORT']}"
+            if in_docker
             else f"http://localhost:{v['API_PORT']}"
         ),
     }
@@ -269,18 +285,21 @@ def write_env(path: Path, variables: dict) -> None:
 
 def generate_nginx_conf(v: dict) -> None:
     # dict of special values to overwrite the .env values
-    overwrite = {
-        "local": {
-            "PROD_URL": "localhost"
-        }
-    }
+    overwrite = {"local": {"PROD_URL": "localhost"}}
     mode = v["MODE"]
 
     def apply_template(template: str) -> str:
         # replace all variables with values + rename file + write template to file
         text = template.read_text()
-        for key in ("DJANGO_PORT", "PROD_URL", "NGINX_PORT", "NGINX_MAX_BODY_SIZE",
-                    "NGINX_TIMEOUT", "SSL_CERTIFICATE", "SSL_KEY"):
+        for key in (
+            "DJANGO_PORT",
+            "PROD_URL",
+            "NGINX_PORT",
+            "NGINX_MAX_BODY_SIZE",
+            "NGINX_TIMEOUT",
+            "SSL_CERTIFICATE",
+            "SSL_KEY",
+        ):
             # 1st, try to replace by hardcoded values in `overwrite``
             if key in overwrite.get(mode, {}).keys():
                 text = text.replace(key, overwrite[mode][key])

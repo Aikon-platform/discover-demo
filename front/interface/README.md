@@ -26,7 +26,7 @@ You can then start the vite compiler from the interface folder:
 pnpm run build --watch # or npm run dev
 ```
 
-This will start a vite server that will provide the js and css files, and update them on-the-go when you modify them. 
+This will start a vite server that will provide the js and css files, and update them on-the-go when you modify them.
 
 ### More efficient development
 

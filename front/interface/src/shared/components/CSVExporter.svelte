@@ -25,7 +25,7 @@
      */
     async function exportDataCSV(): Promise<string> {
         const iter = iterRows();
-        
+
         const lines = [];
         for await (const row of iter) {
             lines.push(row.map((cell) => `"${escapeCSVCell(cell)}"`).join(","));
