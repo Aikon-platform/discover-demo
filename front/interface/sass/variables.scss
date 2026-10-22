@@ -31,6 +31,7 @@ $faded-color: color.adjust($main-color, $saturation: 10%, $lightness: 25%);
 $bg-color: color.adjust($main-color, $saturation: -50%, $lightness: 60%);
 $border-color: color.adjust($bg-color, $saturation: 15%, $lightness: -15%);
 $head-color: $main-color;
+$light-color: $grey;
 $dark-color: color.adjust($head-color, $saturation: -5%, $lightness: -40%);
 $border-radius: 5px;
 $headfont: "Helvetica Neue", Helvetica, Arial, sans-serif;
