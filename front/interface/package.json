@@ -8,7 +8,9 @@
     "build": "vite build",
     "preview": "vite preview",
     "lint": "npx eslint --fix",
-    "check": "svelte-check --tsconfig ./tsconfig.app.json && tsc -p tsconfig.node.json"
+    "check": "svelte-check --tsconfig ./tsconfig.app.json && tsc -p tsconfig.node.json",
+    "sass": "sass --style=compressed --no-source-map --load-path=node_modules sass/main.scss ../shared/static/dist/main.css",
+    "sass:watch": "sass --watch --style=compressed --no-source-map --load-path=node_modules sass/main.scss ../shared/static/dist/main.css"
   },
   "devDependencies": {
     "@eslint/css": "^0.14.1",
