@@ -4,43 +4,15 @@
 {% block title %}Research demos{% endblock %}
 
 {% block content %}
-    <div class="centerwrap container p-5" id="demo-list">
-        <div class="columns is-vcentered">
-            <section class="is-6 column is-large">
-                <h1 class="is-title is-size-2 py-3 is-link">Research demos</h1>
-                <div class="notification is-light">
-                    <p>
-                        These demos were created as part of the <strong>ERC project DISCOVER</strong> funded by the
-                        European Union’s Horizon Europe Research and Innovation program under
-                        grant agreement No. 101076028.
-                    </p>
-                    <div class="message mt-5 is-small">
-                        <div class="message-body">
-                            <p>
-                                Discover project is supported by a network of collaborators:
-                            </p>
-                            <ul>
-                                <li>
-                                    <strong>EiDA</strong>
-                                    (<a href="https://anr.fr/Projet-ANR-22-CE38-0014" class="has-text-link">ANR-22-CE38-0014</a>)
-                                </li>
-                                <li>
-                                    <strong>VHS</strong>
-                                    (<a href="https://anr.fr/Projet-ANR-21-CE38-0008" class="has-text-link">ANR-21-CE38-0008</a>)
-                                </li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-            </section>
-        </div>
-        <div class="columns is-vcentered is-multiline">
+    <div id="home-root"></div>
 
-            {% include "includes/demo-card.html" with demo="dticlustering" demo_title="DTI clustering" demo_subtitle="Group images dataset based on prototype reconstruction" %}
-            {% include "includes/demo-card.html" with demo="watermarks" demo_title="Watermark detection" demo_subtitle="Detect and compare watermarks on historical documents" %}
-            {% include "includes/demo-card.html" with demo="regions" demo_title="Regions extraction" demo_subtitle="Extract visual elements from a document" %}
-            {% include "includes/demo-card.html" with demo="similarity" demo_title="Similarity retrieval" demo_subtitle="Find most similar images in a dataset" %}
+    <script type="text/javascript">
+        document.addEventListener("DOMContentLoaded", () => {
+            console.log(DemoTools);
 
-        </div>
-    </div>
+            DemoTools.initHomeApp(
+                document.getElementById("home-root"),
+            );
+        });
+    </script>
 {% endblock %}

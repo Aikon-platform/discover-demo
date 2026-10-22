@@ -1,4 +1,5 @@
 import { mount } from "svelte";
+
 import ClusterApp from "./ClusterApp/components/ClusterApp.svelte";
 import { unserializeClusterFile } from "./ClusterApp/converters";
 import ProgressTracker from "./shared/components/ProgressTracker.svelte";
@@ -7,10 +8,17 @@ import ImageGenericList from "./shared/components/ImageGenericList.svelte";
 import type { TImageInfo } from "./shared/types";
 import DatasetImageBrowser from "./DatasetApp/components/DatasetImageBrowser.svelte";
 import type { TDatasetFormatType, TDjangoDatasetInterface } from "./DatasetApp/types";
-
-import "../sass/main.scss";
 import SearchResults from "./SimilarityApp/components/SearchResults.svelte";
 import { initWatermarksForm } from "./WatermarksApp/form";
+import HomeView from "./HomeApp/components/HomeView.svelte"
+
+import "../sass/main.scss";
+
+function initHomeApp(targetRoot: HTMLElement) {
+    mount(HomeView, {
+        target: targetRoot,
+    });
+}
 
 /**
  * Mount the cluster viewer in the given target root.
@@ -139,6 +147,7 @@ function initDatasetImageBrowser(
 }
 
 (window as any).DemoTools = {
+    initHomeApp,
     initClusterViewer,
     initProgressTracker,
     initSimilarityApp,
