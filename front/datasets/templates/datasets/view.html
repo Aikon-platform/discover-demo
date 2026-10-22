@@ -49,24 +49,24 @@
         <h2>Dataset contents</h2>
         <div class="tabs is-centered is-normal tab-head-list">
             <ul>
-                <li id="tab-head-tree" class="tab-head is-active">
-                    <a>Document tree</a>
-                </li>
-                <li id="tab-head-images"class="tab-head">
+                <li id="tab-head-images"class="tab-head is-active">
                     <a>Images</a>
+                </li>
+                <li id="tab-head-tree" class="tab-head">
+                    <a>Document tree</a>
                 </li>
             </ul>
         </div>
 
         <div class="tab-body-wrapper">
-            <div id="tab-body-tree"class="tab-body">
+            <div id="tab-body-images" class="tab-body">
+                <div id="document-image-browser"></div>
+            </div>
+            <div id="tab-body-tree"class="tab-body is-hidden">
                 {% for document in dataset.documents %}
                     <h3 class="id-suffix">File structure of document #{{ forloop.counter }}</h3>
                     <div class="dataset-view-structure">{{ dataset.documents.0.document_tree|safe }}</div>
                 {% endfor %}
-            </div>
-            <div id="tab-body-images" class="tab-body is-hidden">
-                <div id="document-image-browser"></div>
             </div>
         </div>
     </div>
@@ -112,8 +112,8 @@
 <script type="text/javascript" id="generic-image-array-script">
     document.addEventListener("DOMContentLoaded", () => {
         const docToImageArray = JSON.parse(document.getElementById('generic-image-array-script').textContent),
-              datasetFormat = "{{ dataset.format }}",
-              htmlId = "document-image-browser";
+            datasetFormat = "{{ dataset.format }}",
+            htmlId = "document-image-browser";
 
         DemoTools.initDatasetImageBrowser(
             document.getElementById(htmlId),
@@ -178,9 +178,9 @@
     }
 
     const taskSlugArray = JSON.parse(document.getElementById('tasks-tab-manager').textContent),
-          contentSlugArray = ["tree", "images"],
-          taskWrapperId = "section-task",
-          contentWrapperId = "section-content";
+        contentSlugArray = ["tree", "images"],
+        taskWrapperId = "section-task",
+        contentWrapperId = "section-content";
 
     switchTabHook(taskWrapperId, taskSlugArray);
     switchTabHook(contentWrapperId, contentSlugArray);

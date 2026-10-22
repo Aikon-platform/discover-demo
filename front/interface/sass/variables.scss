@@ -1,6 +1,21 @@
 @use "sass:color";
 
-$main-color: hsl(233, 100%, 63%);
+$cs-color-green: #66cdaa;
+$cs-color-plum: #710551;
+$cs-color-plum-light: #c93e9f;
+$cs-color-plum-dark: #680059;
+$cs-color-back: #ffffff;
+$cs-color-front: #000;
+$cs-color-front-rgb: rgb(0, 0, 0);
+
+// fonts.
+$family-monospace: "sono";
+$family-sans-serif: "absans";
+$family-primary: "absans";
+$family-secondary: "redaction";
+$family-code: "sono";
+
+$main-color: $cs-color-green;// hsl(233, 100%, 63%);
 $faded-color: color.adjust($main-color, $saturation: 10%, $lightness: 25%);
 $bg-color: color.adjust($main-color, $saturation: -50%, $lightness: 60%);
 $border-color: color.adjust($bg-color, $saturation: 15%, $lightness: -15%);

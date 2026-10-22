@@ -100,6 +100,7 @@ node_modules/
 
 front/shared/static/dist/main.css.map
 front/shared/static/dist/*
+front/staticfiles
 
 **/nginx.conf
 **/nginx_conf

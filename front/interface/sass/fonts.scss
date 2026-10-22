@@ -1,0 +1,70 @@
+// NOTE: font paths are defined relative to build location, not to the current file's location.
+// - in dev,
+//      - build sass path is `front/shared/static/dist/main.css`,
+//      - font path is `front/shared/static/fonts`
+// - in prod,
+//      - build sass path is `front/staticfiles/dist/main.css`,
+//      - font path is `front/staticfiles/fonts/`
+// => in both cases, `../fonts` points to the correct font folder.
+
+/** default text font 1 (sans-serif) */
+@font-face {
+    font-family: 'absans';
+    src: url('../fonts/absans-main/fonts/Absans-Regular.woff') format('woff');
+    font-weight: normal;
+    font-style: normal;
+}
+
+/** default text font 2 (sans-serif) */
+@font-face {
+    font-family: 'urlaub-grotesk';
+    src: url('../fonts/urlaub_grotesk/Urlaub-Grotesk-Regular.otf') format('opentype');
+    font-weight: normal;
+    font-style: normal;
+}
+
+/** monospace font */
+@font-face {
+    font-family: 'sono';
+    src: url('../fonts/sono/Sono-VariableFont_MONO\,wght.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+}
+
+/** accentuation font 1 (serif) */
+@font-face {
+    font-family: 'lucette';
+    src: url('../fonts/lucette/font/woff/Lucette-Regular.woff') format('woff');
+    font-weight: normal;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'lucette';
+    src: url('../fonts/lucette/font/woff/Lucette-Regularitalic.woff') format('woff');
+    font-weight: normal;
+    font-style: italic;
+}
+
+/** accentuation font 2 (serif) */
+@font-face {
+    font-family: 'redaction';
+    src: url('../fonts/redaction/webfonts/Redaction-Bold.woff2') format('woff2');
+    font-weight: 700;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'redaction';
+    src: url('../fonts/redaction/webfonts/Redaction-Regular.woff2') format('woff2');
+    font-weight: normal;
+    font-style: normal;
+}
+
+/** logo font */
+@font-face {
+    font-family: 'redaction-pixel';
+    src: url('../fonts/redaction/webfonts/Redaction_50-Bold.woff2') format('woff2');
+    font-weight: normal;
+    font-style: normal;
+}
