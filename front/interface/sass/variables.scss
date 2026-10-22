@@ -29,7 +29,6 @@ $light-grey: color.adjust($grey, $lightness: 25%);
 
 $faded-color: color.adjust($main-color, $saturation: 10%, $lightness: 25%);
 $bg-color: color.adjust($main-color, $saturation: -50%, $lightness: 60%);
-$code-bg-color: color.adjust($main-color, $lightness: -40%);
 $border-color: color.adjust($bg-color, $saturation: 15%, $lightness: -15%);
 $head-color: $main-color;
 $dark-color: color.adjust($head-color, $saturation: -5%, $lightness: -40%);

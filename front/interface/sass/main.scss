@@ -2,12 +2,20 @@
 @use "fonts" as *;
 @use "variables" as *;
 @use "bulma/sass" with (
+    // https://bulma.io/documentation/customize/list-of-sass-variables/
     $scheme-main: $main-color,
     $success: $green,
-    $family-monospace: $family-monospace,
-    $family-sans-serif: $family-sans-serif,
+    $warning: $yellow,
+    $danger: $red,
+
+    $card-background-color: $dark-color,
+    $code-background: $dark-color,
+    $pre-background: $dark-color,
+
     $family-primary: $family-sans-serif,
     $family-secondary: $family-secondary,
+    $family-monospace: $family-monospace,
+    $family-sans-serif: $family-sans-serif,
     $family-code: $family-monospace,
 );
 @use "DatasetApp" as *;
@@ -17,7 +25,11 @@
 @use "RegionsApp" as *;
 @use "WatermarksApp" as *;
 
-*, *::before, *::after {
+/*******************************
+ * global themes
+ *******************************/
+
+ *, *::before, *::after {
     box-sizing: border-box;
 }
 
@@ -25,6 +37,10 @@ body {
     background-color: $bg-color;
     margin: 0;
     padding: 0;
+}
+
+[data-theme="dark"] {
+    background-color: $dark-color;
 }
 
 /*******************************
@@ -44,9 +60,12 @@ h6,
 }
 
 a,
-.is-family-secondary,
 .is-family-serif {
-    font-family: $family-secondary !important;
+    font-family: $family-secondary;
+}
+
+button a, .button, .pagination-item {
+    font-family: $family-primary;
 }
 
 #nav-title {
@@ -79,7 +98,7 @@ pre {
     padding: 1em;
     text-indent: 0;
 
-    background-color: $code-bg-color;
+    background-color: $dark-color;
     color: white;
 }
 
