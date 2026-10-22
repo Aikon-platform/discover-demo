@@ -2,13 +2,13 @@
 @use "fonts" as *;
 @use "variables" as *;
 @use "bulma/sass" with (
-    // $scheme-main: hsl(233, 100%, 63%),
-    $success: hsl(84, 74%, 43%),
-    $family-monospace: "sono",
-    $family-sans-serif: "absans",
-    $family-primary: "absans",
-    $family-secondary: "redaction",
-    $family-code: "sono",
+    $scheme-main: $main-color,
+    $success: $green,
+    $family-monospace: $family-monospace,
+    $family-sans-serif: $family-sans-serif,
+    $family-primary: $family-sans-serif,
+    $family-secondary: $family-secondary,
+    $family-code: $family-monospace,
 );
 @use "DatasetApp" as *;
 @use "ClusterApp" as *;
@@ -27,9 +27,10 @@ body {
     padding: 0;
 }
 
-/** font definitions
-    (as far as possible, font defs are done in `@use bulma/sass` block
-*/
+/*******************************
+ * font definitions
+ * (as far as possible, font defs are done in `@use bulma/sass` block
+ *******************************/
 
 h1,
 h2,
@@ -48,17 +49,13 @@ a,
     font-family: $family-secondary !important;
 }
 
-pre,
-code,
-.is-family-monospace,
-.is-family-code {
-}
-
 #nav-title {
     font-family: 'redaction-pixel';
 }
 
-/** */
+/*******************************
+ * generic elements
+ *******************************/
 
 h1 {
     color: $main-color !important;
@@ -74,70 +71,16 @@ a {
     text-decoration: none !important;
 }
 
-.wrapper {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-}
-
-#nav-icon {
-    max-height: 30px;
-    width: auto;
-    object-fit: contain; /* or object-fit: cover; */
-}
-
-#nav-title {
-    font-family: monospace;
-    font-size: larger;
-}
-
-.content {
-    display: flex;
-    flex-direction: column;
-    width: 100%;
-}
-
-.strong {
-    color: var(--bulma-text-strong);
-    font-size: var(--bulma-size-normal);
-    font-weight: var(--bulma-weight-semibold);
-}
-
-.centerwrap {
-    max-width: 900px;
-    width: 100%;
-    margin: 1% auto;/*
-    padding-top: 2em; */
-    padding-top: 0.5em;
-}
-
-.hidden {
-    display: none;
-}
-
 pre {
     max-width: 900px;
     overflow: auto;
     white-space: pre-wrap;
-    background: #333;
-    color: #eee;
     border: 2px solid #ccc;
     padding: 1em;
     text-indent: 0;
-}
 
-.full-log {
-    max-height: 300px;
-    overflow: auto;
-}
-
-.iconify {
-    width: 1em;
-    margin-right: 5px;
-    min-width: 1em;
-    height: 1em;
-    min-height: 1em;
-    display: inline-block;
+    background-color: $code-bg-color;
+    color: white;
 }
 
 input[type="submit"], input[type="file"], button:not(.not-button), .btn {
@@ -203,6 +146,145 @@ input[type="submit"], input[type="file"], button:not(.not-button), .btn {
     }
 }
 
+.clickable {
+    transition: all 0.3s ease;
+    box-shadow: 0 0.5em 1em -0.125em hsla(var(--bulma-shadow-h), var(--bulma-shadow-s), 50%, 0.3);
+}
+.clickable:hover {
+    transform: translateY(2px);
+    box-shadow: 0 0.5em 0.4em -0.125em hsla(var(--bulma-shadow-h), var(--bulma-shadow-s), 50%, 0.4);
+}
+
+/**********************************
+ * general purpose classes
+ **********************************/
+.is-top {
+    z-index: 1000;
+}
+.is-center {
+    margin: auto;
+    text-align: center;
+    justify-content: center;
+}
+.is-middle {
+    display: flex;
+    align-content: center;
+    align-items: center;
+}
+.is-left {
+    display: flex;
+    justify-content: flex-start !important;
+}
+.is-right {
+    display: flex;
+    justify-content: flex-end !important;
+}
+.is-bold {
+    font-weight: bold;
+}
+.is-wide {
+    width: 100%;
+}
+.is-tall {
+    height: 100%;
+}
+.smaller {
+    font-size: 0.75em;
+}
+.larger {
+    font-size: 1.25em;
+}
+.center-flex {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.notification ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.faded {
+    opacity: 0.5;
+    font-style: italic;
+}
+
+.full-width {
+    width: 100%;
+}
+
+// remove the wrapping borders
+.widen {
+    width: calc(100vw - 2em);
+    margin-left: calc(-50vw + 50% + 1em);
+    margin-right: calc(-50vw + 50% + 1em);
+    display: flex;
+    justify-content: center; /* Horizontal centering */
+    align-items: center; /* Vertical centering */
+}
+
+/***********************************
+ * other UX elements
+ ***********************************/
+
+.wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+#nav-icon {
+    max-height: 30px;
+    width: auto;
+    object-fit: contain; /* or object-fit: cover; */
+}
+
+#nav-title {
+    font-family: monospace;
+    font-size: larger;
+}
+
+.content {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+}
+
+.strong {
+    color: var(--bulma-text-strong);
+    font-size: var(--bulma-size-normal);
+    font-weight: var(--bulma-weight-semibold);
+}
+
+.centerwrap {
+    max-width: 900px;
+    width: 100%;
+    margin: 1% auto;/*
+    padding-top: 2em; */
+    padding-top: 0.5em;
+}
+
+.hidden {
+    display: none;
+}
+
+.full-log {
+    max-height: 300px;
+    overflow: auto;
+}
+
+.iconify {
+    width: 1em;
+    margin-right: 5px;
+    min-width: 1em;
+    height: 1em;
+    min-height: 1em;
+    display: inline-block;
+}
+
 .text-shadow {
     text-shadow: 3px 3px 3px rgba(0, 0, 0, 0.5);
 }
@@ -236,8 +318,7 @@ ul.messages {
     }
 }
 
-// List of tasks
-
+// list of tasks
 .task-list {
     display: block;
     max-width: 700px;
@@ -327,8 +408,6 @@ ul.messages {
     max-width: 100%;
 }
 
-// Pagination
-
 .pagination {
     display: flex;
     width: 100%;
@@ -343,92 +422,12 @@ ul.messages {
     }
 }
 
-// Nice tables
-
+ // nice tables
 .table {
     border-collapse: collapse;
     width: 100%;
     margin: 0.5em 0;
     overflow: hidden;
-}
-
-
-.clickable {
-    transition: all 0.3s ease;
-    box-shadow: 0 0.5em 1em -0.125em hsla(var(--bulma-shadow-h), var(--bulma-shadow-s), 50%, 0.3);
-}
-.clickable:hover {
-    transform: translateY(2px);
-    box-shadow: 0 0.5em 0.4em -0.125em hsla(var(--bulma-shadow-h), var(--bulma-shadow-s), 50%, 0.4);
-}
-
-.is-top {
-    z-index: 1000;
-}
-.is-center {
-    margin: auto;
-    text-align: center;
-    justify-content: center;
-}
-.is-middle {
-    display: flex;
-    align-content: center;
-    align-items: center;
-}
-.is-left {
-    display: flex;
-    justify-content: flex-start !important;
-}
-.is-right {
-    display: flex;
-    justify-content: flex-end !important;
-}
-.is-bold {
-    font-weight: bold;
-}
-.is-wide {
-    width: 100%;
-}
-.is-tall {
-    height: 100%;
-}
-.smaller {
-    font-size: 0.75em;
-}
-.larger {
-    font-size: 1.25em;
-}
-.center-flex {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-}
-
-.notification ul {
-    margin: 0;
-    padding: 0;
-    list-style: none;
-}
-
-.faded {
-    opacity: 0.5;
-    font-style: italic;
-}
-
-.full-width {
-    width: 100%;
-}
-
-// Remove the wrapping borders
-
-.widen {
-    width: calc(100vw - 2em);
-    margin-left: calc(-50vw + 50% + 1em);
-    margin-right: calc(-50vw + 50% + 1em);
-    display: flex;
-    justify-content: center; /* Horizontal centering */
-    align-items: center; /* Vertical centering */
 }
 
 .duration-tag {
@@ -454,4 +453,38 @@ ul.messages {
         background-color: color.adjust($red, $lightness: 50%);
         color: $red;
     }
+}
+
+.content h1:not(:first-child) {
+    margin-top: 0;
+    margin-bottom: 0.1em;
+}
+
+.box {
+    box-shadow: none;
+    border-style: solid;
+    border-radius: var(--bulma-box-radius);
+    border-color: var(--bulma-link-75);
+    border-width: var(--bulma-control-border-width);
+}
+
+/** NOTE style of breadcrumbs is completed by JS in base.html */
+.breadcrumbs-wrapper:has(.breadcrumbs-sticky-sidebar) {
+    height: 0;
+}
+
+.breadcrumbs {
+    width: fit-content;
+    background-color: white;
+    margin: 1em;
+    border-style: solid;
+    border-radius: var(--bulma-radius-rounded);
+    border-color: var(--bulma-link-75);
+    border-width: var(--bulma-control-border-width);
+}
+
+.breadcrumbs-sticky-sidebar {
+    position: sticky;
+    top: 1em;
+    z-index: 1;
 }

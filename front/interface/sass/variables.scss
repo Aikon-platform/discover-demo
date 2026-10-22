@@ -15,14 +15,9 @@ $family-primary: "absans";
 $family-secondary: "redaction";
 $family-code: "sono";
 
-$main-color: $cs-color-green;// hsl(233, 100%, 63%);
-$faded-color: color.adjust($main-color, $saturation: 10%, $lightness: 25%);
-$bg-color: color.adjust($main-color, $saturation: -50%, $lightness: 60%);
-$border-color: color.adjust($bg-color, $saturation: 15%, $lightness: -15%);
-$head-color: $main-color;
-$dark-color: color.adjust($head-color, $saturation: -5%, $lightness: -40%);
-$border-radius: 5px;
-$headfont: "Helvetica Neue", Helvetica, Arial, sans-serif;
+// colors
+$main-color: hsl(233, 100%, 63%);
+
 $red: #c81307;
 $yellow: hsl(42, 100%, 53%);
 $green: hsl(84, 74%, 43%);
@@ -31,3 +26,12 @@ $blue: $main-color;
 $grey: color.adjust($main-color, $saturation: -80%, $lightness: 15%);
 $dark-grey: color.adjust($grey, $lightness: -35%);
 $light-grey: color.adjust($grey, $lightness: 25%);
+
+$faded-color: color.adjust($main-color, $saturation: 10%, $lightness: 25%);
+$bg-color: color.adjust($main-color, $saturation: -50%, $lightness: 60%);
+$code-bg-color: color.adjust($main-color, $lightness: -40%);
+$border-color: color.adjust($bg-color, $saturation: 15%, $lightness: -15%);
+$head-color: $main-color;
+$dark-color: color.adjust($head-color, $saturation: -5%, $lightness: -40%);
+$border-radius: 5px;
+$headfont: "Helvetica Neue", Helvetica, Arial, sans-serif;
